@@ -1,0 +1,36 @@
+# Python
+venv/
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Node.js
+node_modules/
+dist/
+.vite/
+
+# Vercel
+.vercel/
+
+# Local databases
+*.db
+*.sqlite
+*.sqlite3
+
+# Backups
+backups/
+*_backup_*.csv
+*.backup.py
+*.backup.txt
+
+# Editor files
+.vscode/
+.idea/
