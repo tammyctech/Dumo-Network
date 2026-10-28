@@ -1,3 +1,5 @@
+import os
+
 from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -15,24 +17,29 @@ from .models import PollingUnit
 # EXISTING API ROUTES
 # =====================================================
 
-from .routes import polling_units, auth, monitoring
-from .routes import results
-from .routes import election_admin
-from .routes import result_uploads
-
-from .routes import agent_assignments
-from .routes import admin_options
-from .routes import user_management
-from .routes import assignment_management
-from .routes import dashboard_statistics
-from .routes import result_details
+from .routes import (
+    polling_units,
+    auth,
+    monitoring,
+    results,
+    election_admin,
+    result_uploads,
+    agent_assignments,
+    admin_options,
+    user_management,
+    assignment_management,
+    dashboard_statistics,
+    result_details,
+)
 
 # =====================================================
 # AGENT MANAGEMENT AND ACTIVATION
 # =====================================================
 
-from .routers import admin_agents
-from .routers import agent_activation
+from .routers import (
+    admin_agents,
+    agent_activation,
+)
 
 # =====================================================
 # WARD MANAGEMENT ROUTER
@@ -62,12 +69,29 @@ app = FastAPI(
 # 2. CONFIGURE CORS
 # =====================================================
 
-# Allow the React development frontend to communicate
-# with the FastAPI backend.
+# Local development frontend URLs.
+allowed_origins = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "http://localhost:5174",
+    "http://127.0.0.1:5174",
+]
+
+# Production frontend URL.
+# Set FRONTEND_URL in Render environment variables.
+#
+# Example:
+# FRONTEND_URL=https://dumo-network.vercel.app
+
+frontend_url = os.getenv("FRONTEND_URL", "").strip().rstrip("/")
+
+if frontend_url:
+    allowed_origins.append(frontend_url)
+
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origin_regex=r"^http://(localhost|127\.0\.0\.1):517[0-9]$",
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=[
         "GET",
