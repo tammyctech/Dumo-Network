@@ -9,8 +9,6 @@ import {
   LockKeyhole,
   Mail,
   ShieldCheck,
-  MapPinned,
-  CheckCircle2,
   AlertCircle,
   LoaderCircle,
   Fingerprint,
@@ -53,180 +51,19 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F5F7FA] lg:grid lg:grid-cols-2">
+    <div className="relative min-h-screen overflow-hidden bg-[#F5F7FA]">
 
-      {/* ==========================================
-          LEFT PANEL — BRAND EXPERIENCE
-      ========================================== */}
-
-      <div className="relative hidden min-h-screen overflow-hidden bg-[#071C25] text-white lg:flex lg:flex-col">
-
-        {/* BACKGROUND EFFECTS */}
-
-        <div className="pointer-events-none absolute -left-40 -top-40 h-[500px] w-[500px] rounded-full bg-emerald-500/10 blur-[100px]" />
-
-        <div className="pointer-events-none absolute -bottom-40 -right-40 h-[500px] w-[500px] rounded-full bg-teal-400/10 blur-[120px]" />
-
-        <div
-          className="pointer-events-none absolute inset-0 opacity-[0.035]"
-          style={{
-            backgroundImage:
-              "linear-gradient(#ffffff 1px, transparent 1px), linear-gradient(90deg, #ffffff 1px, transparent 1px)",
-            backgroundSize: "45px 45px",
-          }}
-        />
-
-        {/* BRAND */}
-
-        <div className="relative z-10 flex items-center gap-3 px-12 pt-12 xl:px-20">
-
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-500 shadow-lg shadow-emerald-500/20">
-            <Activity size={25} strokeWidth={2.5} />
-          </div>
-
-          <div>
-            <h1 className="text-lg font-extrabold tracking-tight">
-              DUMO YOUTH NETWORK
-            </h1>
-
-            <p className="text-xs font-medium tracking-[0.2em] text-emerald-400">
-              ELECTION MONITORING
-            </p>
-          </div>
-
-        </div>
-
-        {/* MAIN BRAND CONTENT */}
-
-        <div className="relative z-10 flex flex-1 flex-col justify-center px-12 py-16 xl:px-20">
-
-          {/* BADGE */}
-
-          <div className="mb-9 inline-flex w-fit items-center gap-2 rounded-full border border-emerald-400/20 bg-emerald-400/10 px-4 py-2">
-
-            <span className="h-2 w-2 rounded-full bg-emerald-400" />
-
-            <span className="text-xs font-semibold tracking-wide text-emerald-300">
-              RIVERS STATE · NIGERIA
-            </span>
-
-          </div>
-
-          {/* HEADLINE */}
-
-          <h2 className="max-w-xl text-5xl font-bold leading-[1.12] tracking-tight xl:text-6xl">
-
-            Empowering
-
-            <br />
-
-            Communities.
-
-            <br />
-
-            <span className="text-emerald-400">
-              Strengthening
-            </span>
-
-            <br />
-
-            Transparency.
-
-          </h2>
-
-          <p className="mt-8 max-w-lg text-base leading-8 text-slate-300">
-            A dedicated digital workspace for election monitoring,
-            polling-unit reporting, and community participation
-            across Rivers State.
-          </p>
-
-          {/* FEATURE LIST */}
-
-          <div className="mt-12 space-y-5">
-
-            <div className="flex items-center gap-4">
-
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-white/5">
-                <MapPinned size={21} className="text-emerald-400" />
-              </div>
-
-              <div>
-                <h3 className="text-sm font-semibold">
-                  Polling-Unit Monitoring
-                </h3>
-
-                <p className="mt-1 text-xs text-slate-400">
-                  Organised reporting across Rivers State.
-                </p>
-              </div>
-
-            </div>
-
-            <div className="flex items-center gap-4">
-
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-white/5">
-                <ShieldCheck size={21} className="text-emerald-400" />
-              </div>
-
-              <div>
-                <h3 className="text-sm font-semibold">
-                  Role-Based Access
-                </h3>
-
-                <p className="mt-1 text-xs text-slate-400">
-                  Dedicated tools for authorised platform users.
-                </p>
-              </div>
-
-            </div>
-
-            <div className="flex items-center gap-4">
-
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-white/5">
-                <CheckCircle2 size={21} className="text-emerald-400" />
-              </div>
-
-              <div>
-                <h3 className="text-sm font-semibold">
-                  Structured Result Reporting
-                </h3>
-
-                <p className="mt-1 text-xs text-slate-400">
-                  Clear records of agent-submitted election data.
-                </p>
-              </div>
-
-            </div>
-
-          </div>
-
-        </div>
-
-        {/* LEFT FOOTER */}
-
-        <div className="relative z-10 flex items-center justify-between border-t border-white/10 px-12 py-7 text-xs text-slate-400 xl:px-20">
-
-          <span>
-            © {new Date().getFullYear()} Dumo Youth Network
-          </span>
-
-          <span>
-            Unofficial — Agent-Submitted Data
-          </span>
-
-        </div>
-
-      </div>
+      <div className="pointer-events-none absolute left-1/2 top-0 h-96 w-96 -translate-x-1/2 rounded-full bg-emerald-400/10 blur-3xl" />
 
       {/* ==========================================
           RIGHT PANEL — LOGIN FORM
       ========================================== */}
 
-      <div className="flex min-h-screen flex-col bg-white">
+      <div className="relative flex min-h-screen flex-col">
 
         {/* MOBILE BRAND */}
 
-        <div className="flex items-center gap-3 border-b border-slate-100 px-6 py-5 lg:hidden">
+        <Link to="/" className="flex items-center gap-3 px-6 py-6 sm:px-10">
 
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-600 text-white">
             <Activity size={21} />
@@ -242,13 +79,13 @@ export default function Login() {
             </p>
           </div>
 
-        </div>
+        </Link>
 
         {/* FORM CONTAINER */}
 
-        <div className="flex flex-1 items-center justify-center px-6 py-12 sm:px-10 lg:px-12 xl:px-20">
+        <div className="flex flex-1 items-center justify-center px-5 py-8 sm:px-10 sm:py-12">
 
-          <div className="w-full max-w-[440px]">
+          <div className="w-full max-w-[480px] rounded-3xl border border-slate-200/80 bg-white p-6 shadow-2xl shadow-slate-900/10 sm:p-10">
 
             {/* TOP ICON */}
 

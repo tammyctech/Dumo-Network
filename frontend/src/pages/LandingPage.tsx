@@ -7,6 +7,7 @@ import {
   ChevronRight,
   Clock3,
   Database,
+  Info,
   LogIn,
   Map as MapIcon,
   MapPin,
@@ -399,13 +400,22 @@ export default function LandingPage() {
           </Link>
 
           <nav className="hidden items-center gap-8 md:flex">
-            <a href="#results" className="text-sm font-semibold text-slate-200 hover:text-white">
+            <a
+              href="#results"
+              className="relative py-2 text-sm font-semibold text-slate-200 transition-colors duration-200 after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:origin-left after:scale-x-0 after:rounded-full after:bg-emerald-400 after:transition-transform after:duration-200 after:content-[''] hover:text-white hover:after:scale-x-100"
+            >
               Live results
             </a>
-            <a href="#updates" className="text-sm font-semibold text-slate-200 hover:text-white">
+            <a
+              href="#updates"
+              className="relative py-2 text-sm font-semibold text-slate-200 transition-colors duration-200 after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:origin-left after:scale-x-0 after:rounded-full after:bg-emerald-400 after:transition-transform after:duration-200 after:content-[''] hover:text-white hover:after:scale-x-100"
+            >
               Updates
             </a>
-            <a href="#methodology" className="text-sm font-semibold text-slate-200 hover:text-white">
+            <a
+              href="#methodology"
+              className="relative py-2 text-sm font-semibold text-slate-200 transition-colors duration-200 after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:origin-left after:scale-x-0 after:rounded-full after:bg-emerald-400 after:transition-transform after:duration-200 after:content-[''] hover:text-white hover:after:scale-x-100"
+            >
               Methodology
             </a>
             <Link
@@ -434,9 +444,27 @@ export default function LandingPage() {
         {mobileMenuOpen && (
           <nav className="border-t border-white/10 bg-slate-950 px-5 py-5 md:hidden">
             <div className="flex flex-col gap-4 text-sm font-semibold text-white">
-              <a href="#results" onClick={() => setMobileMenuOpen(false)}>Live results</a>
-              <a href="#updates" onClick={() => setMobileMenuOpen(false)}>Updates</a>
-              <a href="#methodology" onClick={() => setMobileMenuOpen(false)}>Methodology</a>
+              <a
+                href="#results"
+                onClick={() => setMobileMenuOpen(false)}
+                className="rounded-lg px-3 py-3 transition hover:bg-white/10 hover:text-emerald-300"
+              >
+                Live results
+              </a>
+              <a
+                href="#updates"
+                onClick={() => setMobileMenuOpen(false)}
+                className="rounded-lg px-3 py-3 transition hover:bg-white/10 hover:text-emerald-300"
+              >
+                Updates
+              </a>
+              <a
+                href="#methodology"
+                onClick={() => setMobileMenuOpen(false)}
+                className="rounded-lg px-3 py-3 transition hover:bg-white/10 hover:text-emerald-300"
+              >
+                Methodology
+              </a>
               <Link
                 to="/login"
                 className="mt-2 inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-emerald-400 px-5 font-black text-slate-950 shadow-lg shadow-black/20 transition hover:bg-emerald-300"
@@ -559,11 +587,17 @@ export default function LandingPage() {
                   See where submitted results currently lead.
                 </h2>
               </div>
-              <p className="max-w-xl text-sm leading-6 text-slate-600">
-                Colors reflect the leading party from reports received in each
-                LGA. Coverage matters: inspect the percentage before drawing a
-                conclusion.
-              </p>
+              <div className="flex max-w-xl items-start gap-3 rounded-2xl border border-emerald-200 bg-white p-4 text-base leading-7 text-slate-800 shadow-sm">
+                <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-800">
+                  <Info size={18} aria-hidden="true" />
+                </span>
+                <p>
+                  Map colors show the <strong>party currently leading</strong>
+                  {" "}from reports received in each LGA. Always check the
+                  {" "}<strong>reporting coverage percentage</strong> before
+                  interpreting the result.
+                </p>
+              </div>
             </div>
 
             {error && (
