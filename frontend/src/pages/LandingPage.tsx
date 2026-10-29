@@ -762,12 +762,20 @@ export default function LandingPage() {
           </div>
         </section>
 
-        <section id="methodology" className="scroll-mt-8 py-24">
-          <div className="mx-auto max-w-7xl px-5 lg:px-8">
+        <section
+          id="methodology"
+          className="relative scroll-mt-20 overflow-hidden border-y border-emerald-100 bg-emerald-50 py-24"
+        >
+          <div className="pointer-events-none absolute -right-24 -top-24 h-80 w-80 rounded-full bg-emerald-200/50 blur-3xl" />
+          <div className="relative mx-auto max-w-7xl px-5 lg:px-8">
             <div className="grid gap-10 lg:grid-cols-[0.8fr_1.2fr]">
               <div>
-                <p className="text-xs font-black uppercase tracking-[0.2em] text-emerald-700">How it works</p>
-                <h2 className="mt-3 text-4xl font-black tracking-[-0.035em] text-slate-950">Transparent from field report to public view.</h2>
+                <p className="text-sm font-black uppercase tracking-[0.2em] text-emerald-800">How it works</p>
+                <h2 className="mt-4 max-w-xl text-4xl font-black leading-tight tracking-[-0.035em] text-slate-950 sm:text-5xl">Transparent from field report to public view.</h2>
+                <p className="mt-5 max-w-lg text-base leading-7 text-slate-700">
+                  Follow each result through a clear, structured process—from
+                  an assigned monitor's submission to the public dashboard.
+                </p>
               </div>
               <div className="grid gap-4 sm:grid-cols-2">
                 {[
@@ -778,7 +786,7 @@ export default function LandingPage() {
                 ].map((item) => {
                   const Icon = item.icon;
                   return (
-                    <div key={item.title} className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+                    <div key={item.title} className="rounded-2xl border border-emerald-200 bg-white p-6 shadow-md shadow-emerald-950/5">
                       <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700"><Icon size={21} /></div>
                       <h3 className="mt-5 font-black text-slate-950">{item.title}</h3>
                       <p className="mt-2 text-sm leading-6 text-slate-600">{item.text}</p>
