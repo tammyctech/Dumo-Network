@@ -185,15 +185,7 @@ function MapPanel({
 
   const selectedResult = selected
     ? results.get(normalizeLga(selected))
-    : lgaResults.find((item) => item.leader) || lgaResults[0] || null;
-  const activeName = selected || selectedResult?.lga || null;
-  const leaderParties = Array.from(
-    new Set(
-      lgaResults
-        .map((item) => item.leader?.party)
-        .filter((party): party is string => Boolean(party))
-    )
-  );
+    : null;
 
   return (
     <div className="grid gap-6 xl:grid-cols-[minmax(0,1.45fr)_minmax(260px,0.55fr)]">
@@ -209,9 +201,7 @@ function MapPanel({
             {geoJson.features.map((feature) => {
               const name = feature.properties.ADM2_EN || "Unknown LGA";
               const result = results.get(normalizeLga(name));
-              const active =
-                activeName != null &&
-                normalizeLga(activeName) === normalizeLga(name);
+              const active = selected === name;
               return (
                 <path
                   key={name}
@@ -226,14 +216,7 @@ function MapPanel({
                   onClick={() => setSelected(name)}
                   tabIndex={0}
                   aria-label={`${name}: ${result?.leader?.party || "no result yet"}`}
-                >
-                  <title>
-                    {name}: {result?.leader?.party || "No party totals yet"}
-                    {result?.coverage_percent != null
-                      ? `, ${result.coverage_percent.toFixed(1)}% reporting coverage`
-                      : ""}
-                  </title>
-                </path>
+                />
               );
             })}
           </svg>
@@ -253,24 +236,6 @@ function MapPanel({
             </p>
           </div>
         )}
-        <div className="relative mt-2 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-white/10 pt-4 text-xs text-slate-300">
-          <span className="font-bold uppercase tracking-wider text-slate-400">
-            Map key
-          </span>
-          {leaderParties.slice(0, 7).map((party) => (
-            <span key={party} className="flex items-center gap-1.5">
-              <span
-                className="h-2.5 w-2.5 rounded-sm"
-                style={{ backgroundColor: partyColor(party) }}
-              />
-              {party}
-            </span>
-          ))}
-          <span className="flex items-center gap-1.5">
-            <span className="h-2.5 w-2.5 rounded-sm bg-slate-400/40" />
-            No totals
-          </span>
-        </div>
       </div>
 
       <aside className="rounded-3xl border border-slate-200 bg-white p-6 shadow-xl shadow-slate-900/5">
@@ -410,27 +375,13 @@ export default function LandingPage() {
     return () => controller.abort();
   }, [refreshKey]);
 
-  useEffect(() => {
-    const intervalId = window.setInterval(() => {
-      setRefreshKey((value) => value + 1);
-    }, 60_000);
-
-    return () => window.clearInterval(intervalId);
-  }, []);
-
   const leadingParty = overview?.party_totals[0] || null;
   const totalVotes =
     overview?.party_totals.reduce((sum, party) => sum + party.votes, 0) || 0;
 
   return (
     <div className="min-h-screen bg-[#f5f7f6] text-slate-950">
-      <a
-        href="#main-content"
-        className="fixed left-4 top-4 z-[100] -translate-y-24 rounded-lg bg-white px-4 py-2 font-bold text-slate-950 shadow-xl transition focus:translate-y-0"
-      >
-        Skip to main content
-      </a>
-      <header className="sticky inset-x-0 top-0 z-40 border-b border-white/10 bg-[#041713]/95 backdrop-blur-xl">
+      <header className="absolute inset-x-0 top-0 z-40 border-b border-white/10">
         <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-5 lg:px-8">
           <Link to="/" className="flex items-center gap-3 text-white">
             <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500 shadow-lg shadow-emerald-950/30">
@@ -485,44 +436,44 @@ export default function LandingPage() {
         )}
       </header>
 
-      <main id="main-content">
-        <section className="relative overflow-hidden bg-[#041713] pb-24 pt-20 text-white sm:pb-28 sm:pt-28">
+      <main>
+        <section className="relative overflow-hidden bg-[#041713] pb-28 pt-36 text-white sm:pt-44">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_78%_20%,rgba(16,185,129,0.22),transparent_34%),radial-gradient(circle_at_12%_70%,rgba(14,116,144,0.16),transparent_30%)]" />
           <div className="absolute inset-0 opacity-[0.045] [background-image:linear-gradient(rgba(255,255,255,.8)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.8)_1px,transparent_1px)] [background-size:48px_48px]" />
           <div className="relative mx-auto grid max-w-7xl gap-14 px-5 lg:grid-cols-[1.15fr_0.85fr] lg:items-center lg:px-8">
             <div>
               <div className="inline-flex items-center gap-2 rounded-full border border-emerald-400/30 bg-emerald-400/10 px-4 py-2 text-xs font-bold uppercase tracking-[0.16em] text-emerald-300">
                 <Radio size={14} className="animate-pulse" />
-                Live public results monitor
+                Rivers State live monitor
               </div>
               <h1 className="mt-7 max-w-3xl text-5xl font-black leading-[1.04] tracking-[-0.04em] sm:text-6xl lg:text-7xl">
-                Rivers State election monitoring,
-                <span className="block text-emerald-400">in one clear view.</span>
+                Every report.
+                <span className="block text-emerald-400">Every LGA.</span>
+                One public view.
               </h1>
               <p className="mt-7 max-w-2xl text-lg leading-8 text-slate-300">
-                Track reporting coverage, leading parties, and the latest
-                polling-unit submissions across all 23 local government areas.
+                Follow unofficial, agent-submitted election reports across
+                Rivers State as they arrive from monitored polling units.
               </p>
               <div className="mt-9 flex flex-wrap gap-4">
                 <a
                   href="#results"
                   className="inline-flex items-center gap-2 rounded-full bg-emerald-500 px-6 py-3.5 font-bold text-slate-950 transition hover:bg-emerald-400"
                 >
-                  View live results <ArrowRight size={18} />
+                  Explore live map <ArrowRight size={18} />
                 </a>
                 <Link
                   to="/login"
                   className="inline-flex items-center gap-2 rounded-full border border-white/20 px-6 py-3.5 font-bold text-white transition hover:bg-white/10"
                 >
-                  Monitor sign in
+                  Sign in to report
                 </Link>
               </div>
               <div className="mt-10 flex items-start gap-3 border-l-2 border-amber-400 pl-4 text-sm text-slate-300">
                 <ShieldCheck size={18} className="mt-0.5 shrink-0 text-amber-300" />
                 <p>
-                  Unofficial, agent-submitted data. A lead shown here is not a
-                  declared result; only the authorized electoral body can declare
-                  a winner.
+                  Unofficial — Agent-Submitted Data. Dumo Network does not
+                  declare election winners; only authorized electoral bodies do.
                 </p>
               </div>
             </div>
@@ -564,35 +515,16 @@ export default function LandingPage() {
                   <p className="mt-2 text-3xl font-black">{formatNumber(totalVotes)}</p>
                 </div>
                 <div className="rounded-2xl bg-black/20 p-4">
-                  <p className="text-xs text-slate-400">Reported statewide lead</p>
+                  <p className="text-xs text-slate-400">Current statewide lead</p>
                   <p className="mt-2 truncate text-3xl font-black">
                     {leadingParty?.party || "—"}
                   </p>
                 </div>
               </div>
               <p className="mt-5 flex items-center gap-2 text-xs text-slate-400">
-                <Clock3 size={14} /> Last report: {formatDate(overview?.last_updated)}
-                <span className="text-slate-600">•</span>
-                Auto-refreshes every 60 seconds
+                <Clock3 size={14} /> Last update: {formatDate(overview?.last_updated)}
               </p>
             </div>
-          </div>
-        </section>
-
-        <section aria-label="Data status" className="border-b border-slate-200 bg-white">
-          <div className="mx-auto grid max-w-7xl divide-y divide-slate-200 px-5 sm:grid-cols-3 sm:divide-x sm:divide-y-0 lg:px-8">
-            {[
-              ["Data classification", "Unofficial · Agent-submitted"],
-              ["Geographic scope", "23 Rivers State LGAs"],
-              ["Reporting basis", "Received polling-unit submissions"],
-            ].map(([label, value]) => (
-              <div key={label} className="py-4 sm:px-6 sm:first:pl-0">
-                <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-                  {label}
-                </p>
-                <p className="mt-1 text-sm font-bold text-slate-800">{value}</p>
-              </div>
-            ))}
           </div>
         </section>
 
@@ -608,8 +540,9 @@ export default function LandingPage() {
                 </h2>
               </div>
               <p className="max-w-xl text-sm leading-6 text-slate-600">
-                Each color identifies the party currently leading in received
-                reports. Always compare the lead with reporting coverage.
+                Colors reflect the leading party from reports received in each
+                LGA. Coverage matters: inspect the percentage before drawing a
+                conclusion.
               </p>
             </div>
 
@@ -635,58 +568,6 @@ export default function LandingPage() {
                   <span className="text-slate-500">{formatNumber(party.votes)}</span>
                 </div>
               ))}
-            </div>
-
-            <div className="mt-10 overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
-              <div className="flex flex-col gap-2 border-b border-slate-200 px-5 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-6">
-                <div>
-                  <h3 className="font-black text-slate-950">LGA reporting status</h3>
-                  <p className="mt-1 text-sm text-slate-500">
-                    A text-based view of every map result for accessible comparison.
-                  </p>
-                </div>
-                <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
-                  {overview?.lga_results.length || 0} LGAs
-                </span>
-              </div>
-              <div className="overflow-x-auto">
-                <table className="w-full min-w-[720px] text-left text-sm">
-                  <thead className="bg-slate-50 text-xs uppercase tracking-wider text-slate-500">
-                    <tr>
-                      <th scope="col" className="px-6 py-4">LGA</th>
-                      <th scope="col" className="px-6 py-4">Reported lead</th>
-                      <th scope="col" className="px-6 py-4 text-right">Votes</th>
-                      <th scope="col" className="px-6 py-4 text-right">Units reporting</th>
-                      <th scope="col" className="px-6 py-4 text-right">Coverage</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100">
-                    {(overview?.lga_results || []).map((item) => (
-                      <tr key={item.lga} className="hover:bg-slate-50/80">
-                        <th scope="row" className="px-6 py-4 font-bold text-slate-900">{item.lga}</th>
-                        <td className="px-6 py-4">
-                          <span className="inline-flex items-center gap-2 font-semibold text-slate-700">
-                            <span
-                              className="h-2.5 w-2.5 rounded-sm"
-                              style={{ backgroundColor: partyColor(item.leader?.party) }}
-                            />
-                            {item.leader?.party || "No totals"}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 text-right font-semibold text-slate-700">
-                          {formatNumber(item.leader?.votes)}
-                        </td>
-                        <td className="px-6 py-4 text-right text-slate-600">
-                          {item.submitted_polling_units} / {item.total_polling_units}
-                        </td>
-                        <td className="px-6 py-4 text-right font-bold text-slate-900">
-                          {item.coverage_percent?.toFixed(1) || "0.0"}%
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
             </div>
           </div>
         </section>
@@ -755,15 +636,6 @@ export default function LandingPage() {
                   </div>
                 </article>
               ))}
-              {!loading && !overview?.updates.length && (
-                <div className="rounded-2xl border border-dashed border-white/20 bg-white/[0.04] p-8 text-center md:col-span-2 xl:col-span-3">
-                  <Radio className="mx-auto text-emerald-400" />
-                  <h3 className="mt-4 font-bold text-white">Awaiting field reports</h3>
-                  <p className="mt-2 text-sm text-slate-400">
-                    New polling-unit submissions will appear here as they are received.
-                  </p>
-                </div>
-              )}
             </div>
           </div>
         </section>

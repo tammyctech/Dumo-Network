@@ -22,12 +22,6 @@
 html {
   width: 100%;
   min-width: 320px;
-  scroll-behavior: smooth;
-}
-
-:focus-visible {
-  outline: 3px solid #10b981;
-  outline-offset: 3px;
 }
 
 body {
@@ -241,10 +235,6 @@ html.dark #root {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  html {
-    scroll-behavior: auto;
-  }
-
   html,
   body,
   #root {
