@@ -26,6 +26,7 @@ import PollingUnits from "./pages/PollingUnits";
 import Analytics from "./pages/Analytics";
 import AgentResults from "./pages/AgentResults";
 import ResultDetails from "./pages/ResultDetails";
+import Settings from "./pages/Settings";
 
 // Administrator pages
 import AdminElections from "./pages/AdminElections";
@@ -102,6 +103,15 @@ export default function App() {
               <Route
                 path="/analytics"
                 element={<Analytics />}
+              />
+
+              {/* ========================================
+                  SETTINGS — ALL AUTHENTICATED USERS
+              ======================================== */}
+
+              <Route
+                path="/settings"
+                element={<Settings />}
               />
 
               {/* ========================================
