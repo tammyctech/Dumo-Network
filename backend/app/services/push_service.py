@@ -1,0 +1,140 @@
+import json
+import os
+from pathlib import Path
+from urllib.parse import urlsplit
+import ipaddress
+
+from dotenv import load_dotenv
+from pywebpush import webpush, WebPushException
+
+load_dotenv()
+
+BACKEND_DIR = Path(__file__).resolve().parents[2]
+
+
+def get_vapid_config():
+    key_path = os.getenv("VAPID_PRIVATE_KEY_PATH")
+    subject = os.getenv("VAPID_SUBJECT")
+
+    if not key_path:
+        raise RuntimeError("VAPID_PRIVATE_KEY_PATH is not configured")
+
+    if not subject:
+        raise RuntimeError("VAPID_SUBJECT is not configured")
+
+    private_key = Path(key_path)
+
+    if not private_key.is_absolute():
+        private_key = BACKEND_DIR / private_key
+
+    if not private_key.is_file():
+        raise RuntimeError("VAPID private key file was not found")
+
+    return str(private_key), subject
+
+
+def validate_push_endpoint(endpoint: str):
+    """
+    Restrict outgoing requests to supported browser push services.
+    """
+
+    parsed = urlsplit(endpoint)
+
+    if (
+        parsed.scheme != "https"
+        or not parsed.hostname
+        or parsed.username is not None
+        or parsed.password is not None
+        or parsed.port not in (None, 443)
+    ):
+        raise ValueError("Invalid push endpoint")
+
+    hostname = parsed.hostname.lower().rstrip(".")
+
+    allowed_hosts = {
+        "fcm.googleapis.com",
+        "updates.push.services.mozilla.com",
+        "web.push.apple.com",
+    }
+
+    allowed_suffixes = (
+        ".push.apple.com",
+    )
+
+    if hostname not in allowed_hosts and not any(
+        hostname.endswith(suffix)
+        for suffix in allowed_suffixes
+    ):
+        raise ValueError("Unsupported push service")
+
+    try:
+        ipaddress.ip_address(hostname)
+        raise ValueError("IP addresses are not permitted")
+    except ValueError as error:
+        if str(error) == "IP addresses are not permitted":
+            raise
+
+
+def send_push_notification(
+    subscription,
+    title: str,
+    body: str,
+    url: str = "/dashboard",
+):
+    """
+    Send a Web Push notification to a registered browser.
+
+    subscription must contain:
+        endpoint
+        p256dh
+        auth
+    """
+
+    validate_push_endpoint(subscription.endpoint)
+
+    if not url.startswith("/") or url.startswith("//"):
+        raise ValueError("Notification URL must be a relative path")
+
+    private_key, subject = get_vapid_config()
+
+    payload = {
+        "title": title,
+        "body": body,
+        "url": url,
+    }
+
+    subscription_info = {
+        "endpoint": subscription.endpoint,
+        "keys": {
+            "p256dh": subscription.p256dh,
+            "auth": subscription.auth,
+        },
+    }
+
+    try:
+        response = webpush(
+            subscription_info=subscription_info,
+            data=json.dumps(payload),
+            vapid_private_key=private_key,
+            vapid_claims={"sub": subject},
+            ttl=3600,
+            timeout=10,
+        )
+
+        return {
+            "success": True,
+            "status_code": response.status_code,
+        }
+
+    except WebPushException as error:
+        status_code = (
+            error.response.status_code
+            if error.response is not None
+            else None
+        )
+
+        return {
+            "success": False,
+            "status_code": status_code,
+            "error": str(error),
+        }

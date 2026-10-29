@@ -450,3 +450,44 @@ class Ward(Base):
             name="uq_ward_state_lga_number",
         ),
     )
+# ============================================================
+# PUSH NOTIFICATION SUBSCRIPTIONS
+# ============================================================
+
+class PushSubscription(Base):
+    __tablename__ = "push_subscriptions"
+
+    id: Mapped[int] = mapped_column(
+        Integer,
+        primary_key=True,
+        index=True,
+    )
+
+    user_id: Mapped[int] = mapped_column(
+        Integer,
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+
+    endpoint: Mapped[str] = mapped_column(
+        String(2048),
+        unique=True,
+        nullable=False,
+    )
+
+    p256dh: Mapped[str] = mapped_column(
+        String(255),
+        nullable=False,
+    )
+
+    auth: Mapped[str] = mapped_column(
+        String(255),
+        nullable=False,
+    )
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
+        nullable=False,
+    )

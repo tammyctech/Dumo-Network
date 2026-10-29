@@ -6,12 +6,14 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
+
 # =====================================================
 # DATABASE
 # =====================================================
 
 from .database import SessionLocal
 from .models import PollingUnit
+
 
 # =====================================================
 # EXISTING API ROUTES
@@ -30,7 +32,9 @@ from .routes import (
     assignment_management,
     dashboard_statistics,
     result_details,
+    push_notifications,
 )
+
 
 # =====================================================
 # AGENT MANAGEMENT AND ACTIVATION
@@ -41,11 +45,13 @@ from .routers import (
     agent_activation,
 )
 
+
 # =====================================================
 # WARD MANAGEMENT ROUTER
 # =====================================================
 
 from .wards import routes as ward_routes
+
 
 # =====================================================
 # BULK IMPORT ROUTER
@@ -69,7 +75,7 @@ app = FastAPI(
 # 2. CONFIGURE CORS
 # =====================================================
 
-# Local development frontend URLs.
+# Local development frontend URLs
 allowed_origins = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
@@ -77,13 +83,14 @@ allowed_origins = [
     "http://127.0.0.1:5174",
 ]
 
-# Production frontend URL.
-# Set FRONTEND_URL in Render environment variables.
-#
-# Example:
-# FRONTEND_URL=https://dumo-network.vercel.app
 
-frontend_url = os.getenv("FRONTEND_URL", "").strip().rstrip("/")
+# Production frontend URL
+# Configure FRONTEND_URL in Render environment variables.
+
+frontend_url = os.getenv(
+    "FRONTEND_URL",
+    "",
+).strip().rstrip("/")
 
 if frontend_url:
     allowed_origins.append(frontend_url)
@@ -128,7 +135,7 @@ def get_db():
 
 
 # =====================================================
-# 5. REGISTER API ROUTES
+# 5. REGISTER EXISTING API ROUTES
 # =====================================================
 
 # Polling Unit Management
@@ -169,7 +176,18 @@ app.include_router(result_details.router)
 
 
 # =====================================================
-# 6. AGENT MANAGEMENT
+# 6. PUSH NOTIFICATIONS
+# =====================================================
+
+# Register and unregister agent devices.
+# Check subscription status.
+# Authentication is enforced inside the push router.
+
+app.include_router(push_notifications.router)
+
+
+# =====================================================
+# 7. AGENT MANAGEMENT
 # =====================================================
 
 # Administrators create and manage agent invitations.
@@ -180,14 +198,14 @@ app.include_router(agent_activation.router)
 
 
 # =====================================================
-# 7. WARD MANAGEMENT
+# 8. WARD MANAGEMENT
 # =====================================================
 
 app.include_router(ward_routes.router)
 
 
 # =====================================================
-# 8. BULK IMPORT MANAGEMENT
+# 9. BULK IMPORT MANAGEMENT
 # =====================================================
 
 # Import ward registers and polling-unit records.
@@ -197,7 +215,7 @@ app.include_router(import_routes.router)
 
 
 # =====================================================
-# 9. HOME ENDPOINT
+# 10. HOME ENDPOINT
 # =====================================================
 
 @app.get("/")
@@ -210,7 +228,7 @@ def home():
 
 
 # =====================================================
-# 10. DASHBOARD ENDPOINT
+# 11. DASHBOARD ENDPOINT
 # =====================================================
 
 @app.get("/api/dashboard")
