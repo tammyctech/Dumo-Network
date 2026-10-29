@@ -115,7 +115,7 @@ const navigation = [
     name: "Settings",
     path: "/settings",
     icon: Settings,
-    available: false,
+    available: true,
   },
 ];
 
@@ -234,11 +234,11 @@ export default function AppLayout() {
             <div className="min-w-0">
 
               <p className="text-sm font-bold tracking-wide text-white">
-                DUMO NETWORK
+                DUMO YOUTH NETWORK
               </p>
 
               <p className="text-[10px] text-emerald-400">
-                Election Monitoring
+                Election Monitoring System
               </p>
 
             </div>
