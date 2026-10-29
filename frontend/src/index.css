@@ -40,6 +40,12 @@ body {
   min-height: 100vh;
 }
 
+@layer components {
+  .input {
+    @apply w-full rounded-xl border border-slate-300 bg-white px-3 py-3 text-slate-900 outline-none transition focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100;
+  }
+}
+
 /* ==========================================
    TEXT VISIBILITY
 ========================================== */

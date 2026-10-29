@@ -28,6 +28,7 @@ import Analytics from "./pages/Analytics";
 import AgentResults from "./pages/AgentResults";
 import ResultDetails from "./pages/ResultDetails";
 import Settings from "./pages/Settings";
+import Incidents from "./pages/Incidents";
 
 // Administrator pages
 import AdminElections from "./pages/AdminElections";
@@ -98,6 +99,11 @@ export default function App() {
               <Route
                 path="/results"
                 element={<ResultDetails />}
+              />
+
+              <Route
+                path="/incidents"
+                element={<Incidents />}
               />
 
               {/* Analytics */}

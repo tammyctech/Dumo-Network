@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 
 from ..database import get_db
 from ..models import (
-    AuditLog, Election, Incident, PollingUnit, ResultFlag,
+    AgentAssignment, AuditLog, Election, Incident, PollingUnit, ResultFlag,
     ResultReview, ResultSubmission, User,
 )
 from ..security import get_current_user
@@ -45,6 +45,21 @@ def require_admin(user: User = Depends(get_current_user)) -> User:
     return user
 
 
+def require_operations_user(user: User = Depends(get_current_user)) -> User:
+    if user.role not in ("admin", "agent"):
+        raise HTTPException(status_code=403, detail="Operations access required.")
+    return user
+
+
+def authorize_submission(db: Session, submission_id: int, user: User) -> ResultSubmission:
+    submission = db.get(ResultSubmission, submission_id)
+    if submission is None:
+        raise HTTPException(status_code=404, detail="Result submission not found.")
+    if user.role != "admin" and submission.agent_id != user.id:
+        raise HTTPException(status_code=403, detail="You cannot access this submission.")
+    return submission
+
+
 @router.post("/results/{submission_id}/reviews")
 def review_result(submission_id: int, payload: ReviewInput,
                   db: Session = Depends(get_db), admin: User = Depends(require_admin)):
@@ -68,7 +83,8 @@ def review_result(submission_id: int, payload: ReviewInput,
 
 @router.get("/results/{submission_id}/reviews")
 def review_history(submission_id: int, db: Session = Depends(get_db),
-                   user: User = Depends(get_current_user)):
+                   user: User = Depends(require_operations_user)):
+    authorize_submission(db, submission_id, user)
     rows = db.execute(
         select(ResultReview, User).join(User, User.id == ResultReview.reviewer_id)
         .where(ResultReview.submission_id == submission_id)
@@ -81,7 +97,8 @@ def review_history(submission_id: int, db: Session = Depends(get_db),
 
 @router.get("/results/{submission_id}/flags")
 def result_flags(submission_id: int, db: Session = Depends(get_db),
-                 user: User = Depends(get_current_user)):
+                 user: User = Depends(require_operations_user)):
+    authorize_submission(db, submission_id, user)
     flags = db.scalars(select(ResultFlag).where(ResultFlag.submission_id == submission_id)
                        .order_by(ResultFlag.created_at.desc())).all()
     return {"flags": [{"id": item.id, "type": item.flag_type,
@@ -91,14 +108,29 @@ def result_flags(submission_id: int, db: Session = Depends(get_db),
 
 @router.post("/incidents", status_code=status.HTTP_201_CREATED)
 def create_incident(payload: IncidentCreate, db: Session = Depends(get_db),
-                    user: User = Depends(get_current_user)):
+                    user: User = Depends(require_operations_user)):
     election = db.get(Election, payload.election_id)
     if election is None or election.state.lower() != "rivers":
         raise HTTPException(status_code=404, detail="Rivers State election not found.")
+    if user.role == "agent" and payload.polling_unit_id is None:
+        assigned_election = db.scalar(select(AgentAssignment.id).where(
+            AgentAssignment.agent_id == user.id,
+            AgentAssignment.election_id == payload.election_id,
+        ))
+        if assigned_election is None:
+            raise HTTPException(status_code=403, detail="You are not assigned to this election.")
     if payload.polling_unit_id:
         unit = db.get(PollingUnit, payload.polling_unit_id)
         if unit is None or unit.state.lower() != "rivers":
             raise HTTPException(status_code=404, detail="Rivers State polling unit not found.")
+        if user.role == "agent":
+            assignment = db.scalar(select(AgentAssignment.id).where(
+                AgentAssignment.agent_id == user.id,
+                AgentAssignment.election_id == payload.election_id,
+                AgentAssignment.polling_unit_id == payload.polling_unit_id,
+            ))
+            if assignment is None:
+                raise HTTPException(status_code=403, detail="You are not assigned to this polling unit.")
     incident = Incident(election_id=payload.election_id,
                         polling_unit_id=payload.polling_unit_id,
                         reported_by=user.id, category=payload.category.strip(),
@@ -111,7 +143,7 @@ def create_incident(payload: IncidentCreate, db: Session = Depends(get_db),
 
 @router.get("/incidents")
 def list_incidents(election_id: int | None = None, db: Session = Depends(get_db),
-                   user: User = Depends(get_current_user)):
+                   user: User = Depends(require_operations_user)):
     query = select(Incident).order_by(Incident.created_at.desc())
     if election_id is not None:
         query = query.where(Incident.election_id == election_id)

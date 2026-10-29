@@ -1,44 +1,39 @@
-import { FileText } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import { AlertTriangle, CheckCircle2, Eye, FileImage, Loader2, RefreshCw, Search, ShieldCheck, X } from "lucide-react";
+import { useAuth } from "../context/AuthContext";
 
-export default function ResultDetails() {
-  return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-slate-900">
-          Polling-Unit Results
-        </h1>
+const API_URL = (import.meta.env.VITE_API_URL || "http://127.0.0.1:8000").replace(/\/$/, "");
+type Item = { id:number; submitted_at:string; version:number; is_flagged:boolean; verification_status:string; election:{id:number;name:string}; polling_unit:{id:number;code:string;name:string;lga:string;ward:string}; agent:{id:number;full_name:string} };
+type Detail = Item & { accredited_voters:number;valid_votes:number;rejected_votes:number;party_results:{party:string;votes:number}[];evidence:{id:number;uploaded_at:string;image_url:string}[] };
+type Review = {id:number;status:string;notes:string|null;created_at:string;reviewer:string};
+type Flag = {id:number;type:string;severity:string;message:string;resolved_at:string|null};
+async function apiError(r:Response){try{const d=await r.json();return typeof d.detail==="string"?d.detail:`Request failed (${r.status})`;}catch{return `Request failed (${r.status})`;}}
+const label=(v:string)=>v.replaceAll("_"," ");
+const badge=(v:string)=>v==="verified"?"bg-emerald-100 text-emerald-800":v==="disputed"||v==="correction_requested"?"bg-red-100 text-red-800":"bg-amber-100 text-amber-800";
 
-        <p className="mt-2 text-sm text-slate-500">
-          Browse Rivers State polling-unit result submissions.
-        </p>
-      </div>
-
-      <div className="rounded-2xl border border-amber-200 bg-amber-50 p-5">
-        <p className="font-semibold text-amber-900">
-          Unofficial — Agent-Submitted Data
-        </p>
-
-        <p className="mt-2 text-sm text-amber-800">
-          These records are submitted by election monitoring
-          agents and do not constitute official election results.
-        </p>
-      </div>
-
-      <div className="rounded-2xl border border-slate-200 bg-white p-10 text-center">
-        <FileText
-          size={36}
-          className="mx-auto text-emerald-600"
-        />
-
-        <h2 className="mt-4 font-semibold text-slate-900">
-          Polling-Unit Result Explorer
-        </h2>
-
-        <p className="mt-2 text-sm text-slate-500">
-          Result browsing, party breakdowns, and supporting
-          evidence will appear here when the API is connected.
-        </p>
-      </div>
-    </div>
-  );
+export default function ResultDetails(){
+ const {token,user}=useAuth(); const [items,setItems]=useState<Item[]>([]); const [selected,setSelected]=useState<Detail|null>(null); const [reviews,setReviews]=useState<Review[]>([]); const [flags,setFlags]=useState<Flag[]>([]); const [filter,setFilter]=useState(""); const [loading,setLoading]=useState(true); const [detailLoading,setDetailLoading]=useState(false); const [error,setError]=useState(""); const [reviewStatus,setReviewStatus]=useState("under_review"); const [notes,setNotes]=useState(""); const [saving,setSaving]=useState(false);
+ const headers=useCallback(()=>({Authorization:`Bearer ${token}`}),[token]);
+ const load=useCallback(async()=>{if(!token)return;setLoading(true);setError("");try{const r=await fetch(`${API_URL}/api/result-details`,{headers:headers()});if(!r.ok)throw new Error(await apiError(r));setItems((await r.json()).submissions||[]);}catch(e){setError(e instanceof Error?e.message:"Unable to load results.");}finally{setLoading(false);}},[headers,token]);
+ useEffect(()=>{void load();},[load]);
+ async function open(id:number){setDetailLoading(true);setError("");try{const [d,h,f]=await Promise.all([fetch(`${API_URL}/api/result-details/${id}`,{headers:headers()}),fetch(`${API_URL}/api/operations/results/${id}/reviews`,{headers:headers()}),fetch(`${API_URL}/api/operations/results/${id}/flags`,{headers:headers()})]);if(!d.ok)throw new Error(await apiError(d));setSelected((await d.json()).submission);setReviews(h.ok?(await h.json()).reviews||[]:[]);setFlags(f.ok?(await f.json()).flags||[]:[]);}catch(e){setError(e instanceof Error?e.message:"Unable to load details.");}finally{setDetailLoading(false);}}
+ async function review(){if(!selected||saving)return;setSaving(true);try{const r=await fetch(`${API_URL}/api/operations/results/${selected.id}/reviews`,{method:"POST",headers:{...headers(),"Content-Type":"application/json"},body:JSON.stringify({status:reviewStatus,notes:notes.trim()||null})});if(!r.ok)throw new Error(await apiError(r));setNotes("");await open(selected.id);await load();}catch(e){setError(e instanceof Error?e.message:"Unable to save review.");}finally{setSaving(false);}}
+ async function evidence(url:string){try{const r=await fetch(`${API_URL}${url}`,{headers:headers()});if(!r.ok)throw new Error(await apiError(r));const objectUrl=URL.createObjectURL(await r.blob());window.open(objectUrl,"_blank","noopener,noreferrer");window.setTimeout(()=>URL.revokeObjectURL(objectUrl),60000);}catch(e){setError(e instanceof Error?e.message:"Unable to open evidence.");}}
+ const visible=items.filter(i=>`${i.polling_unit.name} ${i.polling_unit.code} ${i.polling_unit.lga} ${i.agent.full_name}`.toLowerCase().includes(filter.toLowerCase()));
+ return <div className="space-y-6">
+  <div className="flex flex-wrap items-start justify-between gap-4"><div><p className="text-xs font-bold uppercase tracking-widest text-emerald-700">Verification workspace</p><h1 className="mt-2 text-3xl font-black text-slate-950">Polling-unit results</h1><p className="mt-2 text-sm text-slate-600">Inspect submissions, evidence, anomaly flags, and review history.</p></div><button onClick={()=>void load()} className="inline-flex items-center gap-2 rounded-xl border bg-white px-4 py-2.5 text-sm font-bold"><RefreshCw size={16}/>Refresh</button></div>
+  {error&&<div role="alert" className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800">{error}</div>}
+  <div className="relative"><Search className="absolute left-4 top-3.5 text-slate-400" size={18}/><input value={filter} onChange={e=>setFilter(e.target.value)} placeholder="Search polling unit, LGA, code, or agent" className="w-full rounded-xl border bg-white py-3 pl-11 pr-4 outline-none focus:border-emerald-600"/></div>
+  {loading?<div className="rounded-2xl border bg-white p-12"><Loader2 className="mx-auto animate-spin text-emerald-700"/></div>:<div className="overflow-hidden rounded-2xl border bg-white shadow-sm"><div className="overflow-x-auto"><table className="w-full text-left text-sm"><thead className="bg-slate-50 text-xs uppercase text-slate-500"><tr><th className="px-5 py-4">Polling unit</th><th className="px-5 py-4">Agent</th><th className="px-5 py-4">Status</th><th className="px-5 py-4">Submitted</th><th/></tr></thead><tbody className="divide-y">{visible.map(i=><tr key={i.id} className="hover:bg-slate-50"><td className="px-5 py-4"><strong className="block">{i.polling_unit.name}</strong><span className="text-xs text-slate-500">{i.polling_unit.lga} · {i.polling_unit.code}</span></td><td className="px-5 py-4">{i.agent.full_name}</td><td className="px-5 py-4"><span className={`rounded-full px-2.5 py-1 text-xs font-bold capitalize ${badge(i.verification_status)}`}>{label(i.verification_status)}</span>{i.is_flagged&&<AlertTriangle size={16} className="ml-2 inline text-amber-600"/>}</td><td className="px-5 py-4 text-slate-600">{new Date(i.submitted_at).toLocaleString("en-NG")}</td><td className="px-5 py-4"><button onClick={()=>void open(i.id)} className="inline-flex items-center gap-1 font-bold text-emerald-700"><Eye size={16}/>Inspect</button></td></tr>)}</tbody></table></div>{!visible.length&&<p className="p-10 text-center text-slate-500">No result submissions found.</p>}</div>}
+  {(selected||detailLoading)&&<div className="fixed inset-0 z-50 flex justify-end bg-slate-950/55 backdrop-blur-sm"><div className="h-full w-full max-w-2xl overflow-y-auto bg-slate-50 p-5 shadow-2xl sm:p-7">{detailLoading?<Loader2 className="mx-auto mt-24 animate-spin text-emerald-700"/>:selected&&<><div className="flex justify-between gap-4"><div><span className={`rounded-full px-3 py-1 text-xs font-bold capitalize ${badge(selected.verification_status)}`}>{label(selected.verification_status)}</span><h2 className="mt-3 text-2xl font-black">{selected.polling_unit.name}</h2><p className="text-sm text-slate-500">{selected.polling_unit.lga} · {selected.polling_unit.ward}</p></div><button aria-label="Close" onClick={()=>setSelected(null)} className="h-fit rounded-xl border bg-white p-2"><X/></button></div>
+   <div className="mt-6 grid grid-cols-3 gap-3">{[["Accredited",selected.accredited_voters],["Valid",selected.valid_votes],["Rejected",selected.rejected_votes]].map(([n,v])=><div key={n} className="rounded-xl border bg-white p-4"><p className="text-xs text-slate-500">{n}</p><p className="mt-1 text-xl font-black">{Number(v).toLocaleString("en-NG")}</p></div>)}</div>
+   <Panel title="Party results">{selected.party_results.sort((a,b)=>b.votes-a.votes).map(p=><div key={p.party} className="flex justify-between py-1.5"><span className="font-semibold">{p.party}</span><strong>{p.votes.toLocaleString("en-NG")}</strong></div>)}</Panel>
+   <Panel title="Anomaly flags" icon={<AlertTriangle size={18} className="text-amber-600"/>}>{flags.map(f=><div key={f.id} className="mb-2 rounded-xl bg-amber-50 p-3 text-sm text-amber-900"><strong className="capitalize">{f.severity}: </strong>{f.message}</div>)}{!flags.length&&<Empty text="No automated flags."/>}</Panel>
+   <Panel title="Result-sheet evidence" icon={<FileImage size={18}/>}>{selected.evidence.map(e=><button key={e.id} onClick={()=>void evidence(e.image_url)} className="mr-2 mt-2 rounded-xl border px-4 py-2 text-sm font-bold text-emerald-700">View evidence #{e.id}</button>)}{!selected.evidence.length&&<Empty text="No evidence uploaded."/>}</Panel>
+   {user?.role==="admin"&&<section className="mt-6 rounded-2xl border border-emerald-200 bg-emerald-50 p-5"><h3 className="flex items-center gap-2 font-black"><ShieldCheck size={18}/>Record review decision</h3><select value={reviewStatus} onChange={e=>setReviewStatus(e.target.value)} className="mt-4 w-full rounded-xl border bg-white p-3"><option value="under_review">Under review</option><option value="verified">Verified</option><option value="correction_requested">Correction requested</option><option value="disputed">Disputed</option></select><textarea value={notes} onChange={e=>setNotes(e.target.value)} placeholder="Reviewer notes" rows={3} className="mt-3 w-full rounded-xl border p-3"/><button disabled={saving} onClick={()=>void review()} className="mt-3 inline-flex items-center gap-2 rounded-xl bg-emerald-700 px-4 py-2.5 font-bold text-white disabled:opacity-50">{saving?<Loader2 size={17} className="animate-spin"/>:<CheckCircle2 size={17}/>}Save decision</button></section>}
+   <Panel title="Review history">{reviews.map(r=><div key={r.id} className="mb-3 border-l-2 border-emerald-500 pl-3 text-sm"><p className="font-bold capitalize">{label(r.status)} · {r.reviewer}</p><p className="text-slate-600">{r.notes||"No notes"}</p><time className="text-xs text-slate-400">{new Date(r.created_at).toLocaleString("en-NG")}</time></div>)}{!reviews.length&&<Empty text="No review decisions yet."/>}</Panel>
+  </>}</div></div>}
+ </div>;
 }
+function Panel({title,icon,children}:{title:string;icon?:React.ReactNode;children:React.ReactNode}){return <section className="mt-6 rounded-2xl border bg-white p-5"><h3 className="flex items-center gap-2 font-black">{icon}{title}</h3><div className="mt-3">{children}</div></section>}
+function Empty({text}:{text:string}){return <p className="text-sm text-slate-500">{text}</p>}

@@ -24,6 +24,7 @@ import {
   Layers,
   ListChecks,
   Upload,
+  Siren,
 } from "lucide-react";
 
 import { useAuth } from "../context/AuthContext";
@@ -49,6 +50,12 @@ const navigation = [
     name: "Polling-Unit Results",
     path: "/results",
     icon: FileText,
+    available: true,
+  },
+  {
+    name: "Incident Centre",
+    path: "/incidents",
+    icon: Siren,
     available: true,
   },
   {
