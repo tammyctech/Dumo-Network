@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
+import { RIVERS_2023_DEMO } from "../data/rivers2023Demo";
 import {
   Activity,
   ArrowRight,
@@ -70,6 +71,9 @@ type PublicOverview = {
   party_totals: PartyTotal[];
   lga_results: LgaResult[];
   updates: ElectionUpdate[];
+  is_demo?: boolean;
+  source_label?: string;
+  source_url?: string;
 };
 type GeoFeature = {
   type: "Feature";
@@ -377,9 +381,16 @@ export default function LandingPage() {
     return () => controller.abort();
   }, [refreshKey]);
 
-  const leadingParty = overview?.party_totals[0] || null;
+  const displayOverview: PublicOverview =
+    overview?.party_totals.length
+      ? overview
+      : (RIVERS_2023_DEMO as PublicOverview);
+  const leadingParty = displayOverview.party_totals[0] || null;
   const totalVotes =
-    overview?.party_totals.reduce((sum, party) => sum + party.votes, 0) || 0;
+    displayOverview.party_totals.reduce(
+      (sum, party) => sum + party.votes,
+      0
+    );
 
   return (
     <div className="min-h-screen bg-[#f5f7f6] text-slate-950">
@@ -486,7 +497,9 @@ export default function LandingPage() {
             <div>
               <div className="inline-flex items-center gap-2 rounded-full border border-emerald-400/30 bg-emerald-400/10 px-4 py-2 text-xs font-bold uppercase tracking-[0.16em] text-emerald-300">
                 <Radio size={14} className="animate-pulse" />
-                Rivers State live monitor
+                {displayOverview.is_demo
+                  ? "Historical demo data"
+                  : "Rivers State live monitor"}
               </div>
               <h1 className="mt-7 max-w-3xl text-5xl font-black leading-[1.04] tracking-[-0.04em] sm:text-6xl lg:text-7xl">
                 Every report.
@@ -494,15 +507,16 @@ export default function LandingPage() {
                 One public view.
               </h1>
               <p className="mt-7 max-w-2xl text-lg leading-8 text-slate-300">
-                Follow unofficial, agent-submitted election reports across
-                Rivers State as they arrive from monitored polling units.
+                {displayOverview.is_demo
+                  ? "Explore published 2023 Rivers State governorship results by LGA while testing the public results experience."
+                  : "Follow unofficial, agent-submitted election reports across Rivers State as they arrive from monitored polling units."}
               </p>
               <div className="mt-9 flex flex-wrap gap-4">
                 <a
                   href="#results"
                   className="inline-flex items-center gap-2 rounded-full bg-emerald-500 px-6 py-3.5 font-bold text-slate-950 transition hover:bg-emerald-400"
                 >
-                  Explore live map <ArrowRight size={18} />
+                  Explore results map <ArrowRight size={18} />
                 </a>
                 <Link
                   to="/login"
@@ -520,8 +534,9 @@ export default function LandingPage() {
               <div className="mt-10 flex items-start gap-3 border-l-2 border-amber-400 pl-4 text-sm text-slate-300">
                 <ShieldCheck size={18} className="mt-0.5 shrink-0 text-amber-300" />
                 <p>
-                  Unofficial — Agent-Submitted Data. Dumo Network does not
-                  declare election winners; only authorized electoral bodies do.
+                  {displayOverview.is_demo
+                    ? "Historical demonstration only — this is not a live election feed. Dumo Network does not declare election winners."
+                    : "Unofficial — Agent-Submitted Data. Dumo Network does not declare election winners; only authorized electoral bodies do."}
                 </p>
               </div>
             </div>
@@ -530,10 +545,10 @@ export default function LandingPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-xs font-bold uppercase tracking-[0.18em] text-emerald-300">
-                    Reporting now
+                    {displayOverview.is_demo ? "Historical test dataset" : "Reporting now"}
                   </p>
                   <h2 className="mt-2 text-xl font-bold">
-                    {overview?.election?.name || "Awaiting active election"}
+                    {displayOverview.election?.name || "Awaiting active election"}
                   </h2>
                 </div>
                 <button
@@ -547,15 +562,19 @@ export default function LandingPage() {
               </div>
               <div className="mt-7 grid grid-cols-2 gap-3">
                 <div className="rounded-2xl bg-black/20 p-4">
-                  <p className="text-xs text-slate-400">Reports received</p>
+                  <p className="text-xs text-slate-400">
+                    {displayOverview.is_demo ? "LGAs included" : "Reports received"}
+                  </p>
                   <p className="mt-2 text-3xl font-black">
-                    {formatNumber(overview?.submitted_polling_units)}
+                    {formatNumber(displayOverview.submitted_polling_units)}
                   </p>
                 </div>
                 <div className="rounded-2xl bg-black/20 p-4">
-                  <p className="text-xs text-slate-400">State coverage</p>
+                  <p className="text-xs text-slate-400">
+                    {displayOverview.is_demo ? "LGA coverage" : "State coverage"}
+                  </p>
                   <p className="mt-2 text-3xl font-black">
-                    {overview?.submission_coverage_percent?.toFixed(1) || "0.0"}%
+                    {displayOverview.submission_coverage_percent?.toFixed(1) || "0.0"}%
                   </p>
                 </div>
                 <div className="rounded-2xl bg-black/20 p-4">
@@ -570,7 +589,7 @@ export default function LandingPage() {
                 </div>
               </div>
               <p className="mt-5 flex items-center gap-2 text-xs text-slate-400">
-                <Clock3 size={14} /> Last update: {formatDate(overview?.last_updated)}
+                <Clock3 size={14} /> {displayOverview.is_demo ? "Collation date" : "Last update"}: {formatDate(displayOverview.last_updated)}
               </p>
             </div>
           </div>
@@ -578,13 +597,35 @@ export default function LandingPage() {
 
         <section id="results" className="scroll-mt-6 py-24">
           <div className="mx-auto max-w-7xl px-5 lg:px-8">
+            {displayOverview.is_demo && (
+              <div className="mb-10 flex flex-col gap-4 rounded-2xl border border-amber-300 bg-amber-50 p-5 text-amber-950 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex items-start gap-3">
+                  <Info className="mt-0.5 shrink-0 text-amber-700" size={20} />
+                  <p className="text-sm leading-6">
+                    <strong>Historical demonstration data.</strong> This view uses
+                    the published 2023 Rivers State governorship LGA collation
+                    breakdown to test the interface. It is not a live election.
+                  </p>
+                </div>
+                <a
+                  href={displayOverview.source_url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="shrink-0 font-bold text-amber-900 underline decoration-amber-500 underline-offset-4 hover:text-amber-700"
+                >
+                  View data source <ArrowRight size={14} className="inline" />
+                </a>
+              </div>
+            )}
             <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
               <div>
                 <p className="text-xs font-black uppercase tracking-[0.2em] text-emerald-700">
-                  Live LGA picture
+                  {displayOverview.is_demo ? "2023 LGA picture" : "Live LGA picture"}
                 </p>
                 <h2 className="mt-3 max-w-3xl text-4xl font-black tracking-[-0.035em] text-slate-950 sm:text-5xl">
-                  See where submitted results currently lead.
+                  {displayOverview.is_demo
+                    ? "Explore the published LGA collation breakdown."
+                    : "See where submitted results currently lead."}
                 </h2>
               </div>
               <div className="flex max-w-xl items-start gap-3 rounded-2xl border border-emerald-200 bg-white p-4 text-base leading-7 text-slate-800 shadow-sm">
@@ -592,10 +633,11 @@ export default function LandingPage() {
                   <Info size={18} aria-hidden="true" />
                 </span>
                 <p>
-                  Map colors show the <strong>party currently leading</strong>
-                  {" "}from reports received in each LGA. Always check the
-                  {" "}<strong>reporting coverage percentage</strong> before
-                  interpreting the result.
+                  {displayOverview.is_demo ? (
+                    <>Map colors show the <strong>party that led the published 2023 collation</strong> in each LGA.</>
+                  ) : (
+                    <>Map colors show the <strong>party currently leading</strong>{" "}from reports received in each LGA. Always check the{" "}<strong>reporting coverage percentage</strong> before interpreting the result.</>
+                  )}
                 </p>
               </div>
             </div>
@@ -609,13 +651,13 @@ export default function LandingPage() {
             <div className="mt-10">
               <MapPanel
                 geoJson={geoJson}
-                lgaResults={overview?.lga_results || []}
+                lgaResults={displayOverview.lga_results}
                 mapLoading={mapLoading}
               />
             </div>
 
             <div className="mt-8 flex flex-wrap gap-3">
-              {overview?.party_totals.slice(0, 8).map((party) => (
+              {displayOverview.party_totals.slice(0, 8).map((party) => (
                 <div key={party.party} className="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm shadow-sm">
                   <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: partyColor(party.party) }} />
                   <strong>{party.party}</strong>
@@ -633,13 +675,14 @@ export default function LandingPage() {
                 <p className="text-xs font-black uppercase tracking-[0.2em] text-emerald-700">Statewide totals</p>
                 <h2 className="mt-3 text-4xl font-black tracking-[-0.035em] text-slate-950">Reported vote position</h2>
                 <p className="mt-5 text-sm leading-7 text-slate-600">
-                  Totals update as verified monitors submit polling-unit records.
-                  These figures remain provisional and unofficial.
+                  {displayOverview.is_demo
+                    ? "Totals are calculated from the published LGA collation breakdown and are shown solely for interface testing."
+                    : "Totals update as verified monitors submit polling-unit records. These figures remain provisional and unofficial."}
                 </p>
               </div>
               <div className="space-y-5">
-                {(overview?.party_totals || []).slice(0, 7).map((party, index) => {
-                  const maximum = overview?.party_totals[0]?.votes || 1;
+                {displayOverview.party_totals.slice(0, 7).map((party, index) => {
+                  const maximum = displayOverview.party_totals[0]?.votes || 1;
                   return (
                     <div key={party.party}>
                       <div className="mb-2 flex items-end justify-between gap-4">
@@ -655,7 +698,7 @@ export default function LandingPage() {
                     </div>
                   );
                 })}
-                {!overview?.party_totals.length && (
+                {!displayOverview.party_totals.length && (
                   <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-8 text-center text-slate-500">Party totals will appear after the first result submission.</div>
                 )}
               </div>
@@ -667,22 +710,22 @@ export default function LandingPage() {
           <div className="mx-auto max-w-7xl px-5 lg:px-8">
             <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
               <div>
-                <p className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.2em] text-emerald-400"><Radio size={14} /> Election updates</p>
-                <h2 className="mt-3 text-4xl font-black tracking-[-0.035em]">Latest field reports</h2>
+                <p className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.2em] text-emerald-400"><Radio size={14} /> {displayOverview.is_demo ? "Historical results" : "Election updates"}</p>
+                <h2 className="mt-3 text-4xl font-black tracking-[-0.035em]">{displayOverview.is_demo ? "2023 LGA collation results" : "Latest field reports"}</h2>
               </div>
-              <p className="max-w-lg text-sm leading-6 text-slate-400">A privacy-safe stream of the newest polling-unit submissions. Agent identities are not published.</p>
+              <p className="max-w-lg text-sm leading-6 text-slate-400">{displayOverview.is_demo ? "A test presentation of published historical LGA-level results. No live submissions are represented." : "A privacy-safe stream of the newest polling-unit submissions. Agent identities are not published."}</p>
             </div>
             <div className="mt-10 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-              {(overview?.updates || []).slice(0, 9).map((update) => (
+              {displayOverview.updates.slice(0, 9).map((update) => (
                 <article key={update.id} className="group rounded-2xl border border-white/10 bg-white/[0.05] p-5 transition hover:-translate-y-1 hover:border-emerald-400/40 hover:bg-white/[0.08]">
                   <div className="flex items-center justify-between text-xs text-slate-400">
                     <span className="rounded-full bg-emerald-400/10 px-2.5 py-1 font-bold text-emerald-300">{update.lga}</span>
                     <time>{formatDate(update.submitted_at)}</time>
                   </div>
-                  <h3 className="mt-5 text-lg font-bold">Result received from {update.polling_unit_name}</h3>
-                  <p className="mt-2 text-sm text-slate-400">{update.ward} ward · {update.polling_unit_code}</p>
+                  <h3 className="mt-5 text-lg font-bold">{displayOverview.is_demo ? update.polling_unit_name : `Result received from ${update.polling_unit_name}`}</h3>
+                  <p className="mt-2 text-sm text-slate-400">{displayOverview.is_demo ? `${update.ward} · Historical dataset` : `${update.ward} ward · ${update.polling_unit_code}`}</p>
                   <div className="mt-5 flex items-center justify-between border-t border-white/10 pt-4">
-                    <span className="text-xs text-slate-400">Reported leader</span>
+                    <span className="text-xs text-slate-400">{displayOverview.is_demo ? "Collation leader" : "Reported leader"}</span>
                     <span className="flex items-center gap-2 font-black">
                       <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: partyColor(update.leading_party?.party) }} />
                       {update.leading_party?.party || "Pending totals"}
