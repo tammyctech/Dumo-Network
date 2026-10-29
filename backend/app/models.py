@@ -308,6 +308,93 @@ class ResultSubmission(Base):
         nullable=False,
     )
 
+    verification_status: Mapped[str] = mapped_column(
+        String(30), default="submitted", nullable=False
+    )
+
+
+class ResultReview(Base):
+    __tablename__ = "result_reviews"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    submission_id: Mapped[int] = mapped_column(
+        ForeignKey("result_submissions.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    reviewer_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id"), nullable=False
+    )
+    status: Mapped[str] = mapped_column(String(30), nullable=False)
+    notes: Mapped[str | None] = mapped_column(String(2000), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
+        nullable=False,
+    )
+
+
+class ResultFlag(Base):
+    __tablename__ = "result_flags"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    submission_id: Mapped[int] = mapped_column(
+        ForeignKey("result_submissions.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    flag_type: Mapped[str] = mapped_column(String(80), nullable=False)
+    severity: Mapped[str] = mapped_column(String(20), nullable=False)
+    message: Mapped[str] = mapped_column(String(500), nullable=False)
+    resolved_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    resolved_by: Mapped[int | None] = mapped_column(
+        ForeignKey("users.id"), nullable=True
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
+        nullable=False,
+    )
+
+
+class Incident(Base):
+    __tablename__ = "incidents"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    election_id: Mapped[int] = mapped_column(
+        ForeignKey("elections.id"), nullable=False, index=True
+    )
+    polling_unit_id: Mapped[int | None] = mapped_column(
+        ForeignKey("polling_units.id"), nullable=True
+    )
+    reported_by: Mapped[int] = mapped_column(
+        ForeignKey("users.id"), nullable=False
+    )
+    category: Mapped[str] = mapped_column(String(80), nullable=False)
+    severity: Mapped[str] = mapped_column(String(20), nullable=False)
+    status: Mapped[str] = mapped_column(
+        String(30), default="open", nullable=False
+    )
+    description: Mapped[str] = mapped_column(String(3000), nullable=False)
+    resolution_notes: Mapped[str | None] = mapped_column(
+        String(3000), nullable=True
+    )
+    assigned_to: Mapped[int | None] = mapped_column(
+        ForeignKey("users.id"), nullable=True
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
+        nullable=False,
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
+        nullable=False,
+    )
+
 
 # ============================================================
 # PARTY RESULT MODEL

@@ -135,6 +135,7 @@ def list_result_submissions(
                 "submitted_at": submission.submitted_at,
                 "version": submission.version,
                 "is_flagged": submission.is_flagged,
+                "verification_status": submission.verification_status,
             }
         )
 
@@ -220,6 +221,7 @@ def get_result_submission(
             "submitted_at": submission.submitted_at,
             "version": submission.version,
             "is_flagged": submission.is_flagged,
+            "verification_status": submission.verification_status,
 
             "election": {
                 "id": election.id,

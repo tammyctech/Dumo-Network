@@ -34,6 +34,7 @@ from .routes import (
     result_details,
     push_notifications,
     public_results,
+    operations,
 )
 
 
@@ -188,6 +189,7 @@ app.include_router(push_notifications.router)
 
 # Privacy-safe, read-only election overview for the public landing page.
 app.include_router(public_results.router)
+app.include_router(operations.router)
 
 
 # =====================================================

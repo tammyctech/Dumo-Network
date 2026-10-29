@@ -117,6 +117,12 @@ type DashboardStatistics = {
 
   rejected_votes: number | null;
 
+  verification_summary: Record<string, number>;
+
+  active_flags: number;
+
+  open_incidents: number;
+
   party_totals: PartyTotal[];
 
   lga_progress: LgaProgress[];
@@ -973,6 +979,38 @@ const sortedLgaData = [...lgaData].sort(
 
             />
 
+          </section>
+
+          {/* VOTE STATISTICS */}
+
+          <section className="grid min-w-0 grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4">
+            <StatCard
+              title="Verified Results"
+              value={formatNumber(statistics.verification_summary?.verified ?? 0)}
+              description="Submissions approved through the review workflow."
+              icon={CheckCircle2}
+            />
+            <StatCard
+              title="Pending Review"
+              value={formatNumber(
+                (statistics.verification_summary?.submitted ?? 0) +
+                (statistics.verification_summary?.under_review ?? 0)
+              )}
+              description="Submitted results still awaiting a final review decision."
+              icon={ClipboardList}
+            />
+            <StatCard
+              title="Active Anomaly Flags"
+              value={formatNumber(statistics.active_flags ?? 0)}
+              description="Automated data-quality observations requiring attention."
+              icon={AlertCircle}
+            />
+            <StatCard
+              title="Open Incidents"
+              value={formatNumber(statistics.open_incidents ?? 0)}
+              description="Operational incidents currently open or under investigation."
+              icon={Activity}
+            />
           </section>
 
           {/* VOTE STATISTICS */}

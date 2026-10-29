@@ -10,6 +10,7 @@ from ..models import (
     AgentAssignment,
     ResultSubmission,
     PartyResult,
+    ResultFlag,
 )
 from ..security import get_current_user
 from ..monitoring.result_schemas import (
@@ -137,6 +138,30 @@ def submit_election_result(
             )
 
             db.add(party_vote)
+
+        anomaly_rows = []
+        if payload.accredited_voters and (
+            payload.rejected_votes / payload.accredited_voters
+        ) > 0.10:
+            anomaly_rows.append((
+                "high_rejection_rate", "medium",
+                "Rejected votes exceed 10% of accredited voters.",
+            ))
+        if payload.valid_votes:
+            leading_votes = max(item.votes for item in payload.party_results)
+            if leading_votes / payload.valid_votes > 0.95:
+                anomaly_rows.append((
+                    "dominant_party_share", "low",
+                    "One party received more than 95% of valid votes; review recommended.",
+                ))
+        for flag_type, severity, message in anomaly_rows:
+            db.add(ResultFlag(
+                submission_id=submission.id,
+                flag_type=flag_type,
+                severity=severity,
+                message=message,
+            ))
+        submission.is_flagged = bool(anomaly_rows)
 
         # 10. Commit all records together.
         db.commit()

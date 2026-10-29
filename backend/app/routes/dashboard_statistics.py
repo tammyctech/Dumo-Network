@@ -10,6 +10,8 @@ from app.models import (
     AgentAssignment,
     ResultSubmission,
     PartyResult,
+    ResultFlag,
+    Incident,
 )
 from app.security import get_current_user
 
@@ -101,6 +103,9 @@ def dashboard_statistics(
             "accredited_voters": None,
             "valid_votes": None,
             "rejected_votes": None,
+            "verification_summary": {},
+            "active_flags": 0,
+            "open_incidents": 0,
             "party_totals": [],
             "lga_progress": [],
             "message": "No election has been created yet.",
@@ -188,6 +193,24 @@ def dashboard_statistics(
     accredited_voters = vote_totals[0]
     valid_votes = vote_totals[1]
     rejected_votes = vote_totals[2]
+
+    verification_rows = db.execute(
+        select(ResultSubmission.verification_status, func.count(ResultSubmission.id))
+        .where(ResultSubmission.election_id == election.id)
+        .group_by(ResultSubmission.verification_status)
+    ).all()
+    verification_summary = {status: count for status, count in verification_rows}
+    active_flags = db.scalar(
+        select(func.count(ResultFlag.id)).join(
+            ResultSubmission, ResultSubmission.id == ResultFlag.submission_id
+        ).where(ResultSubmission.election_id == election.id, ResultFlag.resolved_at.is_(None))
+    ) or 0
+    open_incidents = db.scalar(
+        select(func.count(Incident.id)).where(
+            Incident.election_id == election.id,
+            Incident.status.in_(("open", "investigating")),
+        )
+    ) or 0
 
     # --------------------------------------
     # PARTY VOTE TOTALS
@@ -300,6 +323,9 @@ def dashboard_statistics(
         "accredited_voters": accredited_voters,
         "valid_votes": valid_votes,
         "rejected_votes": rejected_votes,
+        "verification_summary": verification_summary,
+        "active_flags": active_flags,
+        "open_incidents": open_incidents,
         "party_totals": party_totals,
         "lga_progress": lga_progress,
     }
