@@ -137,3 +137,61 @@ export async function updateCurrentUser(
 
   return response.json() as Promise<User>;
 }
+
+// ==========================================
+// CHANGE PASSWORD TYPES
+// ==========================================
+
+export interface ChangePasswordData {
+  current_password: string;
+  new_password: string;
+  confirm_password: string;
+}
+
+// ==========================================
+// CHANGE CURRENT USER PASSWORD
+// ==========================================
+
+export async function changePassword(
+  token: string,
+  data: ChangePasswordData
+): Promise<{ message: string }> {
+  const response = await fetch(
+    `${API_URL}/api/auth/change-password`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(data),
+    }
+  );
+
+  if (!response.ok) {
+    let errorMessage = "Unable to change password.";
+
+    try {
+      const errorData = await response.json();
+
+      if (typeof errorData.detail === "string") {
+        errorMessage = errorData.detail;
+      } else if (Array.isArray(errorData.detail)) {
+        errorMessage = errorData.detail
+          .map(
+            (item: { msg?: string }) =>
+              item.msg || "Invalid password"
+          )
+          .join(". ");
+      }
+    } catch {
+      // Keep the default error message.
+    }
+
+    throw new Error(errorMessage);
+  }
+
+  return response.json() as Promise<{
+    message: string;
+  }>;
+}

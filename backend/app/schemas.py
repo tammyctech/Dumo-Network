@@ -350,3 +350,30 @@ class PollingUnitUpdate(BaseModel):
         min_length=1,
         max_length=100,
     )
+    
+# ==========================================
+# CHANGE PASSWORD SCHEMA
+# ==========================================
+
+class ChangePasswordRequest(BaseModel):
+    """
+    Request schema for changing an authenticated
+    user's password.
+    """
+
+    current_password: str = Field(
+        min_length=1
+    )
+
+    new_password: str = Field(
+        min_length=8,
+        max_length=128
+    )
+
+    confirm_password: str = Field(
+        min_length=1
+    )
+
+    model_config = ConfigDict(
+        extra="forbid"
+    )

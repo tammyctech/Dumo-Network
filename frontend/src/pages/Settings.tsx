@@ -12,9 +12,13 @@ import {
   Loader2,
   CheckCircle2,
   AlertCircle,
+  Eye,
+  EyeOff,
+  LockKeyhole,
 } from "lucide-react";
 
 import { useAuth } from "../context/AuthContext";
+import { changePassword } from "../services/api";
 
 type SettingsTab =
   | "profile"
@@ -24,22 +28,47 @@ type SettingsTab =
   | "organization";
 
 export default function Settings() {
-  const { user, updateProfile } = useAuth();
+  const { user, token, updateProfile } = useAuth();
+
+  // ==========================================
+  // SETTINGS NAVIGATION
+  // ==========================================
 
   const [activeTab, setActiveTab] =
     useState<SettingsTab>("profile");
+
+  const isAdmin = user?.role === "admin";
+
+  // ==========================================
+  // PROFILE STATE
+  // ==========================================
 
   const [fullName, setFullName] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
 
   const [isSaving, setIsSaving] = useState(false);
+
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
 
-  const isAdmin = user?.role === "admin";
+  // ==========================================
+  // SECURITY STATE
+  // ==========================================
+
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+
+  const [showPasswords, setShowPasswords] = useState(false);
+
+  const [isChangingPassword, setIsChangingPassword] =
+    useState(false);
+
+  const [passwordSuccess, setPasswordSuccess] = useState("");
+  const [passwordError, setPasswordError] = useState("");
 
   // ==========================================
-  // LOAD USER PROFILE INTO FORM
+  // LOAD USER PROFILE
   // ==========================================
 
   useEffect(() => {
@@ -50,7 +79,7 @@ export default function Settings() {
   }, [user]);
 
   // ==========================================
-  // CHECK FOR UNSAVED CHANGES
+  // CHECK PROFILE CHANGES
   // ==========================================
 
   const hasChanges =
@@ -112,6 +141,88 @@ export default function Settings() {
   }
 
   // ==========================================
+  // CHANGE PASSWORD
+  // ==========================================
+
+  async function handleChangePassword(
+    event: FormEvent<HTMLFormElement>
+  ) {
+    event.preventDefault();
+
+    setPasswordSuccess("");
+    setPasswordError("");
+
+    if (!token) {
+      setPasswordError(
+        "Your session has expired. Please log in again."
+      );
+      return;
+    }
+
+    if (!currentPassword) {
+      setPasswordError(
+        "Please enter your current password."
+      );
+      return;
+    }
+
+    if (newPassword.length < 8) {
+      setPasswordError(
+        "New password must contain at least 8 characters."
+      );
+      return;
+    }
+
+    if (newPassword.length > 128) {
+      setPasswordError(
+        "New password cannot exceed 128 characters."
+      );
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      setPasswordError(
+        "New passwords do not match."
+      );
+      return;
+    }
+
+    if (currentPassword === newPassword) {
+      setPasswordError(
+        "New password must be different from your current password."
+      );
+      return;
+    }
+
+    setIsChangingPassword(true);
+
+    try {
+      const result = await changePassword(token, {
+        current_password: currentPassword,
+        new_password: newPassword,
+        confirm_password: confirmPassword,
+      });
+
+      setPasswordSuccess(result.message);
+
+      // Clear sensitive form values after success.
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+
+      setShowPasswords(false);
+    } catch (error) {
+      setPasswordError(
+        error instanceof Error
+          ? error.message
+          : "Unable to change your password."
+      );
+    } finally {
+      setIsChangingPassword(false);
+    }
+  }
+
+  // ==========================================
   // SETTINGS MENU
   // ==========================================
 
@@ -151,6 +262,10 @@ export default function Settings() {
         ]
       : []),
   ] as const;
+
+  // ==========================================
+  // PAGE
+  // ==========================================
 
   return (
     <div className="space-y-8">
@@ -195,6 +310,7 @@ export default function Settings() {
                   onClick={() =>
                     setActiveTab(item.id as SettingsTab)
                   }
+                  aria-current={selected ? "page" : undefined}
                   className={`
                     flex w-full items-center gap-4
                     border-b border-slate-100
@@ -244,7 +360,9 @@ export default function Settings() {
 
         <div className="lg:col-span-8">
           <div className="min-h-[400px] rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
-            {/* PROFILE */}
+            {/* ======================================
+                PROFILE
+            ====================================== */}
 
             {activeTab === "profile" && (
               <div className="space-y-6">
@@ -262,8 +380,9 @@ export default function Settings() {
 
                 <div className="flex items-center gap-4 rounded-xl bg-slate-50 p-5">
                   <div className="flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100 text-2xl font-bold text-emerald-700">
-                    {user?.full_name?.charAt(0).toUpperCase() ||
-                      "U"}
+                    {user?.full_name
+                      ?.charAt(0)
+                      .toUpperCase() || "U"}
                   </div>
 
                   <div>
@@ -277,7 +396,7 @@ export default function Settings() {
                   </div>
                 </div>
 
-                {/* SUCCESS MESSAGE */}
+                {/* PROFILE SUCCESS */}
 
                 {successMessage && (
                   <div
@@ -293,7 +412,7 @@ export default function Settings() {
                   </div>
                 )}
 
-                {/* ERROR MESSAGE */}
+                {/* PROFILE ERROR */}
 
                 {errorMessage && (
                   <div
@@ -398,7 +517,7 @@ export default function Settings() {
                     </p>
                   </div>
 
-                  {/* ACCOUNT ROLE */}
+                  {/* ROLE */}
 
                   <div>
                     <label
@@ -417,7 +536,7 @@ export default function Settings() {
                     />
                   </div>
 
-                  {/* SAVE BUTTON */}
+                  {/* SAVE PROFILE */}
 
                   <div className="flex justify-end border-t border-slate-100 pt-5">
                     <button
@@ -449,26 +568,245 @@ export default function Settings() {
               </div>
             )}
 
-            {/* SECURITY */}
+            {/* ======================================
+                SECURITY
+            ====================================== */}
 
             {activeTab === "security" && (
-              <div className="space-y-4">
-                <h2 className="text-xl font-bold text-slate-900">
-                  Security Settings
-                </h2>
+              <div className="space-y-6">
+                {/* SECURITY HEADER */}
 
-                <p className="text-sm text-slate-500">
-                  Manage your password and account security.
-                </p>
+                <div className="flex items-start gap-3">
+                  <div className="rounded-xl bg-emerald-100 p-3">
+                    <LockKeyhole
+                      size={22}
+                      className="text-emerald-700"
+                    />
+                  </div>
 
-                <div className="rounded-xl border border-amber-200 bg-amber-50 p-5 text-sm text-amber-800">
-                  Password management will be enabled after
-                  secure backend verification is implemented.
+                  <div>
+                    <h2 className="text-xl font-bold text-slate-900">
+                      Security Settings
+                    </h2>
+
+                    <p className="mt-1 text-sm text-slate-500">
+                      Manage your password and protect your
+                      Dumo Network account.
+                    </p>
+                  </div>
                 </div>
+
+                {/* SECURITY INFORMATION */}
+
+                <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                  <p className="text-sm font-semibold text-slate-800">
+                    Change Password
+                  </p>
+
+                  <p className="mt-1 text-sm text-slate-600">
+                    Enter your current password and choose
+                    a new password to secure your account.
+                  </p>
+                </div>
+
+                {/* PASSWORD SUCCESS */}
+
+                {passwordSuccess && (
+                  <div
+                    role="status"
+                    className="flex items-start gap-3 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800"
+                  >
+                    <CheckCircle2
+                      size={20}
+                      className="shrink-0"
+                    />
+
+                    <span>{passwordSuccess}</span>
+                  </div>
+                )}
+
+                {/* PASSWORD ERROR */}
+
+                {passwordError && (
+                  <div
+                    role="alert"
+                    className="flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800"
+                  >
+                    <AlertCircle
+                      size={20}
+                      className="shrink-0"
+                    />
+
+                    <span>{passwordError}</span>
+                  </div>
+                )}
+
+                {/* CHANGE PASSWORD FORM */}
+
+                <form
+                  onSubmit={handleChangePassword}
+                  className="space-y-5"
+                >
+                  {/* CURRENT PASSWORD */}
+
+                  <div>
+                    <label
+                      htmlFor="current-password"
+                      className="mb-2 block text-sm font-medium text-slate-700"
+                    >
+                      Current Password
+                    </label>
+
+                    <input
+                      id="current-password"
+                      type={
+                        showPasswords ? "text" : "password"
+                      }
+                      value={currentPassword}
+                      onChange={(event) => {
+                        setCurrentPassword(event.target.value);
+                        setPasswordError("");
+                        setPasswordSuccess("");
+                      }}
+                      autoComplete="current-password"
+                      required
+                      disabled={isChangingPassword}
+                      className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 disabled:opacity-60"
+                    />
+                  </div>
+
+                  {/* NEW PASSWORD */}
+
+                  <div>
+                    <label
+                      htmlFor="new-password"
+                      className="mb-2 block text-sm font-medium text-slate-700"
+                    >
+                      New Password
+                    </label>
+
+                    <input
+                      id="new-password"
+                      type={
+                        showPasswords ? "text" : "password"
+                      }
+                      value={newPassword}
+                      onChange={(event) => {
+                        setNewPassword(event.target.value);
+                        setPasswordError("");
+                        setPasswordSuccess("");
+                      }}
+                      autoComplete="new-password"
+                      minLength={8}
+                      maxLength={128}
+                      required
+                      disabled={isChangingPassword}
+                      className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 disabled:opacity-60"
+                    />
+
+                    <p className="mt-2 text-xs text-slate-500">
+                      Use at least 8 characters. A longer,
+                      unique password is recommended.
+                    </p>
+                  </div>
+
+                  {/* CONFIRM PASSWORD */}
+
+                  <div>
+                    <label
+                      htmlFor="confirm-password"
+                      className="mb-2 block text-sm font-medium text-slate-700"
+                    >
+                      Confirm New Password
+                    </label>
+
+                    <input
+                      id="confirm-password"
+                      type={
+                        showPasswords ? "text" : "password"
+                      }
+                      value={confirmPassword}
+                      onChange={(event) => {
+                        setConfirmPassword(event.target.value);
+                        setPasswordError("");
+                        setPasswordSuccess("");
+                      }}
+                      autoComplete="new-password"
+                      required
+                      disabled={isChangingPassword}
+                      className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 disabled:opacity-60"
+                    />
+                  </div>
+
+                  {/* SHOW PASSWORDS */}
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setShowPasswords((previous) => !previous)
+                    }
+                    disabled={isChangingPassword}
+                    aria-pressed={showPasswords}
+                    className="inline-flex items-center gap-2 text-sm font-medium text-emerald-700 hover:text-emerald-800 disabled:opacity-50"
+                  >
+                    {showPasswords ? (
+                      <>
+                        <EyeOff size={18} />
+                        Hide Passwords
+                      </>
+                    ) : (
+                      <>
+                        <Eye size={18} />
+                        Show Passwords
+                      </>
+                    )}
+                  </button>
+
+                  {/* SECURITY NOTE */}
+
+                  <div className="rounded-xl border border-amber-200 bg-amber-50 p-4">
+                    <p className="text-sm text-amber-800">
+                      Choose a password you do not use
+                      on other websites. Changing your
+                      password does not currently sign
+                      out other active sessions.
+                    </p>
+                  </div>
+
+                  {/* SUBMIT */}
+
+                  <div className="flex justify-end border-t border-slate-100 pt-5">
+                    <button
+                      type="submit"
+                      disabled={
+                        isChangingPassword ||
+                        !token
+                      }
+                      className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-700 px-5 py-3 font-semibold text-white transition hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      {isChangingPassword ? (
+                        <>
+                          <Loader2
+                            size={18}
+                            className="animate-spin"
+                          />
+                          Changing Password...
+                        </>
+                      ) : (
+                        <>
+                          <ShieldCheck size={18} />
+                          Change Password
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </form>
               </div>
             )}
 
-            {/* NOTIFICATIONS */}
+            {/* ======================================
+                NOTIFICATIONS
+            ====================================== */}
 
             {activeTab === "notifications" && (
               <div className="space-y-4">
@@ -487,7 +825,9 @@ export default function Settings() {
               </div>
             )}
 
-            {/* APPEARANCE */}
+            {/* ======================================
+                APPEARANCE
+            ====================================== */}
 
             {activeTab === "appearance" && (
               <div className="space-y-4">
@@ -506,7 +846,9 @@ export default function Settings() {
               </div>
             )}
 
-            {/* ORGANIZATION — ADMIN ONLY */}
+            {/* ======================================
+                ORGANIZATION — ADMIN ONLY
+            ====================================== */}
 
             {activeTab === "organization" && isAdmin && (
               <div className="space-y-4">
