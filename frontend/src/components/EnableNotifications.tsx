@@ -53,6 +53,56 @@ function urlBase64ToUint8Array(
   return output;
 }
 
+function keysMatch(
+  current: ArrayBuffer | null,
+  expected: Uint8Array<ArrayBuffer>
+): boolean {
+  if (!current) return false;
+  const currentBytes = new Uint8Array(current);
+  return (
+    currentBytes.length === expected.length &&
+    currentBytes.every((value, index) => value === expected[index])
+  );
+}
+
+async function createPushSubscription(
+  registration: ServiceWorkerRegistration,
+  applicationServerKey: Uint8Array<ArrayBuffer>
+): Promise<PushSubscription> {
+  const existing = await registration.pushManager.getSubscription();
+
+  if (existing) {
+    if (keysMatch(existing.options.applicationServerKey, applicationServerKey)) {
+      return existing;
+    }
+    await existing.unsubscribe();
+  }
+
+  try {
+    return await registration.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey,
+    });
+  } catch (error) {
+    if (
+      !(error instanceof Error) ||
+      !["NetworkError", "AbortError", "InvalidStateError"].includes(error.name)
+    ) {
+      throw error;
+    }
+
+    await registration.update();
+    const refreshedRegistration = await navigator.serviceWorker.ready;
+    const refreshed = await refreshedRegistration.pushManager.getSubscription();
+    if (refreshed) await refreshed.unsubscribe();
+
+    return refreshedRegistration.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey,
+    });
+  }
+}
+
 async function parseError(
   response: Response,
   fallback: string
@@ -76,9 +126,11 @@ function describePushSubscriptionError(error: unknown): string {
     error.message.toLowerCase().includes("networkerror")
   ) {
     return (
-      "Your browser could not connect to its push notification service. " +
-      "Turn off Private Browsing, VPN, or strict tracking protection, " +
-      "then try again. You can also try Chrome or Edge to confirm browser support."
+      "Your browser could not reach its push notification provider. " +
+      "The Dumo service worker and notification key are valid, but your " +
+      "network, VPN, Private DNS, ad blocker, or browser privacy mode may " +
+      "be blocking Google, Mozilla, or Samsung push services. Try a different " +
+      "network, such as mobile data, and retry."
     );
   }
 
@@ -210,16 +262,10 @@ export default function EnableNotifications() {
       }
 
       const registration = await navigator.serviceWorker.ready;
-      let subscription =
-        await registration.pushManager.getSubscription();
-
-      if (!subscription) {
-        subscription = await registration.pushManager.subscribe({
-          userVisibleOnly: true,
-          applicationServerKey:
-            urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
-        });
-      }
+      const subscription = await createPushSubscription(
+        registration,
+        urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+      );
 
       const data = subscription.toJSON();
       if (!data.endpoint || !data.keys?.p256dh || !data.keys.auth) {

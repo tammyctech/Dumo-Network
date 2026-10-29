@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy import select, func
+from sqlalchemy import inspect, select, func
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -194,23 +194,51 @@ def dashboard_statistics(
     valid_votes = vote_totals[1]
     rejected_votes = vote_totals[2]
 
-    verification_rows = db.execute(
-        select(ResultSubmission.verification_status, func.count(ResultSubmission.id))
-        .where(ResultSubmission.election_id == election.id)
-        .group_by(ResultSubmission.verification_status)
-    ).all()
-    verification_summary = {status: count for status, count in verification_rows}
-    active_flags = db.scalar(
-        select(func.count(ResultFlag.id)).join(
-            ResultSubmission, ResultSubmission.id == ResultFlag.submission_id
-        ).where(ResultSubmission.election_id == election.id, ResultFlag.resolved_at.is_(None))
-    ) or 0
-    open_incidents = db.scalar(
-        select(func.count(Incident.id)).where(
-            Incident.election_id == election.id,
-            Incident.status.in_(("open", "investigating")),
-        )
-    ) or 0
+    # Deployments can briefly run new application code before Alembic finishes.
+    # Keep the core dashboard available during that window and expose advanced
+    # workflow metrics as zero until their schema is present.
+    schema = inspect(db.get_bind())
+    table_names = set(schema.get_table_names())
+    submission_columns = {
+        column["name"] for column in schema.get_columns("result_submissions")
+    }
+
+    verification_summary = {}
+    if "verification_status" in submission_columns:
+        verification_rows = db.execute(
+            select(
+                ResultSubmission.verification_status,
+                func.count(ResultSubmission.id),
+            )
+            .where(ResultSubmission.election_id == election.id)
+            .group_by(ResultSubmission.verification_status)
+        ).all()
+        verification_summary = {
+            status: count for status, count in verification_rows
+        }
+
+    active_flags = 0
+    if "result_flags" in table_names:
+        active_flags = db.scalar(
+            select(func.count(ResultFlag.id))
+            .join(
+                ResultSubmission,
+                ResultSubmission.id == ResultFlag.submission_id,
+            )
+            .where(
+                ResultSubmission.election_id == election.id,
+                ResultFlag.resolved_at.is_(None),
+            )
+        ) or 0
+
+    open_incidents = 0
+    if "incidents" in table_names:
+        open_incidents = db.scalar(
+            select(func.count(Incident.id)).where(
+                Incident.election_id == election.id,
+                Incident.status.in_(("open", "investigating")),
+            )
+        ) or 0
 
     # --------------------------------------
     # PARTY VOTE TOTALS
