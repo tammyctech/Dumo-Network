@@ -40,6 +40,16 @@ const PARTY_COLORS = [
   "#4f46e5",
 ];
 
+const PARTY_COLOR_BY_NAME: Record<string, string> = {
+  PDP: "#16a34a",
+  APC: "#2563eb",
+  SDP: "#dc2626",
+  LP: "#7c3aed",
+  APGA: "#d97706",
+  NNPP: "#0891b2",
+  OTHERS: "#64748b",
+};
+
 type PartyTotal = { party: string; votes: number };
 type Election = { id: number; name: string; election_date: string };
 type LgaResult = {
@@ -98,11 +108,24 @@ function normalizeLga(value: string): string {
 
 function partyColor(party: string | undefined): string {
   if (!party) return "#cbd5e1";
+  const normalizedParty = party.trim().toUpperCase();
+  if (PARTY_COLOR_BY_NAME[normalizedParty]) {
+    return PARTY_COLOR_BY_NAME[normalizedParty];
+  }
   let hash = 0;
-  for (const character of party.toUpperCase()) {
+  for (const character of normalizedParty) {
     hash = (hash * 31 + character.charCodeAt(0)) >>> 0;
   }
   return PARTY_COLORS[hash % PARTY_COLORS.length];
+}
+
+function leaderVoteShare(result: LgaResult | undefined): number {
+  if (!result?.leader) return 0;
+  const total = result.party_totals.reduce(
+    (sum, party) => sum + party.votes,
+    0
+  );
+  return total > 0 ? result.leader.votes / total : 0;
 }
 
 function formatNumber(value: number | null | undefined): string {
@@ -213,7 +236,9 @@ function MapPanel({
                   key={name}
                   d={featurePath(feature)}
                   fill={partyColor(result?.leader?.party)}
-                  fillOpacity={result?.leader ? 0.9 : 0.32}
+                  fillOpacity={
+                    result?.leader ? 0.5 + leaderVoteShare(result) * 0.5 : 0.32
+                  }
                   stroke={active ? "#ffffff" : "#d1fae5"}
                   strokeWidth={active ? 3 : 1.15}
                   className="cursor-pointer transition hover:brightness-125"
@@ -634,7 +659,7 @@ export default function LandingPage() {
                 </span>
                 <p>
                   {displayOverview.is_demo ? (
-                    <>Map colors show the <strong>party that led the published 2023 collation</strong> in each LGA.</>
+                    <>PDP led the published 2023 collation in all 23 LGAs, so the map correctly uses one party color. <strong>Darker areas indicate a stronger winning vote share</strong>; party totals below use distinct colors.</>
                   ) : (
                     <>Map colors show the <strong>party currently leading</strong>{" "}from reports received in each LGA. Always check the{" "}<strong>reporting coverage percentage</strong> before interpreting the result.</>
                   )}
