@@ -85,6 +85,162 @@ video {
     max-width: 100%;
   }
 }
+
+/* ==========================================
+   APPLICATION DARK THEME
+========================================== */
+
+html,
+body,
+#root {
+  transition:
+    background-color 160ms ease,
+    color 160ms ease;
+}
+
+html.dark,
+html.dark body,
+html.dark #root {
+  color: #e2e8f0;
+  background-color: #020617;
+}
+
+.dark .bg-white {
+  background-color: #0f172a;
+}
+
+.dark .bg-slate-50 {
+  background-color: #020617;
+}
+
+.dark .bg-slate-100 {
+  background-color: #1e293b;
+}
+
+.dark .bg-slate-200 {
+  background-color: #334155;
+}
+
+.dark .text-slate-900,
+.dark .text-gray-900,
+.dark main h1,
+.dark main h2,
+.dark main h3,
+.dark main h4,
+.dark header h1,
+.dark header h2,
+.dark header h3 {
+  color: #f8fafc;
+}
+
+.dark .text-slate-800,
+.dark .text-gray-800 {
+  color: #e2e8f0;
+}
+
+.dark .text-slate-700,
+.dark .text-gray-700 {
+  color: #cbd5e1;
+}
+
+.dark .text-slate-600,
+.dark .text-gray-600 {
+  color: #94a3b8;
+}
+
+.dark .text-slate-500,
+.dark .text-gray-500 {
+  color: #94a3b8;
+}
+
+.dark .text-slate-400,
+.dark .text-gray-400 {
+  color: #cbd5e1;
+}
+
+.dark .border-slate-100,
+.dark .border-gray-100 {
+  border-color: #1e293b;
+}
+
+.dark .border-slate-200,
+.dark .border-gray-200 {
+  border-color: #334155;
+}
+
+.dark .border-slate-300,
+.dark .border-gray-300 {
+  border-color: #475569;
+}
+
+.dark .bg-emerald-50 {
+  background-color: #052e2b;
+}
+
+.dark .bg-emerald-100 {
+  background-color: #064e3b;
+}
+
+.dark .bg-blue-50 {
+  background-color: #172554;
+}
+
+.dark .bg-amber-50 {
+  background-color: #451a03;
+}
+
+.dark .bg-red-50 {
+  background-color: #450a0a;
+}
+
+.dark .border-emerald-200 {
+  border-color: #047857;
+}
+
+.dark .border-blue-200 {
+  border-color: #1d4ed8;
+}
+
+.dark .border-amber-200 {
+  border-color: #b45309;
+}
+
+.dark .border-red-200 {
+  border-color: #b91c1c;
+}
+
+.dark input,
+.dark select,
+.dark textarea {
+  color: #f8fafc;
+  background-color: #0f172a;
+}
+
+.dark input::placeholder,
+.dark textarea::placeholder {
+  color: #64748b;
+}
+
+.dark option {
+  color: #f8fafc;
+  background-color: #0f172a;
+}
+
+.dark .shadow-sm,
+.dark .shadow-md,
+.dark .shadow-lg,
+.dark .shadow-xl,
+.dark .shadow-2xl {
+  --tw-shadow-color: rgb(0 0 0 / 0.35);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html,
+  body,
+  #root {
+    transition: none;
+  }
+}
 /* ==========================================
    DUMO NETWORK — HEADING VISIBILITY FIX
 ========================================== */
