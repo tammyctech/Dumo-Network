@@ -7,6 +7,7 @@ import {
   ChevronRight,
   Clock3,
   Database,
+  LogIn,
   Map as MapIcon,
   MapPin,
   Menu,
@@ -409,9 +410,15 @@ export default function LandingPage() {
             </a>
             <Link
               to="/login"
-              className="rounded-full bg-white px-5 py-2.5 text-sm font-bold text-slate-950 transition hover:bg-emerald-50"
+              className="group inline-flex min-h-11 items-center gap-2 rounded-xl bg-emerald-400 px-4 text-sm font-black text-slate-950 shadow-lg shadow-emerald-950/25 transition duration-200 hover:-translate-y-0.5 hover:bg-emerald-300 hover:shadow-emerald-900/30 active:translate-y-0"
             >
+              <LogIn size={17} aria-hidden="true" />
               Monitor login
+              <ArrowRight
+                size={15}
+                aria-hidden="true"
+                className="transition-transform group-hover:translate-x-0.5"
+              />
             </Link>
           </nav>
 
@@ -430,7 +437,14 @@ export default function LandingPage() {
               <a href="#results" onClick={() => setMobileMenuOpen(false)}>Live results</a>
               <a href="#updates" onClick={() => setMobileMenuOpen(false)}>Updates</a>
               <a href="#methodology" onClick={() => setMobileMenuOpen(false)}>Methodology</a>
-              <Link to="/login">Monitor login</Link>
+              <Link
+                to="/login"
+                className="mt-2 inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-emerald-400 px-5 font-black text-slate-950 shadow-lg shadow-black/20 transition hover:bg-emerald-300"
+              >
+                <LogIn size={18} aria-hidden="true" />
+                Monitor login
+                <ArrowRight size={16} aria-hidden="true" />
+              </Link>
             </div>
           </nav>
         )}
@@ -464,9 +478,15 @@ export default function LandingPage() {
                 </a>
                 <Link
                   to="/login"
-                  className="inline-flex items-center gap-2 rounded-full border border-white/20 px-6 py-3.5 font-bold text-white transition hover:bg-white/10"
+                  className="group inline-flex min-h-13 items-center gap-2 rounded-full border border-white/20 bg-white/[0.06] px-6 py-3.5 font-bold text-white shadow-lg shadow-black/10 backdrop-blur-sm transition duration-200 hover:-translate-y-0.5 hover:border-emerald-300/60 hover:bg-white/10 active:translate-y-0"
                 >
-                  Sign in to report
+                  <LogIn size={18} aria-hidden="true" />
+                  Monitor login
+                  <ArrowRight
+                    size={17}
+                    aria-hidden="true"
+                    className="transition-transform group-hover:translate-x-1"
+                  />
                 </Link>
               </div>
               <div className="mt-10 flex items-start gap-3 border-l-2 border-amber-400 pl-4 text-sm text-slate-300">
@@ -670,7 +690,18 @@ export default function LandingPage() {
                 <p className="text-sm font-bold text-emerald-100">Part of the monitoring network?</p>
                 <h3 className="mt-2 text-3xl font-black">Sign in to your command center.</h3>
               </div>
-              <Link to="/login" className="inline-flex shrink-0 items-center justify-center gap-2 rounded-full bg-white px-6 py-3.5 font-black text-emerald-800">Monitor login <ChevronRight size={18} /></Link>
+              <Link
+                to="/login"
+                className="group inline-flex min-h-13 shrink-0 items-center justify-center gap-2 rounded-full bg-[#f8fafc] px-6 py-3.5 font-black text-emerald-800 shadow-xl shadow-emerald-950/20 transition duration-200 hover:-translate-y-0.5 hover:bg-white hover:shadow-emerald-950/30 active:translate-y-0"
+              >
+                <LogIn size={18} aria-hidden="true" />
+                Monitor login
+                <ChevronRight
+                  size={18}
+                  aria-hidden="true"
+                  className="transition-transform group-hover:translate-x-1"
+                />
+              </Link>
             </div>
           </div>
         </section>
