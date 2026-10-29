@@ -19,6 +19,7 @@ import {
 
 import { useAuth } from "../context/AuthContext";
 import { changePassword } from "../services/api";
+import EnableNotifications from "../components/EnableNotifications";
 
 type SettingsTab =
   | "profile"
@@ -818,10 +819,7 @@ export default function Settings() {
                   Control how you receive election monitoring alerts.
                 </p>
 
-                <div className="rounded-xl border border-blue-200 bg-blue-50 p-5 text-sm text-blue-800">
-                  Browser notification preferences will be
-                  connected to the existing push notification service.
-                </div>
+                <EnableNotifications />
               </div>
             )}
 

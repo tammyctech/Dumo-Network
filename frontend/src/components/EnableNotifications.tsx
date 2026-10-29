@@ -1,252 +1,440 @@
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import {
+  AlertCircle,
+  Bell,
+  BellOff,
+  CheckCircle2,
+  Loader2,
+  RefreshCw,
+  Smartphone,
+} from "lucide-react";
+
 import { useAuth } from "../context/AuthContext";
 
-const API_URL =
-  import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
-
+const API_URL = (
+  import.meta.env.VITE_API_URL || "http://127.0.0.1:8000"
+).replace(/\/$/, "");
 const VAPID_PUBLIC_KEY = import.meta.env.VITE_VAPID_PUBLIC_KEY;
 
-// Convert the VAPID public key into the format required by PushManager.
-function urlBase64ToUint8Array(base64String: string): Uint8Array<ArrayBuffer> {
-  const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
+type Notice = {
+  kind: "success" | "error" | "info";
+  message: string;
+} | null;
 
+interface SubscriptionStatus {
+  enabled: boolean;
+  device_count: number;
+}
+
+function supportsPushNotifications(): boolean {
+  return (
+    "Notification" in window &&
+    "serviceWorker" in navigator &&
+    "PushManager" in window
+  );
+}
+
+function urlBase64ToUint8Array(
+  base64String: string
+): Uint8Array<ArrayBuffer> {
+  const padding = "=".repeat(
+    (4 - (base64String.length % 4)) % 4
+  );
   const base64 = (base64String + padding)
     .replace(/-/g, "+")
     .replace(/_/g, "/");
-
   const rawData = window.atob(base64);
+  const output = new Uint8Array(new ArrayBuffer(rawData.length));
 
-  const outputArray = new Uint8Array(new ArrayBuffer(rawData.length));
-
-  for (let i = 0; i < rawData.length; i++) {
-    outputArray[i] = rawData.charCodeAt(i);
+  for (let index = 0; index < rawData.length; index += 1) {
+    output[index] = rawData.charCodeAt(index);
   }
 
-  return outputArray;
+  return output;
+}
+
+async function parseError(
+  response: Response,
+  fallback: string
+): Promise<string> {
+  try {
+    const data = (await response.json()) as { detail?: unknown };
+    return typeof data.detail === "string" ? data.detail : fallback;
+  } catch {
+    return fallback;
+  }
 }
 
 export default function EnableNotifications() {
   const { token } = useAuth();
-
-  const [status, setStatus] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [isEnabled, setIsEnabled] = useState(false);
+  const [isCurrentDeviceEnabled, setIsCurrentDeviceEnabled] =
+    useState(false);
+  const [deviceCount, setDeviceCount] = useState(0);
+  const [notice, setNotice] = useState<Notice>(null);
 
-  const enableNotifications = async () => {
-    if (isProcessing) return;
+  const supported = supportsPushNotifications();
+  const permission = supported
+    ? Notification.permission
+    : "unsupported";
+  const configured = Boolean(VAPID_PUBLIC_KEY);
 
-    setIsProcessing(true);
-    setStatus("");
+  const loadStatus = useCallback(async () => {
+    if (!token) {
+      setIsLoading(false);
+      return;
+    }
+
+    setIsLoading(true);
 
     try {
-      // =====================================
-      // CHECK AUTHENTICATION
-      // =====================================
+      const response = await fetch(`${API_URL}/api/push/status`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
-      if (!token) {
-        setStatus("Please log in to enable notifications.");
+      if (!response.ok) {
+        throw new Error(
+          await parseError(
+            response,
+            "Unable to load notification settings."
+          )
+        );
+      }
+
+      const status = (await response.json()) as SubscriptionStatus;
+      setDeviceCount(status.device_count);
+
+      if (!supported || Notification.permission !== "granted") {
+        setIsCurrentDeviceEnabled(false);
         return;
       }
 
-      // =====================================
-      // CHECK BROWSER SUPPORT
-      // =====================================
+      const registration = await navigator.serviceWorker.ready;
+      const subscription =
+        await registration.pushManager.getSubscription();
+      setIsCurrentDeviceEnabled(Boolean(subscription));
+    } catch (error) {
+      setNotice({
+        kind: "error",
+        message:
+          error instanceof Error
+            ? error.message
+            : "Unable to load notification settings.",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  }, [supported, token]);
 
-      if (
-        !("Notification" in window) ||
-        !("serviceWorker" in navigator) ||
-        !("PushManager" in window)
-      ) {
-        setStatus(
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      void loadStatus();
+    }, 0);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [loadStatus]);
+
+  async function enableNotifications() {
+    if (!token || isProcessing) return;
+
+    setIsProcessing(true);
+    setNotice(null);
+
+    try {
+      if (!supported) {
+        throw new Error(
           "Push notifications are not supported on this device."
         );
-        return;
       }
-
-      // =====================================
-      // CHECK SECURE CONNECTION
-      // =====================================
-
       if (!window.isSecureContext) {
-        setStatus(
-          "Notifications require HTTPS or localhost."
-        );
-        return;
+        throw new Error("Notifications require HTTPS or localhost.");
       }
-
-      // =====================================
-      // CHECK VAPID CONFIGURATION
-      // =====================================
-
       if (!VAPID_PUBLIC_KEY) {
-        setStatus(
-          "Push notifications are not configured. Contact the administrator."
+        throw new Error(
+          "Push notifications are not configured. Contact an administrator."
         );
-        return;
       }
 
-      // =====================================
-      // REQUEST NOTIFICATION PERMISSION
-      // =====================================
-
-      const permission =
+      const result =
         Notification.permission === "granted"
           ? "granted"
           : await Notification.requestPermission();
 
-      if (permission !== "granted") {
-        setStatus(
-          "Notification permission was not granted."
+      if (result !== "granted") {
+        throw new Error(
+          result === "denied"
+            ? "Notifications are blocked in your browser settings."
+            : "Notification permission was not granted."
         );
-        return;
       }
 
-      // =====================================
-      // WAIT FOR SERVICE WORKER
-      // =====================================
-
-      const registration =
-        await navigator.serviceWorker.ready;
-
-      if (!registration.active) {
-        setStatus(
-          "The DYN service worker is not active."
-        );
-        return;
-      }
-
-      // =====================================
-      // CHECK EXISTING SUBSCRIPTION
-      // =====================================
-
+      const registration = await navigator.serviceWorker.ready;
       let subscription =
         await registration.pushManager.getSubscription();
 
-      // =====================================
-      // CREATE SUBSCRIPTION IF NECESSARY
-      // =====================================
-
       if (!subscription) {
-        const applicationServerKey =
-          urlBase64ToUint8Array(VAPID_PUBLIC_KEY);
-
-        subscription =
-          await registration.pushManager.subscribe({
-            userVisibleOnly: true,
-            applicationServerKey,
-          });
+        subscription = await registration.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey:
+            urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
+        });
       }
 
-      // =====================================
-      // PREPARE SUBSCRIPTION DATA
-      // =====================================
-
-      const subscriptionData = subscription.toJSON();
-
-      if (
-        !subscriptionData.endpoint ||
-        !subscriptionData.keys?.p256dh ||
-        !subscriptionData.keys?.auth
-      ) {
+      const data = subscription.toJSON();
+      if (!data.endpoint || !data.keys?.p256dh || !data.keys.auth) {
         throw new Error(
           "The browser returned an incomplete push subscription."
         );
       }
 
-      // =====================================
-      // REGISTER DEVICE WITH FASTAPI
-      // =====================================
+      const response = await fetch(`${API_URL}/api/push/subscribe`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          endpoint: data.endpoint,
+          keys: {
+            p256dh: data.keys.p256dh,
+            auth: data.keys.auth,
+          },
+        }),
+      });
 
-      const response = await fetch(
-        `${API_URL}/api/push/subscribe`,
-        {
-          method: "POST",
+      if (!response.ok) {
+        throw new Error(
+          await parseError(response, "Unable to register this device.")
+        );
+      }
+
+      setIsCurrentDeviceEnabled(true);
+      setNotice({
+        kind: "success",
+        message: "Notifications are enabled on this device.",
+      });
+      await loadStatus();
+    } catch (error) {
+      setNotice({
+        kind: "error",
+        message:
+          error instanceof Error
+            ? error.message
+            : "Unable to enable notifications.",
+      });
+    } finally {
+      setIsProcessing(false);
+    }
+  }
+
+  async function disableNotifications() {
+    if (!token || isProcessing || !supported) return;
+
+    setIsProcessing(true);
+    setNotice(null);
+
+    try {
+      const registration = await navigator.serviceWorker.ready;
+      const subscription =
+        await registration.pushManager.getSubscription();
+
+      if (subscription) {
+        const response = await fetch(`${API_URL}/api/push/unsubscribe`, {
+          method: "DELETE",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({
-            endpoint: subscriptionData.endpoint,
-            keys: {
-              p256dh: subscriptionData.keys.p256dh,
-              auth: subscriptionData.keys.auth,
-            },
-          }),
-        }
-      );
+          body: JSON.stringify({ endpoint: subscription.endpoint }),
+        });
 
-      if (!response.ok) {
-        if (response.status === 401) {
+        if (!response.ok) {
           throw new Error(
-            "Your session has expired. Please log in again."
+            await parseError(
+              response,
+              "Unable to remove this device from your account."
+            )
           );
         }
 
-        if (response.status === 409) {
-          throw new Error(
-            "This browser is already registered to another account."
-          );
-        }
-
-        throw new Error(
-          `Device registration failed (${response.status}).`
-        );
+        await subscription.unsubscribe();
       }
 
-      // =====================================
-      // SUCCESS
-      // =====================================
-
-      setIsEnabled(true);
-
-      setStatus(
-        "Notifications enabled! Your device is registered to receive DYN updates."
-      );
+      setIsCurrentDeviceEnabled(false);
+      setNotice({
+        kind: "success",
+        message: "Notifications are disabled on this device.",
+      });
+      await loadStatus();
     } catch (error) {
-      console.error(
-        "Push notification registration error:",
-        error
-      );
-
-      setStatus(
-        error instanceof Error
-          ? error.message
-          : "Unable to enable notifications. Please try again."
-      );
+      setNotice({
+        kind: "error",
+        message:
+          error instanceof Error
+            ? error.message
+            : "Unable to disable notifications.",
+      });
     } finally {
       setIsProcessing(false);
     }
-  };
+  }
+
+  const noticeStyles =
+    notice?.kind === "error"
+      ? "border-red-200 bg-red-50 text-red-800"
+      : notice?.kind === "success"
+        ? "border-emerald-200 bg-emerald-50 text-emerald-800"
+        : "border-blue-200 bg-blue-50 text-blue-800";
 
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-      <h3 className="text-lg font-semibold text-gray-900">
-        DYN Push Notifications
-      </h3>
+    <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+      <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
+        <div className="flex gap-4">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700">
+            <Bell size={21} />
+          </div>
+          <div>
+            <h3 className="font-bold text-slate-900">
+              Browser push notifications
+            </h3>
+            <p className="mt-1 max-w-2xl text-sm text-slate-600">
+              Receive polling-unit assignments, election updates, and
+              important administrative announcements on this device.
+            </p>
+          </div>
+        </div>
 
-      <p className="mt-2 text-sm text-gray-600">
-        Enable notifications to receive important election updates,
-        polling unit assignments, and administrative announcements.
-      </p>
+        <span
+          className={`inline-flex w-fit items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold ${
+            isCurrentDeviceEnabled
+              ? "bg-emerald-100 text-emerald-800"
+              : "bg-slate-100 text-slate-600"
+          }`}
+        >
+          {isLoading ? (
+            <Loader2 size={14} className="animate-spin" />
+          ) : isCurrentDeviceEnabled ? (
+            <CheckCircle2 size={14} />
+          ) : (
+            <BellOff size={14} />
+          )}
+          {isLoading
+            ? "Checking"
+            : isCurrentDeviceEnabled
+              ? "Enabled"
+              : "Disabled"}
+        </span>
+      </div>
 
-      <button
-        type="button"
-        onClick={enableNotifications}
-        disabled={isProcessing || isEnabled}
-        className="mt-4 rounded-lg bg-emerald-800 px-5 py-3 font-medium text-white hover:bg-emerald-900 disabled:cursor-not-allowed disabled:opacity-60"
-      >
-        {isProcessing
-          ? "Enabling Notifications..."
-          : isEnabled
-            ? "Notifications Enabled"
-            : "Enable Notifications"}
-      </button>
+      <div className="mt-6 grid gap-3 sm:grid-cols-3">
+        <div className="rounded-xl bg-slate-50 p-4">
+          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+            This browser
+          </p>
+          <p className="mt-1 text-sm font-semibold text-slate-800">
+            {supported ? "Supported" : "Not supported"}
+          </p>
+        </div>
+        <div className="rounded-xl bg-slate-50 p-4">
+          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+            Permission
+          </p>
+          <p className="mt-1 text-sm font-semibold capitalize text-slate-800">
+            {permission}
+          </p>
+        </div>
+        <div className="rounded-xl bg-slate-50 p-4">
+          <p className="flex items-center gap-1 text-xs font-semibold uppercase tracking-wide text-slate-500">
+            <Smartphone size={13} /> Registered devices
+          </p>
+          <p className="mt-1 text-sm font-semibold text-slate-800">
+            {isLoading ? "—" : deviceCount}
+          </p>
+        </div>
+      </div>
 
-      {status && (
-        <p role="status" className="mt-3 text-sm text-gray-700">
-          {status}
+      {!configured && (
+        <div className="mt-4 flex gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
+          <AlertCircle size={18} className="mt-0.5 shrink-0" />
+          <p>
+            Push delivery is not configured for this deployment. Set the
+            public VAPID key before enabling notifications.
+          </p>
+        </div>
+      )}
+
+      {notice && (
+        <div
+          role={notice.kind === "error" ? "alert" : "status"}
+          className={`mt-4 flex gap-3 rounded-xl border p-4 text-sm ${noticeStyles}`}
+        >
+          {notice.kind === "success" ? (
+            <CheckCircle2 size={18} className="mt-0.5 shrink-0" />
+          ) : notice.kind === "error" ? (
+            <AlertCircle size={18} className="mt-0.5 shrink-0" />
+          ) : null}
+          <p>{notice.message}</p>
+        </div>
+      )}
+
+      <div className="mt-5 flex flex-wrap gap-3">
+        {isCurrentDeviceEnabled ? (
+          <button
+            type="button"
+            onClick={() => void disableNotifications()}
+            disabled={isLoading || isProcessing}
+            className="inline-flex items-center gap-2 rounded-xl border border-red-200 bg-white px-4 py-2.5 text-sm font-semibold text-red-700 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {isProcessing ? (
+              <Loader2 size={17} className="animate-spin" />
+            ) : (
+              <BellOff size={17} />
+            )}
+            Disable on this device
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={() => void enableNotifications()}
+            disabled={
+              isLoading ||
+              isProcessing ||
+              !supported ||
+              !configured ||
+              permission === "denied"
+            }
+            className="inline-flex items-center gap-2 rounded-xl bg-emerald-700 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {isProcessing ? (
+              <Loader2 size={17} className="animate-spin" />
+            ) : (
+              <Bell size={17} />
+            )}
+            Enable on this device
+          </button>
+        )}
+
+        <button
+          type="button"
+          onClick={() => void loadStatus()}
+          disabled={isLoading || isProcessing}
+          className="inline-flex items-center gap-2 rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-50"
+        >
+          <RefreshCw
+            size={17}
+            className={isLoading ? "animate-spin" : ""}
+          />
+          Refresh status
+        </button>
+      </div>
+
+      {permission === "denied" && (
+        <p className="mt-4 text-sm text-slate-500">
+          Permission is blocked. Allow notifications for this site in your
+          browser settings, then refresh the status.
         </p>
       )}
-    </div>
+    </section>
   );
 }
