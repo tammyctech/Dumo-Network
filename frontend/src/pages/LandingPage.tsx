@@ -771,8 +771,8 @@ export default function LandingPage() {
             <div className="grid gap-10 lg:grid-cols-[0.8fr_1.2fr]">
               <div>
                 <p className="text-sm font-black uppercase tracking-[0.2em] text-emerald-800">How it works</p>
-                <h2 className="mt-4 max-w-xl text-4xl font-black leading-tight tracking-[-0.035em] text-slate-950 sm:text-5xl">Transparent from field report to public view.</h2>
-                <p className="mt-5 max-w-lg text-base leading-7 text-slate-700">
+                <h2 className="mt-4 max-w-xl bg-gradient-to-r from-emerald-950 via-emerald-700 to-teal-600 bg-clip-text text-4xl font-black leading-tight tracking-[-0.035em] text-transparent sm:text-5xl">Transparent from field report to public view.</h2>
+                <p className="mt-5 max-w-lg text-base font-medium leading-7 text-emerald-950">
                   Follow each result through a clear, structured process—from
                   an assigned monitor's submission to the public dashboard.
                 </p>
