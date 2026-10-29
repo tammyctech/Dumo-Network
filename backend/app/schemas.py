@@ -56,7 +56,43 @@ class UserLogin(BaseModel):
 
 
 # ============================================================
-# 3. USER RESPONSE
+# 3. USER PROFILE UPDATE
+# ============================================================
+
+class UserProfileUpdate(BaseModel):
+    """
+    Schema for updating the authenticated user's profile.
+
+    Users can update:
+    - Full name
+    - Phone number
+
+    Users cannot update:
+    - Account role
+    - Email address
+    - Password
+    - Account activation status
+    """
+
+    full_name: str | None = Field(
+        default=None,
+        min_length=2,
+        max_length=150,
+    )
+
+    phone_number: str | None = Field(
+        default=None,
+        min_length=7,
+        max_length=20,
+    )
+
+    model_config = ConfigDict(
+        extra="forbid"
+    )
+
+
+# ============================================================
+# 4. USER RESPONSE
 # ============================================================
 
 class UserResponse(BaseModel):
@@ -84,7 +120,7 @@ class UserResponse(BaseModel):
 
 
 # ============================================================
-# 4. AUTHENTICATION TOKEN RESPONSE
+# 5. AUTHENTICATION TOKEN RESPONSE
 # ============================================================
 
 class TokenResponse(BaseModel):
@@ -98,7 +134,7 @@ class TokenResponse(BaseModel):
 
 
 # ============================================================
-# 5. ADMINISTRATOR-CREATED AGENT
+# 6. ADMINISTRATOR-CREATED AGENT
 # ============================================================
 
 class AgentCreate(BaseModel):
@@ -148,12 +184,12 @@ class AgentCreate(BaseModel):
 
 
 # ============================================================
-# 6. AGENT RESPONSE
+# 7. AGENT RESPONSE
 # ============================================================
 
 class AgentResponse(BaseModel):
     """
-    Response schema for agent information.
+    Schema for agent information.
 
     Agent phone numbers must only be exposed
     through appropriately authorized endpoints.
@@ -177,7 +213,7 @@ class AgentResponse(BaseModel):
 
 
 # ============================================================
-# 7. AGENT CREATION RESPONSE
+# 8. AGENT CREATION RESPONSE
 # ============================================================
 
 class AgentCreatedResponse(AgentResponse):
@@ -195,7 +231,7 @@ class AgentCreatedResponse(AgentResponse):
 
 
 # ============================================================
-# 8. AGENT ACCOUNT ACTIVATION
+# 9. AGENT ACCOUNT ACTIVATION
 # ============================================================
 
 class AgentActivationRequest(BaseModel):
@@ -223,7 +259,7 @@ class AgentActivationRequest(BaseModel):
 
 
 # ============================================================
-# 9. POLLING UNIT CREATION
+# 10. POLLING UNIT CREATION
 # ============================================================
 
 class PollingUnitCreate(BaseModel):
@@ -258,7 +294,7 @@ class PollingUnitCreate(BaseModel):
 
 
 # ============================================================
-# 10. POLLING UNIT RESPONSE
+# 11. POLLING UNIT RESPONSE
 # ============================================================
 
 class PollingUnitResponse(PollingUnitCreate):
@@ -274,7 +310,7 @@ class PollingUnitResponse(PollingUnitCreate):
 
 
 # ============================================================
-# 11. POLLING UNIT UPDATE
+# 12. POLLING UNIT UPDATE
 # ============================================================
 
 class PollingUnitUpdate(BaseModel):

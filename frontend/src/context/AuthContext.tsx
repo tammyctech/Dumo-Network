@@ -9,7 +9,9 @@ import {
 import {
   getCurrentUser,
   loginUser,
+  updateCurrentUser,
   type User,
+  type UserProfileUpdate,
 } from "../services/api";
 
 // ==========================================
@@ -28,6 +30,10 @@ interface AuthContextType {
   ) => Promise<void>;
 
   logout: () => void;
+
+  updateProfile: (
+    data: UserProfileUpdate
+  ) => Promise<User>;
 }
 
 // ==========================================
@@ -131,6 +137,30 @@ export function AuthProvider({
   }
 
   // ========================================
+  // UPDATE PROFILE
+  // ========================================
+
+  async function updateProfile(
+    data: UserProfileUpdate
+  ): Promise<User> {
+    if (!token) {
+      throw new Error(
+        "Your session has expired. Please log in again."
+      );
+    }
+
+    const updatedUser = await updateCurrentUser(
+      token,
+      data
+    );
+
+    // Update the user across the application.
+    setUser(updatedUser);
+
+    return updatedUser;
+  }
+
+  // ========================================
   // LOGOUT
   // ========================================
 
@@ -162,6 +192,7 @@ export function AuthProvider({
         isLoading,
         login,
         logout,
+        updateProfile,
       }}
     >
       {children}

@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState, type FormEvent } from "react";
+
 import {
   UserRound,
   ShieldCheck,
@@ -7,6 +8,10 @@ import {
   Building2,
   ChevronRight,
   Settings2,
+  Save,
+  Loader2,
+  CheckCircle2,
+  AlertCircle,
 } from "lucide-react";
 
 import { useAuth } from "../context/AuthContext";
@@ -19,12 +24,96 @@ type SettingsTab =
   | "organization";
 
 export default function Settings() {
-  const { user } = useAuth();
+  const { user, updateProfile } = useAuth();
 
   const [activeTab, setActiveTab] =
     useState<SettingsTab>("profile");
 
+  const [fullName, setFullName] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
+
+  const [isSaving, setIsSaving] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+
   const isAdmin = user?.role === "admin";
+
+  // ==========================================
+  // LOAD USER PROFILE INTO FORM
+  // ==========================================
+
+  useEffect(() => {
+    if (user) {
+      setFullName(user.full_name || "");
+      setPhoneNumber(user.phone_number || "");
+    }
+  }, [user]);
+
+  // ==========================================
+  // CHECK FOR UNSAVED CHANGES
+  // ==========================================
+
+  const hasChanges =
+    fullName.trim() !== (user?.full_name || "") ||
+    phoneNumber.trim() !== (user?.phone_number || "");
+
+  // ==========================================
+  // SAVE PROFILE
+  // ==========================================
+
+  async function handleSaveProfile(
+    event: FormEvent<HTMLFormElement>
+  ) {
+    event.preventDefault();
+
+    setErrorMessage("");
+    setSuccessMessage("");
+
+    const cleanedName = fullName.trim();
+    const cleanedPhone = phoneNumber.trim();
+
+    if (cleanedName.length < 2) {
+      setErrorMessage(
+        "Full name must contain at least 2 characters."
+      );
+      return;
+    }
+
+    if (
+      cleanedPhone &&
+      !/^\+?[0-9]{7,19}$/.test(cleanedPhone)
+    ) {
+      setErrorMessage(
+        "Enter a valid phone number using 7 to 19 digits."
+      );
+      return;
+    }
+
+    setIsSaving(true);
+
+    try {
+      await updateProfile({
+        full_name: cleanedName,
+        phone_number: cleanedPhone || null,
+      });
+
+      setSuccessMessage(
+        "Your profile has been updated successfully."
+      );
+    } catch (error) {
+      setErrorMessage(
+        error instanceof Error
+          ? error.message
+          : "Unable to update your profile."
+      );
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  // ==========================================
+  // SETTINGS MENU
+  // ==========================================
 
   const settingsMenu = [
     {
@@ -65,7 +154,6 @@ export default function Settings() {
 
   return (
     <div className="space-y-8">
-
       {/* PAGE HEADER */}
 
       <div>
@@ -92,12 +180,10 @@ export default function Settings() {
       {/* SETTINGS LAYOUT */}
 
       <div className="grid gap-6 lg:grid-cols-12">
-
         {/* SETTINGS NAVIGATION */}
 
         <div className="lg:col-span-4">
           <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-
             {settingsMenu.map((item) => {
               const Icon = item.icon;
               const selected = activeTab === item.id;
@@ -106,7 +192,9 @@ export default function Settings() {
                 <button
                   key={item.id}
                   type="button"
-                  onClick={() => setActiveTab(item.id as SettingsTab)}
+                  onClick={() =>
+                    setActiveTab(item.id as SettingsTab)
+                  }
                   className={`
                     flex w-full items-center gap-4
                     border-b border-slate-100
@@ -149,35 +237,33 @@ export default function Settings() {
                 </button>
               );
             })}
-
           </div>
         </div>
 
         {/* SETTINGS CONTENT */}
 
         <div className="lg:col-span-8">
-
           <div className="min-h-[400px] rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
-
             {/* PROFILE */}
 
             {activeTab === "profile" && (
               <div className="space-y-6">
-
                 <div>
                   <h2 className="text-xl font-bold text-slate-900">
                     My Profile
                   </h2>
 
                   <p className="mt-1 text-sm text-slate-500">
-                    Your Dumo Network account information.
+                    Update your personal account information.
                   </p>
                 </div>
 
-                <div className="flex items-center gap-4 rounded-xl bg-slate-50 p-5">
+                {/* PROFILE SUMMARY */}
 
+                <div className="flex items-center gap-4 rounded-xl bg-slate-50 p-5">
                   <div className="flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100 text-2xl font-bold text-emerald-700">
-                    {user?.full_name?.charAt(0).toUpperCase() || "U"}
+                    {user?.full_name?.charAt(0).toUpperCase() ||
+                      "U"}
                   </div>
 
                   <div>
@@ -189,40 +275,177 @@ export default function Settings() {
                       {user?.role || "User"}
                     </p>
                   </div>
-
                 </div>
 
-                <div>
-                  <label className="mb-2 block text-sm font-medium text-slate-700">
-                    Full Name
-                  </label>
+                {/* SUCCESS MESSAGE */}
 
-                  <input
-                    type="text"
-                    value={user?.full_name || ""}
-                    readOnly
-                    className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-700"
-                  />
-                </div>
+                {successMessage && (
+                  <div
+                    role="status"
+                    className="flex items-start gap-3 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800"
+                  >
+                    <CheckCircle2
+                      size={20}
+                      className="shrink-0"
+                    />
 
-                <div>
-                  <label className="mb-2 block text-sm font-medium text-slate-700">
-                    Account Role
-                  </label>
+                    <span>{successMessage}</span>
+                  </div>
+                )}
 
-                  <input
-                    type="text"
-                    value={user?.role || ""}
-                    readOnly
-                    className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 capitalize text-slate-700"
-                  />
-                </div>
+                {/* ERROR MESSAGE */}
 
-                <p className="text-xs text-slate-500">
-                  Profile editing will be available after the
-                  account update API is connected.
-                </p>
+                {errorMessage && (
+                  <div
+                    role="alert"
+                    className="flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800"
+                  >
+                    <AlertCircle
+                      size={20}
+                      className="shrink-0"
+                    />
 
+                    <span>{errorMessage}</span>
+                  </div>
+                )}
+
+                {/* PROFILE FORM */}
+
+                <form
+                  onSubmit={handleSaveProfile}
+                  className="space-y-5"
+                >
+                  {/* FULL NAME */}
+
+                  <div>
+                    <label
+                      htmlFor="profile-full-name"
+                      className="mb-2 block text-sm font-medium text-slate-700"
+                    >
+                      Full Name
+                    </label>
+
+                    <input
+                      id="profile-full-name"
+                      type="text"
+                      value={fullName}
+                      onChange={(event) => {
+                        setFullName(event.target.value);
+                        setSuccessMessage("");
+                        setErrorMessage("");
+                      }}
+                      minLength={2}
+                      maxLength={150}
+                      required
+                      disabled={isSaving}
+                      autoComplete="name"
+                      className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 disabled:opacity-60"
+                    />
+                  </div>
+
+                  {/* PHONE NUMBER */}
+
+                  <div>
+                    <label
+                      htmlFor="profile-phone"
+                      className="mb-2 block text-sm font-medium text-slate-700"
+                    >
+                      Phone Number
+                    </label>
+
+                    <input
+                      id="profile-phone"
+                      type="tel"
+                      value={phoneNumber}
+                      onChange={(event) => {
+                        setPhoneNumber(event.target.value);
+                        setSuccessMessage("");
+                        setErrorMessage("");
+                      }}
+                      maxLength={20}
+                      disabled={isSaving}
+                      autoComplete="tel"
+                      placeholder="08012345678"
+                      className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 disabled:opacity-60"
+                    />
+
+                    <p className="mt-1 text-xs text-slate-500">
+                      Optional. Leave blank to remove your phone
+                      number.
+                    </p>
+                  </div>
+
+                  {/* EMAIL */}
+
+                  <div>
+                    <label
+                      htmlFor="profile-email"
+                      className="mb-2 block text-sm font-medium text-slate-700"
+                    >
+                      Email Address
+                    </label>
+
+                    <input
+                      id="profile-email"
+                      type="email"
+                      value={user?.email || ""}
+                      readOnly
+                      className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-600"
+                    />
+
+                    <p className="mt-1 text-xs text-slate-500">
+                      Your email address cannot be changed here.
+                    </p>
+                  </div>
+
+                  {/* ACCOUNT ROLE */}
+
+                  <div>
+                    <label
+                      htmlFor="profile-role"
+                      className="mb-2 block text-sm font-medium text-slate-700"
+                    >
+                      Account Role
+                    </label>
+
+                    <input
+                      id="profile-role"
+                      type="text"
+                      value={user?.role || ""}
+                      readOnly
+                      className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 capitalize text-slate-600"
+                    />
+                  </div>
+
+                  {/* SAVE BUTTON */}
+
+                  <div className="flex justify-end border-t border-slate-100 pt-5">
+                    <button
+                      type="submit"
+                      disabled={
+                        isSaving ||
+                        !hasChanges ||
+                        !user
+                      }
+                      className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-700 px-5 py-3 font-semibold text-white transition hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      {isSaving ? (
+                        <>
+                          <Loader2
+                            size={18}
+                            className="animate-spin"
+                          />
+                          Saving...
+                        </>
+                      ) : (
+                        <>
+                          <Save size={18} />
+                          Save Changes
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </form>
               </div>
             )}
 
@@ -301,10 +524,8 @@ export default function Settings() {
                 </div>
               </div>
             )}
-
           </div>
         </div>
-
       </div>
     </div>
   );

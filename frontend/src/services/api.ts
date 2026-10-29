@@ -1,10 +1,15 @@
 const API_URL =
   import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
-  
+
+// ==========================================
+// USER TYPES
+// ==========================================
+
 export interface User {
   id: number;
   full_name: string;
   email: string;
+  phone_number?: string | null;
   role: string;
   is_active: boolean;
 }
@@ -15,7 +20,18 @@ export interface RegisterData {
   password: string;
 }
 
-export async function registerUser(data: RegisterData): Promise<User> {
+export interface UserProfileUpdate {
+  full_name?: string;
+  phone_number?: string | null;
+}
+
+// ==========================================
+// REGISTER USER
+// ==========================================
+
+export async function registerUser(
+  data: RegisterData
+): Promise<User> {
   const response = await fetch(`${API_URL}/api/auth/register`, {
     method: "POST",
     headers: {
@@ -31,7 +47,14 @@ export async function registerUser(data: RegisterData): Promise<User> {
   return response.json();
 }
 
-export async function loginUser(email: string, password: string) {
+// ==========================================
+// LOGIN USER
+// ==========================================
+
+export async function loginUser(
+  email: string,
+  password: string
+) {
   const formData = new URLSearchParams();
 
   formData.append("username", email);
@@ -55,7 +78,13 @@ export async function loginUser(email: string, password: string) {
   }>;
 }
 
-export async function getCurrentUser(token: string): Promise<User> {
+// ==========================================
+// GET CURRENT USER
+// ==========================================
+
+export async function getCurrentUser(
+  token: string
+): Promise<User> {
   const response = await fetch(`${API_URL}/api/auth/me`, {
     headers: {
       Authorization: `Bearer ${token}`,
@@ -67,4 +96,44 @@ export async function getCurrentUser(token: string): Promise<User> {
   }
 
   return response.json();
+}
+
+// ==========================================
+// UPDATE CURRENT USER PROFILE
+// ==========================================
+
+export async function updateCurrentUser(
+  token: string,
+  data: UserProfileUpdate
+): Promise<User> {
+  const response = await fetch(`${API_URL}/api/auth/me`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(data),
+  });
+
+  if (!response.ok) {
+    let errorMessage = "Unable to update your profile.";
+
+    try {
+      const errorData = await response.json();
+
+      if (typeof errorData.detail === "string") {
+        errorMessage = errorData.detail;
+      } else if (Array.isArray(errorData.detail)) {
+        errorMessage = errorData.detail
+          .map((item: { msg?: string }) => item.msg || "Invalid value")
+          .join(". ");
+      }
+    } catch {
+      // Use the default error message if the response is not JSON.
+    }
+
+    throw new Error(errorMessage);
+  }
+
+  return response.json() as Promise<User>;
 }

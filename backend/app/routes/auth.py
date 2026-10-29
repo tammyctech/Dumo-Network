@@ -6,7 +6,12 @@ from sqlalchemy.orm import Session
 
 from ..database import get_db
 from ..models import User
-from ..schemas import UserCreate, UserResponse, TokenResponse
+from ..schemas import (
+    UserCreate,
+    UserResponse,
+    TokenResponse,
+    UserProfileUpdate,
+)
 from ..security import (
     hash_password,
     verify_password,
@@ -122,5 +127,80 @@ def login(
 def get_profile(
     current_user: User = Depends(get_current_user)
 ):
+
+    return current_user
+
+@router.patch(
+    "/me",
+    response_model=UserResponse
+)
+def update_profile(
+    profile_data: UserProfileUpdate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Update the authenticated user's profile.
+
+    Only full_name and phone_number can be updated.
+    """
+
+    updates = profile_data.model_fields_set
+
+    if "full_name" in updates:
+        if profile_data.full_name is None:
+            raise HTTPException(
+                status_code=422,
+                detail="Full name cannot be null"
+            )
+
+        full_name = profile_data.full_name.strip()
+
+        if len(full_name) < 2:
+            raise HTTPException(
+                status_code=422,
+                detail="Full name must contain at least 2 characters"
+            )
+
+        current_user.full_name = full_name
+
+    if "phone_number" in updates:
+        phone_number = profile_data.phone_number
+
+        if phone_number is not None:
+            phone_number = phone_number.strip()
+
+            if not phone_number:
+                raise HTTPException(
+                    status_code=422,
+                    detail="Phone number cannot be empty"
+                )
+
+            if not phone_number.lstrip("+").isdigit():
+                raise HTTPException(
+                    status_code=422,
+                    detail="Phone number must contain only digits or a leading +"
+                )
+
+            if len(phone_number.lstrip("+")) < 7:
+                raise HTTPException(
+                    status_code=422,
+                    detail="Phone number is too short"
+                )
+
+        current_user.phone_number = phone_number
+
+    try:
+        db.commit()
+
+    except IntegrityError:
+        db.rollback()
+
+        raise HTTPException(
+            status_code=409,
+            detail="Phone number is already registered"
+        )
+
+    db.refresh(current_user)
 
     return current_user
