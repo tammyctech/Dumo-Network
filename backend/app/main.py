@@ -33,6 +33,7 @@ from .routes import (
     dashboard_statistics,
     result_details,
     push_notifications,
+    public_results,
 )
 
 
@@ -184,6 +185,9 @@ app.include_router(result_details.router)
 # Authentication is enforced inside the push router.
 
 app.include_router(push_notifications.router)
+
+# Privacy-safe, read-only election overview for the public landing page.
+app.include_router(public_results.router)
 
 
 # =====================================================

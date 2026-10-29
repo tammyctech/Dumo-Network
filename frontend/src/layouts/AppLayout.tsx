@@ -239,7 +239,7 @@ export default function AppLayout() {
 
               <p className="text-[10px] text-emerald-400">
                 Election Monitoring System
-              </p>
+              </p> 
 
             </div>
 

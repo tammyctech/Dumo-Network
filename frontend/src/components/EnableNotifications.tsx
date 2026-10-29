@@ -65,6 +65,46 @@ async function parseError(
   }
 }
 
+function describePushSubscriptionError(error: unknown): string {
+  if (!(error instanceof Error)) {
+    return "Unable to enable notifications on this device.";
+  }
+
+  if (
+    error.name === "NetworkError" ||
+    error.name === "AbortError" ||
+    error.message.toLowerCase().includes("networkerror")
+  ) {
+    return (
+      "Your browser could not connect to its push notification service. " +
+      "Turn off Private Browsing, VPN, or strict tracking protection, " +
+      "then try again. You can also try Chrome or Edge to confirm browser support."
+    );
+  }
+
+  if (
+    error.name === "NotAllowedError" ||
+    error.name === "SecurityError"
+  ) {
+    return (
+      "Notification permission is blocked. Allow notifications for Dumo " +
+      "Network in your browser settings, then refresh this page."
+    );
+  }
+
+  if (
+    error.name === "InvalidAccessError" ||
+    error.name === "InvalidStateError"
+  ) {
+    return (
+      "This browser could not use the configured notification key. " +
+      "Please contact the Dumo Network administrator."
+    );
+  }
+
+  return error.message;
+}
+
 export default function EnableNotifications() {
   const { token } = useAuth();
   const [isLoading, setIsLoading] = useState(true);
@@ -218,10 +258,7 @@ export default function EnableNotifications() {
     } catch (error) {
       setNotice({
         kind: "error",
-        message:
-          error instanceof Error
-            ? error.message
-            : "Unable to enable notifications.",
+        message: describePushSubscriptionError(error),
       });
     } finally {
       setIsProcessing(false);

@@ -19,6 +19,7 @@ import AppLayout from "./layouts/AppLayout";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import ActivateAgent from "./pages/ActivateAgent";
+import LandingPage from "./pages/LandingPage";
 
 // Application pages
 import Dashboard from "./pages/Dashboard";
@@ -50,7 +51,7 @@ export default function App() {
 
           <Route
             path="/"
-            element={<Navigate to="/login" replace />}
+            element={<LandingPage />}
           />
 
           <Route
