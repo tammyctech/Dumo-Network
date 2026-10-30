@@ -1,5 +1,8 @@
 import json
 import os
+import base64
+import binascii
+from functools import lru_cache
 from pathlib import Path
 from urllib.parse import urlsplit
 import ipaddress
@@ -12,9 +15,12 @@ load_dotenv()
 BACKEND_DIR = Path(__file__).resolve().parents[2]
 
 
+@lru_cache(maxsize=1)
 def get_vapid_config():
     key_path = os.getenv("VAPID_PRIVATE_KEY_PATH")
     subject = os.getenv("VAPID_SUBJECT") or os.getenv("FRONTEND_URL")
+
+    private_key_b64 = os.getenv("VAPID_PRIVATE_KEY_B64", "").strip()
 
     if key_path:
         private_key = Path(key_path)
@@ -32,13 +38,37 @@ def get_vapid_config():
             candidates[0],
         )
 
+    if not private_key.is_file() and private_key_b64:
+        try:
+            private_key_bytes = base64.b64decode(
+                private_key_b64,
+                validate=True,
+            )
+        except (binascii.Error, ValueError) as error:
+            raise RuntimeError(
+                "VAPID_PRIVATE_KEY_B64 is not valid base64"
+            ) from error
+
+        if (
+            len(private_key_bytes) > 16_384
+            or b"-----BEGIN" not in private_key_bytes
+            or b"PRIVATE KEY-----" not in private_key_bytes
+        ):
+            raise RuntimeError(
+                "VAPID_PRIVATE_KEY_B64 does not contain a valid PEM private key"
+            )
+
+        private_key = Path("/tmp/dumo_vapid_private_key.pem")
+        private_key.write_bytes(private_key_bytes)
+        private_key.chmod(0o600)
+
     if not subject:
         raise RuntimeError("VAPID_SUBJECT is not configured")
 
     if not private_key.is_file():
         raise RuntimeError(
             "VAPID private key file was not found at the configured path or "
-            "/etc/secrets/private_key.pem"
+            "/etc/secrets/private_key.pem, and VAPID_PRIVATE_KEY_B64 is absent"
         )
 
     return str(private_key), subject
