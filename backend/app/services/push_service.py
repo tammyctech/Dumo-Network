@@ -14,21 +14,32 @@ BACKEND_DIR = Path(__file__).resolve().parents[2]
 
 def get_vapid_config():
     key_path = os.getenv("VAPID_PRIVATE_KEY_PATH")
-    subject = os.getenv("VAPID_SUBJECT")
+    subject = os.getenv("VAPID_SUBJECT") or os.getenv("FRONTEND_URL")
 
-    if not key_path:
-        raise RuntimeError("VAPID_PRIVATE_KEY_PATH is not configured")
+    if key_path:
+        private_key = Path(key_path)
+        if not private_key.is_absolute():
+            private_key = BACKEND_DIR / private_key
+    else:
+        # Render mounts secret files under /etc/secrets. Keep the local path as
+        # a development fallback without ever committing the ignored PEM file.
+        candidates = (
+            Path("/etc/secrets/private_key.pem"),
+            BACKEND_DIR / "private_key.pem",
+        )
+        private_key = next(
+            (candidate for candidate in candidates if candidate.is_file()),
+            candidates[0],
+        )
 
     if not subject:
         raise RuntimeError("VAPID_SUBJECT is not configured")
 
-    private_key = Path(key_path)
-
-    if not private_key.is_absolute():
-        private_key = BACKEND_DIR / private_key
-
     if not private_key.is_file():
-        raise RuntimeError("VAPID private key file was not found")
+        raise RuntimeError(
+            "VAPID private key file was not found at the configured path or "
+            "/etc/secrets/private_key.pem"
+        )
 
     return str(private_key), subject
 
