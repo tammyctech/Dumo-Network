@@ -10,6 +10,7 @@ import {
   getCurrentUser,
   loginUser,
   updateCurrentUser,
+  ApiRequestError,
   type User,
   type UserProfileUpdate,
 } from "../services/api";
@@ -23,6 +24,7 @@ interface AuthContextType {
   token: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  authError: string | null;
 
   login: (
     email: string,
@@ -66,6 +68,7 @@ export function AuthProvider({
   );
 
   const [isLoading, setIsLoading] = useState(true);
+  const [authError, setAuthError] = useState<string | null>(null);
 
   // ========================================
   // RESTORE SESSION
@@ -83,19 +86,28 @@ export function AuthProvider({
       }
 
       try {
+        setAuthError(null);
         const profile = await getCurrentUser(storedToken);
 
         if (cancelled) return;
 
         setToken(storedToken);
         setUser(profile);
-      } catch {
+      } catch (error) {
         if (cancelled) return;
 
-        sessionStorage.removeItem(TOKEN_KEY);
-
-        setToken(null);
-        setUser(null);
+        if (
+          error instanceof ApiRequestError &&
+          (error.status === 401 || error.status === 403)
+        ) {
+          sessionStorage.removeItem(TOKEN_KEY);
+          setToken(null);
+          setUser(null);
+        } else {
+          setAuthError(
+            "Dumo Network could not restore your session because the API is temporarily unavailable. Your login has been preserved."
+          );
+        }
       } finally {
         if (!cancelled) {
           setIsLoading(false);
@@ -134,6 +146,7 @@ export function AuthProvider({
 
     setToken(result.access_token);
     setUser(profile);
+    setAuthError(null);
   }
 
   // ========================================
@@ -169,6 +182,7 @@ export function AuthProvider({
 
     setToken(null);
     setUser(null);
+    setAuthError(null);
   }
 
   // ========================================
@@ -190,6 +204,7 @@ export function AuthProvider({
         token,
         isAuthenticated,
         isLoading,
+        authError,
         login,
         logout,
         updateProfile,

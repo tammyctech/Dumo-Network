@@ -25,6 +25,16 @@ export interface UserProfileUpdate {
   phone_number?: string | null;
 }
 
+export class ApiRequestError extends Error {
+  status: number;
+
+  constructor(message: string, status: number) {
+    super(message);
+    this.name = "ApiRequestError";
+    this.status = status;
+  }
+}
+
 // ==========================================
 // REGISTER USER
 // ==========================================
@@ -92,7 +102,12 @@ export async function getCurrentUser(
   });
 
   if (!response.ok) {
-    throw new Error("Authentication failed.");
+    throw new ApiRequestError(
+      response.status === 401 || response.status === 403
+        ? "Your session has expired."
+        : "The authentication service is temporarily unavailable.",
+      response.status
+    );
   }
 
   return response.json();

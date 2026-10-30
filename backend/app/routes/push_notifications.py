@@ -17,6 +17,7 @@ from ..models import (
 )
 from ..security import get_current_user, require_admin
 from ..services.push_service import (
+    get_vapid_config,
     send_push_notification,
     validate_push_endpoint,
 )
@@ -191,6 +192,25 @@ def subscription_status(
     }
 
 
+@router.get("/readiness")
+def push_readiness(admin: User = Depends(require_admin)):
+    """Confirm server-side push credentials without exposing their values."""
+    try:
+        _, subject = get_vapid_config()
+        return {
+            "ready": True,
+            "private_key": "available",
+            "subject_configured": bool(subject),
+        }
+    except RuntimeError as error:
+        return {
+            "ready": False,
+            "private_key": "unavailable",
+            "subject_configured": False,
+            "detail": str(error),
+        }
+
+
 def resolve_recipient_ids(payload: SendNotificationRequest, db: Session) -> list[int]:
     query = select(User.id).where(
         User.role == "agent",
@@ -244,6 +264,8 @@ def send_notification(
     )
     db.add(campaign)
     db.flush()
+    configuration_failed = 0
+    provider_failed = 0
 
     for subscription in subscriptions:
         try:
@@ -260,14 +282,24 @@ def send_notification(
                 campaign.expired_removed += 1
             else:
                 campaign.failed += 1
-        except (ValueError, RuntimeError):
+                provider_failed += 1
+        except RuntimeError:
             campaign.failed += 1
+            configuration_failed += 1
             logger.warning(
                 "Notification campaign %s delivery configuration failed",
                 campaign.id,
             )
+        except ValueError:
+            campaign.failed += 1
+            provider_failed += 1
+            logger.warning(
+                "Notification campaign %s subscription validation failed",
+                campaign.id,
+            )
         except Exception:
             campaign.failed += 1
+            provider_failed += 1
             logger.exception(
                 "Unexpected campaign %s delivery failure",
                 campaign.id,
@@ -300,8 +332,16 @@ def send_notification(
         "sent": campaign.sent,
         "failed": campaign.failed,
         "expired_removed": campaign.expired_removed,
+        "configuration_failed": configuration_failed,
+        "provider_failed": provider_failed,
         "message": (
-            "Notification delivery completed."
+            "No notifications were delivered because server push credentials are unavailable."
+            if configuration_failed and not campaign.sent
+            else "No notifications were delivered. Check provider connectivity and refresh device subscriptions."
+            if subscriptions and not campaign.sent
+            else "Notification delivery completed with some failures."
+            if campaign.failed
+            else "Notification delivery completed."
             if subscriptions
             else "Audience resolved, but no registered devices were found."
         ),
