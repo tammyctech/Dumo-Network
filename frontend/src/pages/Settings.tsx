@@ -25,6 +25,7 @@ import { changePassword } from "../services/api";
 import EnableNotifications from "../components/EnableNotifications";
 import { useTheme } from "../context/useTheme";
 import type { ThemePreference } from "../context/theme";
+import { useSearchParams } from "react-router-dom";
 
 type SettingsTab =
   | "profile"
@@ -36,13 +37,21 @@ type SettingsTab =
 export default function Settings() {
   const { user, token, updateProfile } = useAuth();
   const { preference, resolvedTheme, setPreference } = useTheme();
+  const [searchParams] = useSearchParams();
 
   // ==========================================
   // SETTINGS NAVIGATION
   // ==========================================
 
-  const [activeTab, setActiveTab] =
-    useState<SettingsTab>("profile");
+  const requestedTab = searchParams.get("tab");
+  const [activeTab, setActiveTab] = useState<SettingsTab>(
+    requestedTab === "security" ||
+      requestedTab === "notifications" ||
+      requestedTab === "appearance" ||
+      requestedTab === "organization"
+      ? requestedTab
+      : "profile"
+  );
 
   const isAdmin = user?.role === "admin";
 

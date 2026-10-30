@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import {
   NavLink,
@@ -25,6 +25,10 @@ import {
   ListChecks,
   Upload,
   Siren,
+  BellRing,
+  CheckCircle2,
+  ChevronRight,
+  SlidersHorizontal,
 } from "lucide-react";
 
 import { useAuth } from "../context/AuthContext";
@@ -138,9 +142,33 @@ const navigation = [
 
 export default function AppLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const notificationsRef = useRef<HTMLDivElement>(null);
 
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    function closeNotifications(event: MouseEvent) {
+      if (
+        notificationsRef.current &&
+        !notificationsRef.current.contains(event.target as Node)
+      ) {
+        setNotificationsOpen(false);
+      }
+    }
+
+    function closeOnEscape(event: KeyboardEvent) {
+      if (event.key === "Escape") setNotificationsOpen(false);
+    }
+
+    document.addEventListener("mousedown", closeNotifications);
+    document.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.removeEventListener("mousedown", closeNotifications);
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+  }, []);
 
   // ===================================================
   // LOGOUT
@@ -453,17 +481,112 @@ export default function AppLayout() {
 
             </div>
 
-            {/* NOTIFICATIONS PLACEHOLDER */}
+            {/* NOTIFICATIONS */}
 
-            <button
-              type="button"
-              disabled
-              title="Notifications coming soon"
-              aria-label="Notifications coming soon"
-              className="rounded-xl p-2 text-slate-300"
-            >
-              <Bell size={20} />
-            </button>
+            <div ref={notificationsRef} className="relative">
+              <button
+                type="button"
+                title="Open notifications"
+                aria-label="Open notifications"
+                aria-expanded={notificationsOpen}
+                aria-haspopup="dialog"
+                onClick={() => setNotificationsOpen((open) => !open)}
+                className={`relative rounded-xl border p-2.5 transition focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 ${
+                  notificationsOpen
+                    ? "border-emerald-200 bg-emerald-50 text-emerald-800"
+                    : "border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900"
+                }`}
+              >
+                <Bell size={20} />
+                <span className="absolute right-2 top-2 h-2 w-2 rounded-full border-2 border-white bg-emerald-500" />
+              </button>
+
+              {notificationsOpen && (
+                <div
+                  role="dialog"
+                  aria-label="Notifications panel"
+                  className="fixed inset-x-3 top-[4.75rem] z-50 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl shadow-slate-950/20 sm:absolute sm:inset-x-auto sm:right-0 sm:top-14 sm:w-[25rem]"
+                >
+                  <div className="relative overflow-hidden bg-slate-950 px-5 py-5 text-white">
+                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_85%_10%,rgba(16,185,129,.28),transparent_38%)]" />
+                    <div className="relative flex items-start justify-between gap-4">
+                      <div>
+                        <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.16em] text-emerald-300">
+                          <BellRing size={14} /> Live communications
+                        </div>
+                        <h3 className="mt-2 text-xl font-black">Notifications</h3>
+                        <p className="mt-1 text-xs leading-5 text-slate-300">
+                          Operational alerts and election updates from Dumo Network.
+                        </p>
+                      </div>
+                      <span className="mt-0.5 inline-flex items-center gap-1.5 rounded-full border border-emerald-400/25 bg-emerald-400/10 px-2.5 py-1 text-[10px] font-bold text-emerald-200">
+                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" /> Online
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="p-4">
+                    <div className="rounded-2xl border border-emerald-100 bg-emerald-50/70 p-4">
+                      <div className="flex gap-3">
+                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-emerald-700 text-white">
+                          <CheckCircle2 size={18} />
+                        </span>
+                        <div>
+                          <p className="text-sm font-black text-slate-900">You are all caught up</p>
+                          <p className="mt-1 text-xs leading-5 text-slate-600">
+                            New urgent updates will appear as browser notifications on enabled devices.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="mt-4 space-y-2">
+                      {user?.role === "admin" && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setNotificationsOpen(false);
+                            navigate("/admin/notifications");
+                          }}
+                          className="group flex w-full items-center gap-3 rounded-xl border border-slate-200 p-3 text-left transition hover:border-emerald-200 hover:bg-emerald-50/60"
+                        >
+                          <span className="rounded-lg bg-slate-100 p-2 text-slate-700 group-hover:bg-emerald-100 group-hover:text-emerald-800">
+                            <BellRing size={17} />
+                          </span>
+                          <span className="min-w-0 flex-1">
+                            <strong className="block text-sm text-slate-900">Open Notification Centre</strong>
+                            <span className="mt-0.5 block text-xs text-slate-500">Create and review delivery campaigns</span>
+                          </span>
+                          <ChevronRight size={17} className="text-slate-400 group-hover:text-emerald-700" />
+                        </button>
+                      )}
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setNotificationsOpen(false);
+                          navigate("/settings?tab=notifications");
+                        }}
+                        className="group flex w-full items-center gap-3 rounded-xl border border-slate-200 p-3 text-left transition hover:border-emerald-200 hover:bg-emerald-50/60"
+                      >
+                        <span className="rounded-lg bg-slate-100 p-2 text-slate-700 group-hover:bg-emerald-100 group-hover:text-emerald-800">
+                          <SlidersHorizontal size={17} />
+                        </span>
+                        <span className="min-w-0 flex-1">
+                          <strong className="block text-sm text-slate-900">Notification preferences</strong>
+                          <span className="mt-0.5 block text-xs text-slate-500">Manage this browser and registered devices</span>
+                        </span>
+                        <ChevronRight size={17} className="text-slate-400 group-hover:text-emerald-700" />
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="border-t border-slate-100 bg-slate-50 px-4 py-3 text-center text-[11px] font-medium text-slate-500">
+                    Push delivery is protected by your browser permissions.
+                  </div>
+                </div>
+              )}
+            </div>
 
             {/* ACCOUNT */}
 
