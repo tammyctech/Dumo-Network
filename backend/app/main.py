@@ -1,9 +1,11 @@
 import os
 
 from fastapi import FastAPI, Depends
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 
-from sqlalchemy import func
+from sqlalchemy import func, inspect, text
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 
@@ -231,6 +233,39 @@ def home():
         "message": "Welcome to Dumo Network",
         "status": "running",
     }
+
+
+@app.get("/health")
+def health(db: Session = Depends(get_db)):
+    """Report API, database, and required workflow-schema readiness."""
+    try:
+        db.execute(text("SELECT 1"))
+        schema = inspect(db.get_bind())
+        tables = set(schema.get_table_names())
+        result_columns = {
+            column["name"]
+            for column in schema.get_columns("result_submissions")
+        } if "result_submissions" in tables else set()
+        missing = sorted(
+            {"result_reviews", "result_flags", "incidents"} - tables
+        )
+        if "verification_status" not in result_columns:
+            missing.append("result_submissions.verification_status")
+        if missing:
+            return JSONResponse(
+                status_code=503,
+                content={
+                    "status": "migration_required",
+                    "database": "connected",
+                    "missing_schema": missing,
+                },
+            )
+        return {"status": "ready", "database": "connected"}
+    except SQLAlchemyError:
+        return JSONResponse(
+            status_code=503,
+            content={"status": "database_unavailable", "database": "unavailable"},
+        )
 
 
 # =====================================================

@@ -18,6 +18,7 @@ import {
   CartesianGrid,
   Tooltip,
 } from "recharts";
+import { useAuth } from "../context/AuthContext";
 
 interface DashboardStats {
   total_polling_units: number;
@@ -28,6 +29,14 @@ interface DashboardStats {
   message: string;
 }
 
+interface DashboardStatisticsResponse {
+  total_polling_units: number;
+  submitted_polling_units: number;
+  verification_summary?: Record<string, number>;
+  data_type: string;
+  message?: string;
+}
+
 interface PollingUnit {
   id: number;
   state: string;
@@ -36,9 +45,12 @@ interface PollingUnit {
   name: string;
 }
 
-const API_BASE_URL = "http://127.0.0.1:8000";
+const API_BASE_URL = (
+  import.meta.env.VITE_API_URL || "http://127.0.0.1:8000"
+).replace(/\/$/, "");
 
 export default function Analytics() {
+  const { token } = useAuth();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [pollingUnits, setPollingUnits] = useState<PollingUnit[]>([]);
 
@@ -54,16 +66,15 @@ export default function Analytics() {
         setLoading(true);
         setError(null);
 
-        const token = localStorage.getItem("access_token");
-
         const headers: HeadersInit = token
           ? { Authorization: `Bearer ${token}` }
           : {};
 
         const [dashboardResponse, pollingResponse] =
           await Promise.all([
-            fetch(`${API_BASE_URL}/api/dashboard`, {
+            fetch(`${API_BASE_URL}/api/dashboard/statistics`, {
               signal: controller.signal,
+              headers,
             }),
 
             fetch(`${API_BASE_URL}/api/polling-units/`, {
@@ -82,8 +93,25 @@ export default function Analytics() {
           );
         }
 
-        const dashboardData: DashboardStats =
+        const dashboardResponseData: DashboardStatisticsResponse =
           await dashboardResponse.json();
+
+        const verification =
+          dashboardResponseData.verification_summary ?? {};
+        const dashboardData: DashboardStats = {
+          total_polling_units:
+            dashboardResponseData.total_polling_units,
+          reported_polling_units:
+            dashboardResponseData.submitted_polling_units,
+          verified_results: verification.verified ?? 0,
+          pending_verification:
+            (verification.submitted ?? 0) +
+            (verification.under_review ?? 0),
+          data_type: dashboardResponseData.data_type,
+          message:
+            dashboardResponseData.message ??
+            "Live election monitoring statistics",
+        };
 
         const pollingData: PollingUnit[] =
           await pollingResponse.json();
@@ -116,29 +144,25 @@ export default function Analytics() {
     fetchAnalytics();
 
     return () => controller.abort();
-  }, [refreshKey]);
+  }, [refreshKey, token]);
 
-  // Group the fetched polling units by state.
-  // These figures describe the returned records only.
-  const stateCounts = pollingUnits.reduce<Record<string, number>>(
+  const lgaCounts = pollingUnits.reduce<Record<string, number>>(
     (acc, unit) => {
-      const state = unit.state || "Unknown";
+      const lga = unit.lga || "Unknown";
 
-      acc[state] = (acc[state] || 0) + 1;
+      acc[lga] = (acc[lga] || 0) + 1;
 
       return acc;
     },
     {}
   );
 
-  const stateChartData = Object.entries(stateCounts)
-    .map(([state, count]) => ({
-      state,
+  const lgaChartData = Object.entries(lgaCounts)
+    .map(([lga, count]) => ({
+      lga,
       count,
     }))
     .sort((a, b) => b.count - a.count);
-
-  const uniqueStates = Object.keys(stateCounts).length;
 
   const totalPollingUnits = stats?.total_polling_units ?? null;
 
@@ -221,17 +245,17 @@ export default function Analytics() {
         />
 
         <StatCard
-          title="Units in Current Response"
-          value={loading || error ? "—" : pollingUnits.length.toLocaleString()}
-          subtitle="Records returned by the API"
-          icon={Database}
+          title="Submitted Results"
+          value={loading || error ? "—" : formatNumber(stats?.reported_polling_units ?? null)}
+          subtitle="Polling units reporting for the selected election"
+          icon={Activity}
         />
 
         <StatCard
-          title="States Represented"
-          value={loading || error ? "—" : uniqueStates.toLocaleString()}
-          subtitle="Within returned records"
-          icon={Activity}
+          title="Pending Verification"
+          value={loading || error ? "—" : formatNumber(stats?.pending_verification ?? null)}
+          subtitle="Submitted or currently under review"
+          icon={Database}
         />
 
         <StatCard
@@ -241,7 +265,7 @@ export default function Analytics() {
               ? "—"
               : formatNumber(stats?.verified_results ?? null)
           }
-          subtitle="Verification module pending"
+          subtitle="Approved through the review workflow"
           icon={ShieldCheck}
         />
 
@@ -253,11 +277,11 @@ export default function Analytics() {
 
         <div className="mb-6">
           <h2 className="text-lg font-bold text-slate-900">
-            Polling Units by State
+            Polling Units by LGA
           </h2>
 
           <p className="mt-1 text-sm text-slate-500">
-            Distribution within the polling-unit records returned by the API.
+            Rivers State polling-unit distribution across LGAs.
           </p>
         </div>
 
@@ -269,7 +293,7 @@ export default function Analytics() {
           <div className="flex h-80 items-center justify-center text-slate-500">
             Chart unavailable
           </div>
-        ) : stateChartData.length === 0 ? (
+        ) : lgaChartData.length === 0 ? (
           <div className="flex h-80 items-center justify-center text-slate-500">
             No polling-unit data available.
           </div>
@@ -277,7 +301,7 @@ export default function Analytics() {
           <div className="h-80 w-full min-w-0">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
-                data={stateChartData}
+                data={lgaChartData}
                 margin={{ top: 10, right: 15, left: 0, bottom: 10 }}
               >
                 <CartesianGrid
@@ -286,7 +310,7 @@ export default function Analytics() {
                 />
 
                 <XAxis
-                  dataKey="state"
+                  dataKey="lga"
                   tick={{ fontSize: 11 }}
                   interval={0}
                   angle={-25}
@@ -327,11 +351,10 @@ export default function Analytics() {
         </p>
 
         <p className="mt-3 text-sm leading-6 text-blue-700">
-          The polling-unit endpoint currently returns a limited set of
-          records. State distribution therefore reflects only the
-          returned records, not necessarily every polling unit in
-          PostgreSQL. Election-result analytics will become available
-          after result submission and verification modules are built.
+          Polling-unit distribution comes from the Rivers State register.
+          Submission and verification figures come from the current election
+          monitoring workflow and update as agents report and administrators
+          complete reviews.
         </p>
       </section>
 

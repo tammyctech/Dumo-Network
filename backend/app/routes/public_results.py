@@ -137,14 +137,19 @@ def public_election_overview(db: Session = Depends(get_db)):
         )
 
     recent_rows = db.execute(
-        select(ResultSubmission, PollingUnit)
+        select(
+            ResultSubmission.id,
+            ResultSubmission.submitted_at,
+            ResultSubmission.is_flagged,
+            PollingUnit,
+        )
         .join(PollingUnit, PollingUnit.id == ResultSubmission.polling_unit_id)
         .where(*submission_filter)
         .order_by(ResultSubmission.submitted_at.desc(), ResultSubmission.id.desc())
         .limit(12)
     ).all()
 
-    recent_ids = [submission.id for submission, _ in recent_rows]
+    recent_ids = [submission_id for submission_id, _, _, _ in recent_rows]
     recent_parties: dict[int, list[dict]] = defaultdict(list)
 
     if recent_ids:
@@ -159,18 +164,18 @@ def public_election_overview(db: Session = Depends(get_db)):
             )
 
     updates = []
-    for submission, unit in recent_rows:
-        parties = recent_parties.get(submission.id, [])
+    for submission_id, submitted_at, is_flagged, unit in recent_rows:
+        parties = recent_parties.get(submission_id, [])
         updates.append(
             {
-                "id": submission.id,
-                "submitted_at": submission.submitted_at,
+                "id": submission_id,
+                "submitted_at": submitted_at,
                 "lga": unit.lga,
                 "ward": unit.ward,
                 "polling_unit_name": unit.name,
                 "polling_unit_code": unit.code,
                 "leading_party": parties[0] if parties else None,
-                "is_flagged": submission.is_flagged,
+                "is_flagged": is_flagged,
             }
         )
 

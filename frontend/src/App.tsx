@@ -4,6 +4,7 @@ import {
   Route,
   Routes,
 } from "react-router-dom";
+import { lazy, Suspense } from "react";
 
 // Authentication
 import { AuthProvider } from "./context/AuthContext";
@@ -13,37 +14,38 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import AdminRoute from "./components/AdminRoute";
 
 // Shared application layout
-import AppLayout from "./layouts/AppLayout";
+const AppLayout = lazy(() => import("./layouts/AppLayout"));
 
 // Public pages
-import Login from "./pages/Login";
-import Register from "./pages/Register";
-import ActivateAgent from "./pages/ActivateAgent";
-import LandingPage from "./pages/LandingPage";
+const Login = lazy(() => import("./pages/Login"));
+const Register = lazy(() => import("./pages/Register"));
+const ActivateAgent = lazy(() => import("./pages/ActivateAgent"));
+const LandingPage = lazy(() => import("./pages/LandingPage"));
 
 // Application pages
-import Dashboard from "./pages/Dashboard";
-import PollingUnits from "./pages/PollingUnits";
-import Analytics from "./pages/Analytics";
-import AgentResults from "./pages/AgentResults";
-import ResultDetails from "./pages/ResultDetails";
-import Settings from "./pages/Settings";
-import Incidents from "./pages/Incidents";
+const Dashboard = lazy(() => import("./pages/Dashboard"));
+const PollingUnits = lazy(() => import("./pages/PollingUnits"));
+const Analytics = lazy(() => import("./pages/Analytics"));
+const AgentResults = lazy(() => import("./pages/AgentResults"));
+const ResultDetails = lazy(() => import("./pages/ResultDetails"));
+const Settings = lazy(() => import("./pages/Settings"));
+const Incidents = lazy(() => import("./pages/Incidents"));
 
 // Administrator pages
-import AdminElections from "./pages/AdminElections";
-import WardManagement from "./pages/WardManagement";
-import PollingUnitManagement from "./pages/PollingUnitManagement";
-import UserManagement from "./pages/UserManagement";
-import AgentAssignments from "./pages/AgentAssignments";
+const AdminElections = lazy(() => import("./pages/AdminElections"));
+const WardManagement = lazy(() => import("./pages/WardManagement"));
+const PollingUnitManagement = lazy(() => import("./pages/PollingUnitManagement"));
+const UserManagement = lazy(() => import("./pages/UserManagement"));
+const AgentAssignments = lazy(() => import("./pages/AgentAssignments"));
 
 // Bulk Import Dashboard
-import BulkImport from "./pages/BulkImport";
+const BulkImport = lazy(() => import("./pages/BulkImport"));
 
 export default function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
+        <Suspense fallback={<div className="flex min-h-screen items-center justify-center bg-slate-50 text-sm font-semibold text-slate-600">Loading Dumo Network…</div>}>
         <Routes>
 
           {/* ============================================
@@ -178,6 +180,7 @@ export default function App() {
           />
 
         </Routes>
+        </Suspense>
       </AuthProvider>
     </BrowserRouter>
   );
