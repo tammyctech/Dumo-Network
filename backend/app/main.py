@@ -247,7 +247,13 @@ def health(db: Session = Depends(get_db)):
             for column in schema.get_columns("result_submissions")
         } if "result_submissions" in tables else set()
         missing = sorted(
-            {"result_reviews", "result_flags", "incidents"} - tables
+            {
+                "result_reviews",
+                "result_flags",
+                "incidents",
+                "notification_campaigns",
+            }
+            - tables
         )
         if "verification_status" not in result_columns:
             missing.append("result_submissions.verification_status")

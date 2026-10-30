@@ -95,6 +95,12 @@ const navigation = [
     available: true,
   },
   {
+    name: "Notification Centre",
+    path: "/admin/notifications",
+    icon: Bell,
+    available: true,
+  },
+  {
     name: "Analytics",
     path: "/analytics",
     icon: BarChart3,
@@ -166,11 +172,11 @@ export default function AppLayout() {
     // Administrator-only pages
     if (
       item.path === "/admin/elections" ||
-      item.path === "/admin/wards" ||
       item.path === "/admin/import" ||
       item.path === "/admin/polling-units" ||
       item.path === "/admin/users" ||
-      item.path === "/admin/assignments"
+      item.path === "/admin/assignments" ||
+      item.path === "/admin/notifications"
     ) {
       return user?.role === "admin";
     }

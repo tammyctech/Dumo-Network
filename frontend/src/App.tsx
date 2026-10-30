@@ -37,6 +37,7 @@ const WardManagement = lazy(() => import("./pages/WardManagement"));
 const PollingUnitManagement = lazy(() => import("./pages/PollingUnitManagement"));
 const UserManagement = lazy(() => import("./pages/UserManagement"));
 const AgentAssignments = lazy(() => import("./pages/AgentAssignments"));
+const AdminNotifications = lazy(() => import("./pages/AdminNotifications"));
 
 // Bulk Import Dashboard
 const BulkImport = lazy(() => import("./pages/BulkImport"));
@@ -163,6 +164,11 @@ export default function App() {
                 <Route
                   path="/admin/assignments"
                   element={<AgentAssignments />}
+                />
+
+                <Route
+                  path="/admin/notifications"
+                  element={<AdminNotifications />}
                 />
 
               </Route>
