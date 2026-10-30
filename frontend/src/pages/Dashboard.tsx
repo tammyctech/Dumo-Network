@@ -47,7 +47,6 @@ import {
 } from "recharts";
 
 import { useAuth } from "../context/AuthContext";
-import EnableNotifications from "../components/EnableNotifications";
 
 // ==========================================
 
@@ -560,9 +559,6 @@ const sortedLgaData = [...lgaData].sort(
   return (
 
     <div className="w-full min-w-0 max-w-full space-y-7 break-words">
-      {/* Agent notification preferences */}
-      {user?.role === "agent" && <EnableNotifications />}
-
       {/* =====================================
 
           HEADER
