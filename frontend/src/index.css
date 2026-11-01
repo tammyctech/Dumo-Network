@@ -273,113 +273,113 @@ html.dark #root {
   }
 }
 
-.dark .landing-page {
+.dark .light-page {
   color: #0f172a;
   background-color: #f5f7f6;
   color-scheme: light;
 }
 
-.dark .landing-page .bg-white {
+.dark .light-page .bg-white {
   background-color: #fff;
 }
 
-.dark .landing-page .bg-slate-50 {
+.dark .light-page .bg-slate-50 {
   background-color: #f8fafc;
 }
 
-.dark .landing-page .bg-slate-100 {
+.dark .light-page .bg-slate-100 {
   background-color: #f1f5f9;
 }
 
-.dark .landing-page .bg-slate-200 {
+.dark .light-page .bg-slate-200 {
   background-color: #e2e8f0;
 }
 
-.dark .landing-page .bg-emerald-50 {
+.dark .light-page .bg-emerald-50 {
   background-color: #ecfdf5;
 }
 
-.dark .landing-page .bg-emerald-100 {
+.dark .light-page .bg-emerald-100 {
   background-color: #d1fae5;
 }
 
-.dark .landing-page .bg-amber-50 {
+.dark .light-page .bg-amber-50 {
   background-color: #fffbeb;
 }
 
-.dark .landing-page .bg-red-50 {
+.dark .light-page .bg-red-50 {
   background-color: #fef2f2;
 }
 
-.dark .landing-page .text-slate-900,
-.dark .landing-page .text-gray-900 {
+.dark .light-page .text-slate-900,
+.dark .light-page .text-gray-900 {
   color: #0f172a;
 }
 
-.dark .landing-page .text-slate-800,
-.dark .landing-page .text-gray-800 {
+.dark .light-page .text-slate-800,
+.dark .light-page .text-gray-800 {
   color: #1e293b;
 }
 
-.dark .landing-page .text-slate-700,
-.dark .landing-page .text-gray-700 {
+.dark .light-page .text-slate-700,
+.dark .light-page .text-gray-700 {
   color: #334155;
 }
 
-.dark .landing-page .text-slate-600,
-.dark .landing-page .text-gray-600 {
+.dark .light-page .text-slate-600,
+.dark .light-page .text-gray-600 {
   color: #475569;
 }
 
-.dark .landing-page .text-slate-500,
-.dark .landing-page .text-gray-500 {
+.dark .light-page .text-slate-500,
+.dark .light-page .text-gray-500 {
   color: #64748b;
 }
 
-.dark .landing-page .text-slate-400,
-.dark .landing-page .text-gray-400 {
+.dark .light-page .text-slate-400,
+.dark .light-page .text-gray-400 {
   color: #94a3b8;
 }
 
-.dark .landing-page main h1,
-.dark .landing-page main h2,
-.dark .landing-page main h3,
-.dark .landing-page main h4 {
+.dark .light-page h1,
+.dark .light-page h2,
+.dark .light-page h3,
+.dark .light-page h4 {
   color: inherit;
 }
 
-.dark .landing-page #methodology h2 {
+.dark .light-page #methodology h2 {
   color: transparent;
 }
 
-.dark .landing-page .border-slate-100,
-.dark .landing-page .border-gray-100 {
+.dark .light-page .border-slate-100,
+.dark .light-page .border-gray-100 {
   border-color: #f1f5f9;
 }
 
-.dark .landing-page .border-slate-200,
-.dark .landing-page .border-gray-200 {
+.dark .light-page .border-slate-200,
+.dark .light-page .border-gray-200 {
   border-color: #e2e8f0;
 }
 
-.dark .landing-page .border-slate-300,
-.dark .landing-page .border-gray-300 {
+.dark .light-page .border-slate-300,
+.dark .light-page .border-gray-300 {
   border-color: #cbd5e1;
 }
 
-.dark .landing-page .border-emerald-200 {
+.dark .light-page .border-emerald-200 {
   border-color: #a7f3d0;
 }
 
-.dark .landing-page .border-blue-200 {
+.dark .light-page .border-blue-200 {
   border-color: #bfdbfe;
 }
 
-.dark .landing-page .border-amber-200 {
+.dark .light-page .border-amber-200 {
   border-color: #fde68a;
 }
 
-.dark .landing-page .border-red-200 {
+.dark .light-page .border-red-200 {
   border-color: #fecaca;
 }
 /* ==========================================

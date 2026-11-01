@@ -147,6 +147,7 @@ export default function AppLayout() {
   const { user, logout } = useAuth();
   const { pathname } = useLocation();
   const navigate = useNavigate();
+  const isDashboardPage = pathname === "/dashboard";
 
   useEffect(() => {
     function closeMenusOutside(event: PointerEvent) {
@@ -231,7 +232,11 @@ export default function AppLayout() {
   // ===================================================
 
   return (
-    <div className="min-h-screen bg-canvas dark:bg-slate-950">
+    <div
+      className={`min-h-screen bg-canvas ${
+        isDashboardPage ? "" : "dark:bg-slate-950"
+      }`}
+    >
 
       {/* MOBILE BACKDROP */}
 
@@ -429,7 +434,11 @@ export default function AppLayout() {
 
         {/* TOP HEADER */}
 
-        <header className="sticky top-0 z-30 flex h-[76px] shrink-0 items-center justify-between border-b border-slate-200/80 bg-white/95 px-4 backdrop-blur-xl dark:border-slate-800 dark:bg-slate-900/95 sm:px-6 lg:px-8">
+        <header
+          className={`sticky top-0 z-30 flex h-[76px] shrink-0 items-center justify-between border-b border-slate-200/80 bg-white/95 px-4 backdrop-blur-xl sm:px-6 lg:px-8 ${
+            isDashboardPage ? "" : "dark:border-slate-800 dark:bg-slate-900/95"
+          }`}
+        >
 
           {/* LEFT HEADER */}
 
@@ -635,7 +644,11 @@ export default function AppLayout() {
             PAGE CONTENT
         ================================================= */}
 
-        <main className="min-w-0 flex-1 px-4 py-7 sm:px-6 sm:py-8 lg:px-9 lg:py-9">
+        <main
+          className={`min-w-0 flex-1 px-4 py-7 sm:px-6 sm:py-8 lg:px-9 lg:py-9 ${
+            isDashboardPage ? "bg-canvas" : ""
+          }`}
+        >
 
           <div className="mx-auto w-full max-w-[1440px] min-w-0">
             <Outlet />
@@ -645,7 +658,11 @@ export default function AppLayout() {
 
         {/* FOOTER */}
 
-        <footer className="border-t border-slate-200/80 bg-white/80 px-4 py-4 text-center dark:border-slate-800 dark:bg-slate-900/80 sm:px-6">
+        <footer
+          className={`border-t border-slate-200/80 bg-white/80 px-4 py-4 text-center sm:px-6 ${
+            isDashboardPage ? "" : "dark:border-slate-800 dark:bg-slate-900/80"
+          }`}
+        >
 
           <p className="text-xs text-slate-400">
             © {CURRENT_YEAR} Dumo Network.
