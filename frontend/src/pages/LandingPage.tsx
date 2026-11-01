@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { RIVERS_2023_DEMO } from "../data/rivers2023Demo";
 import {
   Activity,
   ArrowRight,
@@ -81,9 +80,18 @@ type PublicOverview = {
   party_totals: PartyTotal[];
   lga_results: LgaResult[];
   updates: ElectionUpdate[];
-  is_demo?: boolean;
-  source_label?: string;
-  source_url?: string;
+};
+const EMPTY_OVERVIEW: PublicOverview = {
+  state: "Rivers",
+  data_type: "unofficial_agent_submitted",
+  election: null,
+  last_updated: null,
+  total_polling_units: 0,
+  submitted_polling_units: 0,
+  submission_coverage_percent: null,
+  party_totals: [],
+  lga_results: [],
+  updates: [],
 };
 type GeoFeature = {
   type: "Feature";
@@ -406,11 +414,9 @@ export default function LandingPage() {
     return () => controller.abort();
   }, [refreshKey]);
 
-  const displayOverview: PublicOverview =
-    overview?.party_totals.length
-      ? overview
-      : (RIVERS_2023_DEMO as PublicOverview);
+  const displayOverview = overview ?? EMPTY_OVERVIEW;
   const leadingParty = displayOverview.party_totals[0] || null;
+  const hasUploadedResults = displayOverview.submitted_polling_units > 0;
   const totalVotes =
     displayOverview.party_totals.reduce(
       (sum, party) => sum + party.votes,
@@ -418,19 +424,19 @@ export default function LandingPage() {
     );
 
   return (
-    <div className="min-h-screen bg-[#f5f7f6] text-slate-950">
-      <header className="absolute inset-x-0 top-0 z-40 border-b border-white/10">
-        <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-5 lg:px-8">
-          <Link to="/" className="flex items-center gap-3 text-white">
-            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500 shadow-lg shadow-emerald-950/30">
-              <Activity size={20} />
+    <div className="landing-page min-h-screen bg-[#f5f7f6] text-slate-950">
+      <header className="sticky top-0 z-40 border-b border-slate-200/80 bg-white/95 shadow-sm shadow-slate-900/[0.03] backdrop-blur-xl">
+        <div className="mx-auto flex h-[4.5rem] max-w-7xl items-center justify-between px-5 lg:px-8">
+          <Link to="/" className="flex items-center gap-3 text-slate-950">
+            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-700 text-white shadow-md shadow-emerald-950/15">
+              <Activity size={20} strokeWidth={2.5} />
             </span>
             <span>
-              <span className="block text-sm font-black tracking-wide">
+              <span className="block text-sm font-black tracking-[0.12em]">
                 DUMO NETWORK
               </span>
-              <span className="block text-[10px] uppercase tracking-[0.18em] text-emerald-300">
-                Election Intelligence
+              <span className="mt-0.5 block text-[9px] uppercase tracking-[0.2em] text-slate-500">
+                Election monitoring
               </span>
             </span>
           </Link>
@@ -438,25 +444,25 @@ export default function LandingPage() {
           <nav className="hidden items-center gap-8 md:flex">
             <a
               href="#results"
-              className="relative py-2 text-sm font-semibold text-slate-200 transition-colors duration-200 after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:origin-left after:scale-x-0 after:rounded-full after:bg-emerald-400 after:transition-transform after:duration-200 after:content-[''] hover:text-white hover:after:scale-x-100"
+              className="relative py-2 text-sm font-semibold text-slate-600 transition-colors duration-200 after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:origin-left after:scale-x-0 after:rounded-full after:bg-emerald-700 after:transition-transform after:duration-200 after:content-[''] hover:text-emerald-800 hover:after:scale-x-100"
             >
               Live results
             </a>
             <a
               href="#updates"
-              className="relative py-2 text-sm font-semibold text-slate-200 transition-colors duration-200 after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:origin-left after:scale-x-0 after:rounded-full after:bg-emerald-400 after:transition-transform after:duration-200 after:content-[''] hover:text-white hover:after:scale-x-100"
+              className="relative py-2 text-sm font-semibold text-slate-600 transition-colors duration-200 after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:origin-left after:scale-x-0 after:rounded-full after:bg-emerald-700 after:transition-transform after:duration-200 after:content-[''] hover:text-emerald-800 hover:after:scale-x-100"
             >
               Updates
             </a>
             <a
               href="#methodology"
-              className="relative py-2 text-sm font-semibold text-slate-200 transition-colors duration-200 after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:origin-left after:scale-x-0 after:rounded-full after:bg-emerald-400 after:transition-transform after:duration-200 after:content-[''] hover:text-white hover:after:scale-x-100"
+              className="relative py-2 text-sm font-semibold text-slate-600 transition-colors duration-200 after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:origin-left after:scale-x-0 after:rounded-full after:bg-emerald-700 after:transition-transform after:duration-200 after:content-[''] hover:text-emerald-800 hover:after:scale-x-100"
             >
               Methodology
             </a>
             <Link
               to="/login"
-              className="group inline-flex min-h-11 items-center gap-2 rounded-xl bg-emerald-400 px-4 text-sm font-black text-slate-950 shadow-lg shadow-emerald-950/25 transition duration-200 hover:-translate-y-0.5 hover:bg-emerald-300 hover:shadow-emerald-900/30 active:translate-y-0"
+              className="group inline-flex min-h-11 items-center gap-2 rounded-xl bg-emerald-700 px-4 text-sm font-bold text-white shadow-md shadow-emerald-950/15 transition duration-200 hover:-translate-y-0.5 hover:bg-emerald-800 active:translate-y-0"
             >
               <LogIn size={17} aria-hidden="true" />
               Monitor login
@@ -471,39 +477,41 @@ export default function LandingPage() {
           <button
             type="button"
             aria-label="Toggle navigation"
+            aria-expanded={mobileMenuOpen}
+            aria-controls="mobile-navigation"
             onClick={() => setMobileMenuOpen((value) => !value)}
-            className="rounded-xl border border-white/20 p-2.5 text-white md:hidden"
+            className="flex h-11 w-11 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-700 transition hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-800 md:hidden"
           >
             {mobileMenuOpen ? <X /> : <Menu />}
           </button>
         </div>
         {mobileMenuOpen && (
-          <nav className="border-t border-white/10 bg-slate-950 px-5 py-5 md:hidden">
-            <div className="flex flex-col gap-4 text-sm font-semibold text-white">
+          <nav id="mobile-navigation" className="border-t border-slate-200 bg-white px-5 py-5 shadow-lg md:hidden">
+            <div className="flex flex-col gap-2 text-sm font-semibold text-slate-700">
               <a
                 href="#results"
                 onClick={() => setMobileMenuOpen(false)}
-                className="rounded-lg px-3 py-3 transition hover:bg-white/10 hover:text-emerald-300"
+                className="rounded-lg px-3 py-3 transition hover:bg-emerald-50 hover:text-emerald-800"
               >
                 Live results
               </a>
               <a
                 href="#updates"
                 onClick={() => setMobileMenuOpen(false)}
-                className="rounded-lg px-3 py-3 transition hover:bg-white/10 hover:text-emerald-300"
+                className="rounded-lg px-3 py-3 transition hover:bg-emerald-50 hover:text-emerald-800"
               >
                 Updates
               </a>
               <a
                 href="#methodology"
                 onClick={() => setMobileMenuOpen(false)}
-                className="rounded-lg px-3 py-3 transition hover:bg-white/10 hover:text-emerald-300"
+                className="rounded-lg px-3 py-3 transition hover:bg-emerald-50 hover:text-emerald-800"
               >
                 Methodology
               </a>
               <Link
                 to="/login"
-                className="mt-2 inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-emerald-400 px-5 font-black text-slate-950 shadow-lg shadow-black/20 transition hover:bg-emerald-300"
+                className="mt-2 inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-emerald-700 px-5 font-bold text-white shadow-md transition hover:bg-emerald-800"
               >
                 <LogIn size={18} aria-hidden="true" />
                 Monitor login
@@ -515,40 +523,40 @@ export default function LandingPage() {
       </header>
 
       <main>
-        <section className="relative overflow-hidden bg-[#041713] pb-28 pt-36 text-white sm:pt-44">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_78%_20%,rgba(16,185,129,0.22),transparent_34%),radial-gradient(circle_at_12%_70%,rgba(14,116,144,0.16),transparent_30%)]" />
-          <div className="absolute inset-0 opacity-[0.045] [background-image:linear-gradient(rgba(255,255,255,.8)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.8)_1px,transparent_1px)] [background-size:48px_48px]" />
-          <div className="relative mx-auto grid max-w-7xl gap-14 px-5 lg:grid-cols-[1.15fr_0.85fr] lg:items-center lg:px-8">
+        <section className="relative isolate overflow-hidden border-b border-emerald-950/5 bg-[#f7f8f5] pb-16 pt-14 text-slate-950 sm:pb-20 sm:pt-20">
+          <div className="pointer-events-none absolute -right-36 -top-40 h-[34rem] w-[34rem] rounded-full border border-emerald-900/[0.06]" />
+          <div className="pointer-events-none absolute -right-16 -top-20 h-[25rem] w-[25rem] rounded-full border border-emerald-900/[0.06]" />
+          <div className="pointer-events-none absolute right-[8%] top-12 h-80 w-80 rounded-full bg-emerald-200/30 blur-3xl" />
+          <div className="relative mx-auto grid max-w-7xl gap-12 px-5 lg:grid-cols-[1.02fr_0.98fr] lg:items-center lg:gap-16 lg:px-8">
             <div>
-              <div className="inline-flex items-center gap-2 rounded-full border border-emerald-400/30 bg-emerald-400/10 px-4 py-2 text-xs font-bold uppercase tracking-[0.16em] text-emerald-300">
-                <Radio size={14} className="animate-pulse" />
-                {displayOverview.is_demo
-                  ? "Historical demo data"
-                  : "Rivers State live monitor"}
+              <div className="inline-flex items-center gap-2.5 rounded-full border border-slate-200 bg-white/80 px-3.5 py-2 text-[10px] font-bold uppercase tracking-[0.15em] text-slate-600 shadow-sm">
+                <span className={`relative flex h-2 w-2 ${loading ? "animate-pulse" : ""}`}>
+                  <span className="absolute inline-flex h-full w-full rounded-full bg-emerald-600 opacity-40" />
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-600" />
+                </span>
+                {loading ? "Loading public results · Rivers State" : "Public results · Rivers State"}
               </div>
-              <h1 className="mt-7 max-w-3xl text-5xl font-black leading-[1.04] tracking-[-0.04em] sm:text-6xl lg:text-7xl">
-                Every report.
-                <span className="block text-emerald-400">Every LGA.</span>
-                One public view.
+              <h1 className="mt-7 max-w-2xl text-[2.8rem] font-semibold leading-[1.04] tracking-[-0.055em] text-slate-950 sm:text-6xl lg:text-[4.4rem]">
+                See what’s
+                <span className="block text-emerald-800">happening at</span>
+                <span className="block">the polling unit.</span>
               </h1>
-              <p className="mt-7 max-w-2xl text-lg leading-8 text-slate-300">
-                {displayOverview.is_demo
-                  ? "Explore published 2023 Rivers State governorship results by LGA while testing the public results experience."
-                  : "Follow unofficial, agent-submitted election reports across Rivers State as they arrive from monitored polling units."}
+              <p className="mt-6 max-w-xl text-base leading-7 text-slate-600 sm:text-lg sm:leading-8">
+                "Follow unofficial reports submitted by assigned monitors across all 23 local government areas."
               </p>
-              <div className="mt-9 flex flex-wrap gap-4">
+              <div className="mt-8 flex flex-wrap gap-3">
                 <a
                   href="#results"
-                  className="inline-flex items-center gap-2 rounded-full bg-emerald-500 px-6 py-3.5 font-bold text-slate-950 transition hover:bg-emerald-400"
+                  className="group inline-flex min-h-12 items-center gap-2 rounded-lg bg-emerald-800 px-5 py-3 text-sm font-semibold text-white shadow-md shadow-emerald-950/10 transition duration-200 hover:-translate-y-0.5 hover:bg-emerald-900 active:translate-y-0"
                 >
-                  Explore results map <ArrowRight size={18} />
+                  Explore the results <ArrowRight size={18} className="transition-transform group-hover:translate-x-1" />
                 </a>
                 <Link
                   to="/login"
-                  className="group inline-flex min-h-13 items-center gap-2 rounded-full border border-white/20 bg-white/[0.06] px-6 py-3.5 font-bold text-white shadow-lg shadow-black/10 backdrop-blur-sm transition duration-200 hover:-translate-y-0.5 hover:border-emerald-300/60 hover:bg-white/10 active:translate-y-0"
+                  className="group inline-flex min-h-12 items-center gap-2 rounded-lg border border-slate-300 bg-white/70 px-5 py-3 text-sm font-semibold text-slate-800 transition duration-200 hover:-translate-y-0.5 hover:border-emerald-700/40 hover:bg-white active:translate-y-0"
                 >
                   <LogIn size={18} aria-hidden="true" />
-                  Monitor login
+                  Monitor sign in
                   <ArrowRight
                     size={17}
                     aria-hidden="true"
@@ -556,101 +564,108 @@ export default function LandingPage() {
                   />
                 </Link>
               </div>
-              <div className="mt-10 flex items-start gap-3 border-l-2 border-amber-400 pl-4 text-sm text-slate-300">
-                <ShieldCheck size={18} className="mt-0.5 shrink-0 text-amber-300" />
+              <div className="mt-8 flex max-w-xl items-start gap-3 border-l-2 border-amber-500 pl-4 text-sm leading-6 text-slate-600">
+                <ShieldCheck size={18} className="mt-0.5 shrink-0 text-amber-700" aria-hidden="true" />
                 <p>
-                  {displayOverview.is_demo
-                    ? "Historical demonstration only — this is not a live election feed. Dumo Network does not declare election winners."
-                    : "Unofficial — Agent-Submitted Data. Dumo Network does not declare election winners; only authorized electoral bodies do."}
+                  Unofficial — Agent-Submitted Data. Dumo Network does not
+                  declare election winners; only authorized electoral bodies
+                  do.
                 </p>
               </div>
             </div>
 
-            <div className="rounded-[2rem] border border-white/10 bg-white/[0.07] p-5 shadow-2xl backdrop-blur-xl sm:p-7">
-              <div className="flex items-center justify-between">
+            <div className="relative rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_24px_70px_-35px_rgba(15,23,42,0.24)] sm:p-7">
+              <div className="relative flex items-start justify-between gap-4">
                 <div>
-                  <p className="text-xs font-bold uppercase tracking-[0.18em] text-emerald-300">
-                    {displayOverview.is_demo ? "Historical test dataset" : "Reporting now"}
+                  <p className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.18em] text-emerald-800">
+                    <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-50"><Activity size={14} aria-hidden="true" /></span>
+                    {displayOverview.election ? "Current election" : "Election status"}
                   </p>
-                  <h2 className="mt-2 text-xl font-bold">
-                    {displayOverview.election?.name || "Awaiting active election"}
+                  <h2 className="mt-3 max-w-sm text-lg font-bold leading-snug text-slate-950 sm:text-xl">
+                    {displayOverview.election?.name || "No election data available"}
                   </h2>
                 </div>
                 <button
                   type="button"
                   onClick={() => setRefreshKey((value) => value + 1)}
-                  aria-label="Refresh live data"
-                  className="rounded-xl border border-white/10 p-3 text-slate-300 hover:bg-white/10"
+                  aria-label="Refresh election data"
+                  title="Refresh election data"
+                  disabled={loading}
+                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 transition hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-800 disabled:cursor-wait disabled:opacity-60"
                 >
                   <RefreshCw size={18} className={loading ? "animate-spin" : ""} />
                 </button>
               </div>
-              <div className="mt-7 grid grid-cols-2 gap-3">
-                <div className="rounded-2xl bg-black/20 p-4">
-                  <p className="text-xs text-slate-400">
-                    {displayOverview.is_demo ? "LGAs included" : "Reports received"}
+              <div className="relative mt-6 grid grid-cols-2 gap-3">
+                <div className="rounded-xl border border-slate-200/80 bg-[#f8faf8] p-4 transition hover:border-emerald-200">
+                  <p className="text-[11px] font-medium text-slate-500">
+                    Reports received
                   </p>
-                  <p className="mt-2 text-3xl font-black">
-                    {formatNumber(displayOverview.submitted_polling_units)}
-                  </p>
-                </div>
-                <div className="rounded-2xl bg-black/20 p-4">
-                  <p className="text-xs text-slate-400">
-                    {displayOverview.is_demo ? "LGA coverage" : "State coverage"}
-                  </p>
-                  <p className="mt-2 text-3xl font-black">
-                    {displayOverview.submission_coverage_percent?.toFixed(1) || "0.0"}%
+                  <p className="mt-2 text-2xl font-bold tabular-nums tracking-tight text-slate-950 sm:text-3xl">
+                    {displayOverview.election
+                      ? formatNumber(displayOverview.submitted_polling_units)
+                      : "—"}
                   </p>
                 </div>
-                <div className="rounded-2xl bg-black/20 p-4">
-                  <p className="text-xs text-slate-400">Reported votes</p>
-                  <p className="mt-2 text-3xl font-black">{formatNumber(totalVotes)}</p>
+                <div className="rounded-xl border border-slate-200/80 bg-[#f8faf8] p-4 transition hover:border-emerald-200">
+                  <p className="text-[11px] font-medium text-slate-500">
+                    State coverage
+                  </p>
+                  <p className="mt-2 text-2xl font-bold tabular-nums tracking-tight text-slate-950 sm:text-3xl">
+                    {displayOverview.submission_coverage_percent == null
+                      ? "—"
+                      : `${displayOverview.submission_coverage_percent.toFixed(1)}%`}
+                  </p>
                 </div>
-                <div className="rounded-2xl bg-black/20 p-4">
-                  <p className="text-xs text-slate-400">Current statewide lead</p>
-                  <p className="mt-2 truncate text-3xl font-black">
-                    {leadingParty?.party || "—"}
+                <div className="rounded-xl border border-slate-200/80 bg-[#f8faf8] p-4 transition hover:border-emerald-200">
+                  <p className="text-[11px] font-medium text-slate-500">Reported votes</p>
+                  <p className="mt-2 text-2xl font-bold tabular-nums tracking-tight text-slate-950 sm:text-3xl">
+                    {hasUploadedResults ? formatNumber(totalVotes) : "—"}
+                  </p>
+                </div>
+                <div className="rounded-xl border border-slate-200/80 bg-[#f8faf8] p-4 transition hover:border-emerald-200">
+                  <p className="text-[11px] font-medium text-slate-500">Current statewide lead</p>
+                  <p className="mt-2 truncate text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl">
+                    {hasUploadedResults && leadingParty ? leadingParty.party : "—"}
                   </p>
                 </div>
               </div>
-              <p className="mt-5 flex items-center gap-2 text-xs text-slate-400">
-                <Clock3 size={14} /> {displayOverview.is_demo ? "Collation date" : "Last update"}: {formatDate(displayOverview.last_updated)}
+              <p className="relative mt-5 flex items-center gap-2 border-t border-slate-200 pt-4 text-xs text-slate-500">
+                <Clock3 size={14} /> Last update: {formatDate(displayOverview.last_updated)}
               </p>
             </div>
           </div>
+          <div className="relative mx-auto mt-14 grid max-w-7xl grid-cols-1 gap-3 px-5 sm:grid-cols-3 lg:px-8">
+            {[
+              { label: "Geographic coverage", value: "23 local government areas", icon: MapPin },
+              { label: "Reporting model", value: "Polling-unit submissions", icon: Radio },
+              { label: "Public status", value: "Provisional & transparent", icon: ShieldCheck },
+            ].map((item) => {
+              const Icon = item.icon;
+              return (
+                <div key={item.label} className="flex items-center gap-3 rounded-xl border border-slate-200/80 bg-white/75 px-4 py-3 shadow-sm shadow-slate-900/[0.02]">
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-50 text-emerald-800">
+                    <Icon size={17} aria-hidden="true" />
+                  </span>
+                  <span>
+                    <span className="block text-[10px] font-semibold uppercase tracking-[0.13em] text-slate-500">{item.label}</span>
+                    <span className="mt-0.5 block text-sm font-semibold text-slate-800">{item.value}</span>
+                  </span>
+                </div>
+              );
+            })}
+          </div>
         </section>
 
-        <section id="results" className="scroll-mt-6 py-24">
+        <section id="results" className="scroll-mt-24 bg-[#f5f7f6] py-20 sm:py-24">
           <div className="mx-auto max-w-7xl px-5 lg:px-8">
-            {displayOverview.is_demo && (
-              <div className="mb-10 flex flex-col gap-4 rounded-2xl border border-amber-300 bg-amber-50 p-5 text-amber-950 shadow-sm sm:flex-row sm:items-center sm:justify-between">
-                <div className="flex items-start gap-3">
-                  <Info className="mt-0.5 shrink-0 text-amber-700" size={20} />
-                  <p className="text-sm leading-6">
-                    <strong>Historical demonstration data.</strong> This view uses
-                    the published 2023 Rivers State governorship LGA collation
-                    breakdown to test the interface. It is not a live election.
-                  </p>
-                </div>
-                <a
-                  href={displayOverview.source_url}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="shrink-0 font-bold text-amber-900 underline decoration-amber-500 underline-offset-4 hover:text-amber-700"
-                >
-                  View data source <ArrowRight size={14} className="inline" />
-                </a>
-              </div>
-            )}
             <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
               <div>
                 <p className="text-xs font-black uppercase tracking-[0.2em] text-emerald-700">
-                  {displayOverview.is_demo ? "2023 LGA picture" : "Live LGA picture"}
+                  Rivers State · LGA overview
                 </p>
                 <h2 className="mt-3 max-w-3xl text-4xl font-black tracking-[-0.035em] text-slate-950 sm:text-5xl">
-                  {displayOverview.is_demo
-                    ? "Explore the published LGA collation breakdown."
-                    : "See where submitted results currently lead."}
+                  See where submitted results currently lead.
                 </h2>
               </div>
               <div className="flex max-w-xl items-start gap-3 rounded-2xl border border-emerald-200 bg-white p-4 text-base leading-7 text-slate-800 shadow-sm">
@@ -658,11 +673,7 @@ export default function LandingPage() {
                   <Info size={18} aria-hidden="true" />
                 </span>
                 <p>
-                  {displayOverview.is_demo ? (
-                    <>PDP led the published 2023 collation in all 23 LGAs, so the map correctly uses one party color. <strong>Darker areas indicate a stronger winning vote share</strong>; party totals below use distinct colors.</>
-                  ) : (
-                    <>Map colors show the <strong>party currently leading</strong>{" "}from reports received in each LGA. Always check the{" "}<strong>reporting coverage percentage</strong> before interpreting the result.</>
-                  )}
+                  Map colors show the <strong>party currently leading</strong>{" "}from reports received in each LGA. Always check the{" "}<strong>reporting coverage percentage</strong> before interpreting the result.
                 </p>
               </div>
             </div>
@@ -673,7 +684,7 @@ export default function LandingPage() {
               </div>
             )}
 
-            <div className="mt-10">
+            <div className="mt-10 rounded-[1.75rem] border border-slate-200/80 bg-white p-3 shadow-xl shadow-slate-900/[0.04] sm:p-5">
               <MapPanel
                 geoJson={geoJson}
                 lgaResults={displayOverview.lga_results}
@@ -693,71 +704,105 @@ export default function LandingPage() {
           </div>
         </section>
 
-        <section className="bg-white py-24">
+        <section className="border-y border-slate-200/70 bg-white py-20 sm:py-24">
           <div className="mx-auto max-w-7xl px-5 lg:px-8">
-            <div className="grid gap-12 lg:grid-cols-[0.75fr_1.25fr]">
-              <div>
-                <p className="text-xs font-black uppercase tracking-[0.2em] text-emerald-700">Statewide totals</p>
-                <h2 className="mt-3 text-4xl font-black tracking-[-0.035em] text-slate-950">Reported vote position</h2>
-                <p className="mt-5 text-sm leading-7 text-slate-600">
-                  {displayOverview.is_demo
-                    ? "Totals are calculated from the published LGA collation breakdown and are shown solely for interface testing."
-                    : "Totals update as verified monitors submit polling-unit records. These figures remain provisional and unofficial."}
+            <div className="grid gap-10 lg:grid-cols-[0.72fr_1.28fr] lg:gap-16">
+              <div className="lg:sticky lg:top-28 lg:self-start">
+                <p className="flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.2em] text-emerald-700"><BarChart3 size={15} /> Statewide totals</p>
+                <h2 className="mt-4 text-4xl font-black leading-[1.08] tracking-[-0.045em] text-slate-950 sm:text-5xl">Reported vote position</h2>
+                <p className="mt-5 max-w-md text-sm leading-7 text-slate-600">
+                  Totals update as monitors submit polling-unit records. These figures remain provisional and unofficial.
                 </p>
+                <div className="mt-6 flex items-start gap-3 rounded-xl border border-emerald-100 bg-emerald-50/70 p-4 text-sm leading-6 text-emerald-950">
+                  <Info size={17} className="mt-0.5 shrink-0 text-emerald-700" aria-hidden="true" />
+                  <p>Bars compare each party's reported votes with the current highest total. They are not a projection or declaration.</p>
+                </div>
               </div>
-              <div className="space-y-5">
+              <div className="rounded-3xl border border-slate-200 bg-slate-50/70 p-5 sm:p-8">
+                <div className="mb-7 flex items-center justify-between border-b border-slate-200 pb-4">
+                  <div>
+                    <p className="text-sm font-bold text-slate-900">Party totals</p>
+                    <p className="mt-1 text-xs text-slate-500">{displayOverview.party_totals.length} reported parties</p>
+                  </div>
+                  <span className="rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-amber-800">Unofficial</span>
+                </div>
+                <div className="space-y-6">
                 {displayOverview.party_totals.slice(0, 7).map((party, index) => {
                   const maximum = displayOverview.party_totals[0]?.votes || 1;
+                  const share = totalVotes > 0 ? (party.votes / totalVotes) * 100 : 0;
                   return (
                     <div key={party.party}>
                       <div className="mb-2 flex items-end justify-between gap-4">
-                        <div className="flex items-center gap-3">
-                          <span className="text-xs font-black text-slate-400">{String(index + 1).padStart(2, "0")}</span>
+                        <div className="flex min-w-0 items-center gap-3">
+                          <span className="w-5 text-[10px] font-black text-slate-400">{String(index + 1).padStart(2, "0")}</span>
+                          <span className="h-3 w-3 shrink-0 rounded-full ring-4 ring-white" style={{ backgroundColor: partyColor(party.party) }} />
                           <span className="font-black text-slate-900">{party.party}</span>
                         </div>
-                        <span className="font-black text-slate-950">{formatNumber(party.votes)}</span>
+                        <div className="shrink-0 text-right">
+                          <span className="font-black tabular-nums text-slate-950">{formatNumber(party.votes)}</span>
+                          <span className="ml-2 text-xs font-semibold tabular-nums text-slate-500">{share.toFixed(1)}%</span>
+                        </div>
                       </div>
-                      <div className="h-3 overflow-hidden rounded-full bg-slate-100">
-                        <div className="h-full rounded-full" style={{ width: `${(party.votes / maximum) * 100}%`, backgroundColor: partyColor(party.party) }} />
+                      <div
+                        className="ml-8 h-2.5 overflow-hidden rounded-full bg-slate-200/80"
+                        role="progressbar"
+                        aria-label={`${party.party} reported votes compared with the current highest total`}
+                        aria-valuemin={0}
+                        aria-valuemax={100}
+                        aria-valuenow={Math.round((party.votes / maximum) * 100)}
+                      >
+                        <div className="h-full rounded-full transition-[width] duration-700" style={{ width: `${(party.votes / maximum) * 100}%`, backgroundColor: partyColor(party.party) }} />
                       </div>
                     </div>
                   );
                 })}
                 {!displayOverview.party_totals.length && (
-                  <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-8 text-center text-slate-500">Party totals will appear after the first result submission.</div>
+                  <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-center">
+                    <BarChart3 className="mx-auto text-slate-400" size={24} aria-hidden="true" />
+                    <p className="mt-3 font-semibold text-slate-700">No totals to display yet</p>
+                    <p className="mt-1 text-sm text-slate-500">Party totals will appear after the first result submission.</p>
+                  </div>
                 )}
+                </div>
               </div>
             </div>
           </div>
         </section>
 
-        <section id="updates" className="scroll-mt-8 bg-slate-950 py-24 text-white">
+        <section id="updates" className="scroll-mt-24 border-y border-slate-200/80 bg-[#f2f5f2] py-20 text-slate-950 sm:py-24">
           <div className="mx-auto max-w-7xl px-5 lg:px-8">
             <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
               <div>
-                <p className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.2em] text-emerald-400"><Radio size={14} /> {displayOverview.is_demo ? "Historical results" : "Election updates"}</p>
-                <h2 className="mt-3 text-4xl font-black tracking-[-0.035em]">{displayOverview.is_demo ? "2023 LGA collation results" : "Latest field reports"}</h2>
+                <p className="flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.2em] text-emerald-800"><Radio size={14} /> Election updates</p>
+                <h2 className="mt-3 text-4xl font-bold tracking-[-0.045em] text-slate-950 sm:text-5xl">Latest field reports</h2>
               </div>
-              <p className="max-w-lg text-sm leading-6 text-slate-400">{displayOverview.is_demo ? "A test presentation of published historical LGA-level results. No live submissions are represented." : "A privacy-safe stream of the newest polling-unit submissions. Agent identities are not published."}</p>
+              <p className="max-w-lg text-sm leading-6 text-slate-600">A privacy-safe stream of the newest polling-unit submissions. Agent identities are not published.</p>
             </div>
             <div className="mt-10 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
               {displayOverview.updates.slice(0, 9).map((update) => (
-                <article key={update.id} className="group rounded-2xl border border-white/10 bg-white/[0.05] p-5 transition hover:-translate-y-1 hover:border-emerald-400/40 hover:bg-white/[0.08]">
-                  <div className="flex items-center justify-between text-xs text-slate-400">
-                    <span className="rounded-full bg-emerald-400/10 px-2.5 py-1 font-bold text-emerald-300">{update.lga}</span>
+                <article key={update.id} className="group rounded-xl border border-slate-200 bg-white p-5 shadow-sm shadow-slate-900/[0.03] transition duration-200 hover:-translate-y-1 hover:border-emerald-300 hover:shadow-lg hover:shadow-emerald-950/[0.06]">
+                  <div className="flex items-center justify-between gap-3 text-xs text-slate-500">
+                    <span className="rounded-full bg-emerald-50 px-2.5 py-1 font-bold text-emerald-800">{update.lga}</span>
                     <time>{formatDate(update.submitted_at)}</time>
                   </div>
-                  <h3 className="mt-5 text-lg font-bold">{displayOverview.is_demo ? update.polling_unit_name : `Result received from ${update.polling_unit_name}`}</h3>
-                  <p className="mt-2 text-sm text-slate-400">{displayOverview.is_demo ? `${update.ward} · Historical dataset` : `${update.ward} ward · ${update.polling_unit_code}`}</p>
-                  <div className="mt-5 flex items-center justify-between border-t border-white/10 pt-4">
-                    <span className="text-xs text-slate-400">{displayOverview.is_demo ? "Collation leader" : "Reported leader"}</span>
-                    <span className="flex items-center gap-2 font-black">
+                  <h3 className="mt-5 text-lg font-bold leading-snug text-slate-900">Result received from {update.polling_unit_name}</h3>
+                  <p className="mt-2 text-sm text-slate-600">{update.ward} ward · {update.polling_unit_code}</p>
+                  <div className="mt-5 flex items-center justify-between border-t border-slate-100 pt-4">
+                    <span className="text-xs text-slate-500">Reported leader</span>
+                    <span className="flex items-center gap-2 font-bold text-slate-800">
                       <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: partyColor(update.leading_party?.party) }} />
                       {update.leading_party?.party || "Pending totals"}
                     </span>
                   </div>
                 </article>
               ))}
+              {!displayOverview.updates.length && (
+                <div className="col-span-full rounded-2xl border border-dashed border-slate-300 bg-white/70 px-6 py-12 text-center">
+                  <Radio className="mx-auto text-slate-400" size={25} aria-hidden="true" />
+                  <p className="mt-4 font-semibold text-slate-800">No field reports yet</p>
+                  <p className="mx-auto mt-1 max-w-md text-sm leading-6 text-slate-500">New polling-unit submissions will appear here when reporting begins.</p>
+                </div>
+              )}
             </div>
           </div>
         </section>

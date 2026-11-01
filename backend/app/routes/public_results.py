@@ -21,7 +21,7 @@ def public_election_overview(db: Session = Depends(get_db)):
     election = db.scalar(
         select(Election)
         .where(Election.state == "Rivers")
-        .order_by(Election.election_date.desc(), Election.id.desc())
+        .order_by(Election.id.desc())
         .limit(1)
     )
 

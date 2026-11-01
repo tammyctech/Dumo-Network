@@ -24,10 +24,6 @@ import {
 
   CartesianGrid,
 
-  Cell,
-
-  Legend,
-
   ResponsiveContainer,
 
   Tooltip,
@@ -278,9 +274,8 @@ description,
 
         </div>
 
-        <div className="shrink-0 rounded-xl bg-emerald-50 p-3 text-emerald-700 ring-1 ring-emerald-100 transition group-hover:bg-emerald-100">
-
-          <Icon size={22} />
+        <div className="shrink-0 rounded-xl bg-slate-100 p-3 text-slate-600 ring-1 ring-slate-200 transition group-hover:bg-slate-200">
+          <Icon size={21} />
 
         </div>
 
@@ -618,9 +613,9 @@ const workflowUnavailableMessage = statistics?.election
 
         <div>
 
-          <div className="flex items-center gap-2 text-emerald-700">
+          <div className="flex items-center gap-2 text-slate-500">
 
-            <Activity size={16} />
+            <Activity size={16} className="text-emerald-700" />
 
             <span className="text-[11px] font-bold uppercase tracking-[0.16em]">
 
@@ -630,7 +625,7 @@ const workflowUnavailableMessage = statistics?.election
 
           </div>
 
-          <h1 className="mt-2 text-[26px] font-semibold leading-tight tracking-tight text-slate-950 sm:text-3xl">
+          <h1 className="mt-2 text-[26px] font-semibold leading-tight tracking-[-0.035em] text-slate-950 sm:text-3xl">
 
             Election Monitoring Dashboard
 
@@ -676,7 +671,7 @@ const workflowUnavailableMessage = statistics?.election
 
       ===================================== */}
 
-      <div className="rounded-2xl border border-amber-200/80 bg-amber-50/80 p-4 sm:p-5">
+      <div className="rounded-xl border border-slate-200 bg-white p-4 sm:p-5">
 
         <div className="flex items-start gap-3">
 
@@ -690,13 +685,13 @@ const workflowUnavailableMessage = statistics?.election
 
           <div>
 
-            <h2 className="font-bold text-amber-900">
+            <h2 className="font-bold text-slate-900">
 
               Unofficial — Agent-Submitted Data
 
             </h2>
 
-            <p className="mt-2 text-sm leading-6 text-amber-800">
+            <p className="mt-2 text-sm leading-6 text-slate-600">
 
               These statistics are compiled from submissions
 
@@ -725,7 +720,7 @@ const workflowUnavailableMessage = statistics?.election
 
           role="alert"
 
-          className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700"
+          className="rounded-xl border border-red-200 bg-red-50/70 p-4 text-sm text-red-800"
 
         >
 
@@ -782,7 +777,7 @@ const workflowUnavailableMessage = statistics?.election
 
                     size={19}
 
-                    className="text-emerald-600"
+                    className="text-slate-500"
 
                   />
 
@@ -894,15 +889,15 @@ const workflowUnavailableMessage = statistics?.election
 
           {!statistics.election && (
 
-            <div className="rounded-xl border border-blue-200 bg-blue-50 p-5">
+            <div className="rounded-xl border border-slate-200 bg-slate-50 p-5">
 
-              <p className="font-semibold text-blue-900">
+              <p className="font-semibold text-slate-800">
 
                 No election has been created yet.
 
               </p>
 
-              <p className="mt-2 text-sm text-blue-800">
+              <p className="mt-2 text-sm text-slate-600">
 
                 An administrator must create a Rivers State
 
@@ -919,7 +914,7 @@ const workflowUnavailableMessage = statistics?.election
           <section className="grid min-w-0 gap-5 xl:grid-cols-2">
             <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm sm:p-6">
               <div className="flex items-start gap-3">
-                <span className="rounded-xl bg-amber-50 p-2.5 text-amber-700">
+                <span className="rounded-xl bg-slate-100 p-2.5 text-slate-600">
                   <AlertCircle size={19} />
                 </span>
                 <div>
@@ -945,7 +940,7 @@ const workflowUnavailableMessage = statistics?.election
                             ? "/admin/assignments"
                             : "/agent-results"
                         }
-                        className="flex min-h-11 items-center justify-between gap-3 rounded-xl border border-amber-200 bg-amber-50/70 px-4 py-3 text-sm text-amber-950 hover:bg-amber-50"
+                        className="flex min-h-11 items-center justify-between gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 transition hover:border-amber-300 hover:bg-amber-50/60"
                       >
                         <span>No polling units are assigned for this election</span>
                         <ArrowRight size={17} className="shrink-0" />
@@ -958,7 +953,7 @@ const workflowUnavailableMessage = statistics?.election
                             ? "/admin/assignments"
                             : "/agent-results"
                         }
-                        className="flex min-h-11 items-center justify-between gap-3 rounded-xl border border-amber-200 bg-amber-50/70 px-4 py-3 text-sm text-amber-950 hover:bg-amber-50"
+                        className="flex min-h-11 items-center justify-between gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 transition hover:border-amber-300 hover:bg-amber-50/60"
                       >
                         <span>
                           <strong>{formatNumber(missingAssignedUnits)}</strong>{" "}
@@ -971,7 +966,7 @@ const workflowUnavailableMessage = statistics?.election
                       statistics.active_flags > 0 && (
                         <Link
                           to="/results"
-                          className="flex min-h-11 items-center justify-between gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-900 hover:bg-red-100"
+                          className="flex min-h-11 items-center justify-between gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 transition hover:border-red-300 hover:bg-red-50/60"
                         >
                           <span>
                             <strong>{formatNumber(statistics.active_flags)}</strong>{" "}
@@ -984,7 +979,7 @@ const workflowUnavailableMessage = statistics?.election
                       statistics.open_incidents > 0 && (
                         <Link
                           to="/incidents"
-                          className="flex min-h-11 items-center justify-between gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-900 hover:bg-red-100"
+                          className="flex min-h-11 items-center justify-between gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 transition hover:border-red-300 hover:bg-red-50/60"
                         >
                           <span>
                             <strong>{formatNumber(statistics.open_incidents)}</strong>{" "}
@@ -998,7 +993,7 @@ const workflowUnavailableMessage = statistics?.election
                       alertsAreAvailable &&
                       statistics.active_flags === 0 &&
                       statistics.open_incidents === 0 && (
-                        <p className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-900">
+                        <p className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700">
                           No outstanding alerts in the current monitoring data.
                         </p>
                       )}
@@ -1031,25 +1026,25 @@ const workflowUnavailableMessage = statistics?.election
                   <>
                     <Link
                       to="/admin/elections"
-                      className="flex min-h-12 items-center justify-between gap-2 rounded-xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-700 hover:border-emerald-300 hover:bg-emerald-50"
+                      className="flex min-h-12 items-center justify-between gap-2 rounded-xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50"
                     >
                       Manage elections <ArrowRight size={16} />
                     </Link>
                     <Link
                       to="/admin/assignments"
-                      className="flex min-h-12 items-center justify-between gap-2 rounded-xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-700 hover:border-emerald-300 hover:bg-emerald-50"
+                      className="flex min-h-12 items-center justify-between gap-2 rounded-xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50"
                     >
                       Assign agents <ArrowRight size={16} />
                     </Link>
                     <Link
                       to="/results"
-                      className="flex min-h-12 items-center justify-between gap-2 rounded-xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-700 hover:border-emerald-300 hover:bg-emerald-50"
+                      className="flex min-h-12 items-center justify-between gap-2 rounded-xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50"
                     >
                       Review submissions <ArrowRight size={16} />
                     </Link>
                     <Link
                       to="/admin/notifications"
-                      className="flex min-h-12 items-center justify-between gap-2 rounded-xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-700 hover:border-emerald-300 hover:bg-emerald-50"
+                      className="flex min-h-12 items-center justify-between gap-2 rounded-xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50"
                     >
                       Notification centre <ArrowRight size={16} />
                     </Link>
@@ -1058,13 +1053,13 @@ const workflowUnavailableMessage = statistics?.election
                   <>
                     <Link
                       to="/agent-results"
-                      className="flex min-h-12 items-center justify-between gap-2 rounded-xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-700 hover:border-emerald-300 hover:bg-emerald-50"
+                      className="flex min-h-12 items-center justify-between gap-2 rounded-xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50"
                     >
                       Submit a result <ArrowRight size={16} />
                     </Link>
                     <Link
                       to="/incidents"
-                      className="flex min-h-12 items-center justify-between gap-2 rounded-xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-700 hover:border-emerald-300 hover:bg-emerald-50"
+                      className="flex min-h-12 items-center justify-between gap-2 rounded-xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50"
                     >
                       Report an incident <ArrowRight size={16} />
                     </Link>
@@ -1072,7 +1067,7 @@ const workflowUnavailableMessage = statistics?.election
                 ) : null}
                 <Link
                   to="/analytics"
-                  className="flex min-h-12 items-center justify-between gap-2 rounded-xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-700 hover:border-emerald-300 hover:bg-emerald-50"
+                  className="flex min-h-12 items-center justify-between gap-2 rounded-xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50"
                 >
                   View analytics <ArrowRight size={16} />
                 </Link>
@@ -1095,7 +1090,7 @@ const workflowUnavailableMessage = statistics?.election
               {(user?.role === "admin" || user?.role === "agent") && (
                 <Link
                   to="/results"
-                  className="inline-flex min-h-11 items-center gap-2 rounded-lg px-3 text-sm font-semibold text-emerald-800 hover:bg-emerald-50"
+                  className="inline-flex min-h-11 items-center gap-2 rounded-lg px-3 text-sm font-semibold text-slate-700 hover:bg-slate-100"
                 >
                   View results <ArrowRight size={16} />
                 </Link>
@@ -1113,7 +1108,7 @@ const workflowUnavailableMessage = statistics?.election
                     className="flex flex-wrap items-center justify-between gap-3 py-4 first:pt-2 last:pb-2"
                   >
                     <div className="flex min-w-0 items-start gap-3">
-                      <span className="mt-0.5 rounded-lg bg-emerald-50 p-2 text-emerald-700">
+                      <span className="mt-0.5 rounded-lg bg-slate-100 p-2 text-slate-600">
                         <ClipboardList size={17} />
                       </span>
                       <div className="min-w-0">
@@ -1365,7 +1360,7 @@ const workflowUnavailableMessage = statistics?.election
                 )}
               >
                 <div
-                  className="h-full rounded-full bg-emerald-500 transition-all duration-500"
+                  className="h-full rounded-full bg-emerald-700 transition-all duration-500"
                   style={{
                     width: `${Math.min(100, Math.max(0, statistics.submission_coverage_percent))}%`,
                   }}
@@ -1387,7 +1382,7 @@ const workflowUnavailableMessage = statistics?.election
 
               </span>
 
-              <span className="font-bold text-emerald-700">
+              <span className="font-semibold text-slate-700">
 
                 {formatPercent(
 
@@ -1407,13 +1402,7 @@ const workflowUnavailableMessage = statistics?.election
 
             <div className="flex items-center gap-3">
 
-              <BarChart3
-
-                size={21}
-
-                className="text-emerald-600"
-
-              />
+              <BarChart3 size={21} className="text-slate-500" />
 
               <h2 className="text-lg font-bold text-slate-900">
 
@@ -1463,20 +1452,15 @@ const workflowUnavailableMessage = statistics?.election
 
                   >
 
-                    <CartesianGrid
+                    <CartesianGrid stroke="#e2e8f0" strokeDasharray="3 3" vertical={false} />
 
-                      strokeDasharray="3 3"
-
-                      vertical={false}
-
-                    />
-
-                    <XAxis dataKey="party" />
+                    <XAxis dataKey="party" tick={{ fill: "#64748b", fontSize: 12 }} axisLine={{ stroke: "#cbd5e1" }} tickLine={false} />
 
                     <YAxis
-
                       allowDecimals={false}
-
+                      tick={{ fill: "#64748b", fontSize: 12 }}
+                      axisLine={false}
+                      tickLine={false}
                       tickFormatter={(value) =>
 
                         Number(value).toLocaleString("en-NG")
@@ -1486,40 +1470,17 @@ const workflowUnavailableMessage = statistics?.election
                     />
 
                     <Tooltip
-
                       formatter={(value) =>
-
                         Number(value).toLocaleString("en-NG")
-
                       }
-
                     />
 
-                    <Legend />
-
                     <Bar
-
                       dataKey="votes"
-
                       name="Agent-Submitted Votes"
-
+                      fill="#0f766e"
                       radius={[6, 6, 0, 0]}
-
-                    >
-
-                      {partyData.map((entry, index) => (
-
-                        <Cell
-
-                          key={`${entry.party}-${index}`}
-
-                          fill="#10b981"
-
-                        />
-
-                      ))}
-
-                    </Bar>
+                    />
 
                   </BarChart>
 
@@ -1647,7 +1608,7 @@ const workflowUnavailableMessage = statistics?.election
 
                               <div
 
-                                className="h-full bg-emerald-500"
+                                className="h-full bg-emerald-700"
 
                                 style={{
 
