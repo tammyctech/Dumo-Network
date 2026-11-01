@@ -1,10 +1,9 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   Activity,
   ArrowRight,
   BarChart3,
-  Camera,
   ChevronRight,
   Clock3,
   Database,
@@ -18,8 +17,6 @@ import {
   ShieldCheck,
   X,
 } from "lucide-react";
-import { toBlob } from "html-to-image";
-import ScreenshotPreview from "../components/ScreenshotPreview";
 
 const API_URL = (
   import.meta.env.VITE_API_URL || "http://127.0.0.1:8000"
@@ -256,7 +253,7 @@ function MapPanel({
                   }
                   stroke={active ? "#047857" : "#86a995"}
                   strokeWidth={active ? 3 : 1.5}
-                  className="cursor-pointer transition hover:brightness-125"
+                  className="cursor-pointer outline-none transition hover:brightness-125 focus-visible:stroke-emerald-900 focus-visible:[stroke-width:3]"
                   onMouseEnter={() => setSelected(name)}
                   onFocus={() => setSelected(name)}
                   onClick={() => setSelected(name)}
@@ -388,40 +385,6 @@ export default function LandingPage() {
   const [error, setError] = useState("");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
-  const [screenshotMessage, setScreenshotMessage] = useState("");
-  const [savingScreenshot, setSavingScreenshot] = useState(false);
-  const [screenshotImageUrl, setScreenshotImageUrl] = useState("");
-  const screenshotContentRef = useRef<HTMLElement>(null);
-
-  async function saveScreenshot() {
-    const content = screenshotContentRef.current;
-    if (!content) {
-      setScreenshotMessage("The page is not ready to capture yet.");
-      return;
-    }
-
-    setScreenshotMessage("");
-    setSavingScreenshot(true);
-    try {
-      const image = await toBlob(content, {
-        backgroundColor: "#f5f7f6",
-        cacheBust: true,
-        pixelRatio: 2,
-      });
-      if (!image) throw new Error("Image could not be generated.");
-      setScreenshotImageUrl(URL.createObjectURL(image));
-      setScreenshotMessage("Screenshot ready to preview or download.");
-    } catch (caught) {
-      setScreenshotMessage(
-        caught instanceof Error
-          ? `Unable to save screenshot: ${caught.message}`
-          : "Unable to save screenshot."
-      );
-    } finally {
-      setSavingScreenshot(false);
-    }
-  }
-
   useEffect(() => {
     const controller = new AbortController();
     async function load() {
@@ -587,7 +550,7 @@ export default function LandingPage() {
         )}
       </header>
 
-      <main ref={screenshotContentRef}>
+      <main>
         <section className="relative isolate overflow-hidden border-b border-emerald-950/5 bg-[#f7f8f5] pb-16 pt-14 text-slate-950 sm:pb-20 sm:pt-20">
           <div className="pointer-events-none absolute -right-36 -top-40 h-[34rem] w-[34rem] rounded-full border border-emerald-900/[0.06]" />
           <div className="pointer-events-none absolute -right-16 -top-20 h-[25rem] w-[25rem] rounded-full border border-emerald-900/[0.06]" />
@@ -749,30 +712,6 @@ export default function LandingPage() {
                 {error}
               </div>
             )}
-
-            <div className="mt-8 flex flex-wrap items-center gap-3">
-              <button
-                type="button"
-                onClick={() => void saveScreenshot()}
-                disabled={savingScreenshot}
-                className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 text-sm font-semibold text-emerald-800 transition hover:border-emerald-300 hover:bg-emerald-100"
-              >
-                <Camera size={17} />
-                {savingScreenshot ? "Preparing screenshot…" : "Save screenshot"}
-              </button>
-              {screenshotMessage && (
-                <span
-                  role={screenshotMessage.startsWith("Unable") ? "alert" : "status"}
-                  className={`text-sm ${
-                    screenshotMessage.startsWith("Unable")
-                      ? "text-red-700"
-                      : "text-emerald-800"
-                  }`}
-                >
-                  {screenshotMessage}
-                </span>
-              )}
-            </div>
 
             <div className="mt-8 -mx-1 rounded-2xl border border-slate-200/80 bg-white p-1 shadow-xl shadow-slate-900/[0.04] sm:mx-0 sm:mt-10 sm:rounded-[1.75rem] sm:p-5">
               <MapPanel
@@ -953,18 +892,6 @@ export default function LandingPage() {
           </div>
         </section>
       </main>
-
-      {screenshotImageUrl && (
-        <ScreenshotPreview
-          imageUrl={screenshotImageUrl}
-          filename="dumo-youth-network-election-results.png"
-          onClose={() => {
-            URL.revokeObjectURL(screenshotImageUrl);
-            setScreenshotImageUrl("");
-            setScreenshotMessage("");
-          }}
-        />
-      )}
 
       <footer className="border-t border-slate-200 bg-white py-10">
         <div className="mx-auto flex max-w-7xl flex-col gap-6 px-5 text-sm text-slate-500 sm:flex-row sm:items-center sm:justify-between lg:px-8">

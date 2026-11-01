@@ -29,12 +29,9 @@ import {
   ChevronRight,
   SlidersHorizontal,
   MapPin,
-  Camera,
 } from "lucide-react";
-import { toBlob } from "html-to-image";
 
 import { useAuth } from "../context/AuthContext";
-import ScreenshotPreview from "../components/ScreenshotPreview";
 
 // =====================================================
 // NAVIGATION MENU
@@ -144,53 +141,13 @@ export default function AppLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
-  const [screenshotMessage, setScreenshotMessage] = useState("");
-  const [savingScreenshot, setSavingScreenshot] = useState(false);
-  const [screenshotImageUrl, setScreenshotImageUrl] = useState("");
-  const [screenshotFilename, setScreenshotFilename] = useState("");
   const notificationsRef = useRef<HTMLDivElement>(null);
   const profileRef = useRef<HTMLDivElement>(null);
-  const screenshotContentRef = useRef<HTMLDivElement>(null);
 
   const { user, logout } = useAuth();
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const isDashboardPage = pathname === "/dashboard";
-
-  async function saveScreenshot() {
-    const content = screenshotContentRef.current;
-    if (!content) {
-      setScreenshotMessage("The page is not ready to capture yet.");
-      return;
-    }
-
-    setScreenshotMessage("");
-    setSavingScreenshot(true);
-    try {
-      const image = await toBlob(content, {
-        backgroundColor: "#f5f7fa",
-        cacheBust: true,
-        pixelRatio: 2,
-      });
-      if (!image) throw new Error("Image could not be generated.");
-      const pageName = (currentPage?.name ?? "workspace")
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, "-")
-        .replace(/^-|-$/g, "");
-      const filename = `${pageName}-screenshot.png`;
-      setScreenshotFilename(filename);
-      setScreenshotImageUrl(URL.createObjectURL(image));
-      setScreenshotMessage("Screenshot ready to preview or download.");
-    } catch (error) {
-      setScreenshotMessage(
-        error instanceof Error
-          ? `Unable to save screenshot: ${error.message}`
-          : "Unable to save screenshot."
-      );
-    } finally {
-      setSavingScreenshot(false);
-    }
-  }
 
   useEffect(() => {
     function closeMenusOutside(event: PointerEvent) {
@@ -522,30 +479,6 @@ export default function AppLayout() {
             </div>
 
             <div className="flex flex-col items-end">
-              <button
-                type="button"
-                onClick={() => void saveScreenshot()}
-                disabled={savingScreenshot}
-                className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-3 text-xs font-semibold text-emerald-800 transition hover:border-emerald-300 hover:bg-emerald-100 disabled:cursor-wait disabled:opacity-60 sm:px-4 sm:text-sm"
-              >
-                <Camera size={17} />
-                <span className="hidden sm:inline">
-                  {savingScreenshot ? "Preparing…" : "Save screenshot"}
-                </span>
-                <span className="sm:hidden">{savingScreenshot ? "…" : "Capture"}</span>
-              </button>
-              {screenshotMessage && (
-                <span
-                  role={screenshotMessage.startsWith("Unable") ? "alert" : "status"}
-                  className={`absolute right-4 top-[4.75rem] z-40 max-w-72 rounded-lg border bg-white px-3 py-2 text-xs shadow-lg sm:right-6 lg:right-8 ${
-                    screenshotMessage.startsWith("Unable")
-                      ? "border-red-200 text-red-700"
-                      : "border-emerald-200 text-emerald-800"
-                  }`}
-                >
-                  {screenshotMessage}
-                </span>
-              )}
             </div>
 
             {/* NOTIFICATIONS */}
@@ -714,10 +647,7 @@ export default function AppLayout() {
           }`}
         >
 
-          <div
-            ref={screenshotContentRef}
-            className="mx-auto w-full max-w-[1440px] min-w-0"
-          >
+          <div className="mx-auto w-full max-w-[1440px] min-w-0">
             <Outlet />
           </div>
 
@@ -738,18 +668,6 @@ export default function AppLayout() {
         </footer>
 
       </div>
-
-      {screenshotImageUrl && (
-        <ScreenshotPreview
-          imageUrl={screenshotImageUrl}
-          filename={screenshotFilename}
-          onClose={() => {
-            URL.revokeObjectURL(screenshotImageUrl);
-            setScreenshotImageUrl("");
-            setScreenshotMessage("");
-          }}
-        />
-      )}
 
     </div>
   );
