@@ -611,7 +611,7 @@ export default function AgentResults() {
                   required
                   disabled={savedSubmissionId !== null}
                   aria-label={`Party ${index + 1} name`}
-                  placeholder="Party name, e.g. APC"
+                  placeholder="Party name, e.g. NDC"
                   value={result.party}
                   onChange={(event) =>
                     updateParty(index, "party", event.target.value)

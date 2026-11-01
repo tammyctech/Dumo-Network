@@ -841,14 +841,14 @@ export default function LandingPage() {
                 })}
               </div>
             </div>
-            <div className="mt-14 flex flex-col gap-6 rounded-3xl bg-emerald-600 p-7 text-white sm:flex-row sm:items-center sm:justify-between sm:p-10">
+            <div className="mt-14 flex flex-col gap-6 rounded-3xl bg-emerald-900 p-7 text-white sm:flex-row sm:items-center sm:justify-between sm:p-10">
               <div>
                 <p className="text-sm font-bold text-emerald-100">Part of the monitoring network?</p>
                 <h3 className="mt-2 text-3xl font-black">Sign in to your command center.</h3>
               </div>
               <Link
                 to="/login"
-                className="group inline-flex min-h-13 shrink-0 items-center justify-center gap-2 rounded-full bg-[#f8fafc] px-6 py-3.5 font-black text-emerald-800 shadow-xl shadow-emerald-950/20 transition duration-200 hover:-translate-y-0.5 hover:bg-white hover:shadow-emerald-950/30 active:translate-y-0"
+                className="group inline-flex min-h-13 shrink-0 items-center justify-center gap-2 rounded-full bg-emerald-800 px-6 py-3.5 font-black text-white shadow-xl shadow-emerald-950/20 transition duration-200 hover:-translate-y-0.5 hover:bg-emerald-700 hover:shadow-emerald-950/30 active:translate-y-0"
               >
                 <LogIn size={18} aria-hidden="true" />
                 Monitor login
