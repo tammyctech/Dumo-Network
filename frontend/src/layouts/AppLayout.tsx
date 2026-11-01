@@ -1,7 +1,8 @@
-import { useEffect, useRef, useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 
 import {
   NavLink,
+  useLocation,
   Outlet,
   useNavigate,
 } from "react-router-dom";
@@ -18,7 +19,6 @@ import {
   Menu,
   X,
   Bell,
-  CircleHelp,
   ClipboardList,
   CalendarDays,
   Layers,
@@ -26,9 +26,9 @@ import {
   Upload,
   Siren,
   BellRing,
-  CheckCircle2,
   ChevronRight,
   SlidersHorizontal,
+  MapPin,
 } from "lucide-react";
 
 import { useAuth } from "../context/AuthContext";
@@ -41,100 +41,97 @@ const navigation = [
   {
     name: "Dashboard",
     path: "/dashboard",
+    section: "Overview",
     icon: LayoutDashboard,
     available: true,
   },
   {
     name: "Submit Results",
     path: "/agent-results",
+    section: "Monitoring",
     icon: ClipboardList,
     available: true,
   },
   {
     name: "Polling-Unit Results",
     path: "/results",
+    section: "Monitoring",
     icon: FileText,
     available: true,
   },
   {
     name: "Incident Centre",
     path: "/incidents",
+    section: "Monitoring",
     icon: Siren,
+    available: true,
+  },
+  {
+    name: "Analytics",
+    path: "/analytics",
+    section: "Monitoring",
+    icon: BarChart3,
     available: true,
   },
   {
     name: "Election Admin",
     path: "/admin/elections",
+    section: "Administration",
     icon: CalendarDays,
     available: true,
   },
   {
     name: "Ward Management",
     path: "/admin/wards",
+    section: "Administration",
     icon: Layers,
     available: true,
   },
   {
     name: "Bulk Import",
     path: "/admin/import",
+    section: "Administration",
     icon: Upload,
     available: true,
   },
   {
     name: "Polling Unit Management",
     path: "/admin/polling-units",
+    section: "Administration",
     icon: ListChecks,
     available: true,
   },
   {
     name: "User Management",
     path: "/admin/users",
+    section: "Administration",
     icon: Users,
     available: true,
   },
   {
     name: "Agent Assignments",
     path: "/admin/assignments",
+    section: "Administration",
     icon: Users,
     available: true,
   },
   {
     name: "Notification Centre",
     path: "/admin/notifications",
+    section: "Administration",
     icon: Bell,
     available: true,
   },
   {
-    name: "Analytics",
-    path: "/analytics",
-    icon: BarChart3,
-    available: true,
-  },
-  {
-    name: "Observers",
-    path: "/observers",
-    icon: Users,
-    available: false,
-  },
-  {
-    name: "Reports",
-    path: "/reports",
-    icon: FileText,
-    available: false,
-  },
-  {
-    name: "Audit Logs",
-    path: "/audit-logs",
-    icon: ShieldCheck,
-    available: false,
-  },
-  {
     name: "Settings",
     path: "/settings",
+    section: "Account",
     icon: Settings,
     available: true,
   },
 ];
+
+const CURRENT_YEAR = new Date().getFullYear();
 
 // =====================================================
 // APPLICATION LAYOUT
@@ -143,29 +140,39 @@ const navigation = [
 export default function AppLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
   const notificationsRef = useRef<HTMLDivElement>(null);
+  const profileRef = useRef<HTMLDivElement>(null);
 
   const { user, logout } = useAuth();
+  const { pathname } = useLocation();
   const navigate = useNavigate();
 
   useEffect(() => {
-    function closeNotifications(event: MouseEvent) {
-      if (
-        notificationsRef.current &&
-        !notificationsRef.current.contains(event.target as Node)
-      ) {
+    function closeMenusOutside(event: PointerEvent) {
+      if (!(event.target instanceof Node)) return;
+
+      if (notificationsRef.current && !notificationsRef.current.contains(event.target)) {
         setNotificationsOpen(false);
+      }
+
+      if (profileRef.current && !profileRef.current.contains(event.target)) {
+        setProfileOpen(false);
       }
     }
 
     function closeOnEscape(event: KeyboardEvent) {
-      if (event.key === "Escape") setNotificationsOpen(false);
+      if (event.key === "Escape") {
+        setNotificationsOpen(false);
+        setProfileOpen(false);
+        setSidebarOpen(false);
+      }
     }
 
-    document.addEventListener("mousedown", closeNotifications);
+    document.addEventListener("pointerdown", closeMenusOutside);
     document.addEventListener("keydown", closeOnEscape);
     return () => {
-      document.removeEventListener("mousedown", closeNotifications);
+      document.removeEventListener("pointerdown", closeMenusOutside);
       document.removeEventListener("keydown", closeOnEscape);
     };
   }, []);
@@ -177,6 +184,7 @@ export default function AppLayout() {
   function handleLogout() {
     logout();
     setSidebarOpen(false);
+    setProfileOpen(false);
     navigate("/login", { replace: true });
   }
 
@@ -197,15 +205,7 @@ export default function AppLayout() {
   // ===================================================
 
   const visibleNavigation = navigation.filter((item) => {
-    // Administrator-only pages
-    if (
-      item.path === "/admin/elections" ||
-      item.path === "/admin/import" ||
-      item.path === "/admin/polling-units" ||
-      item.path === "/admin/users" ||
-      item.path === "/admin/assignments" ||
-      item.path === "/admin/notifications"
-    ) {
+    if (item.path.startsWith("/admin/")) {
       return user?.role === "admin";
     }
 
@@ -224,13 +224,14 @@ export default function AppLayout() {
 
     return true;
   });
+  const currentPage = navigation.find((item) => item.path === pathname);
 
   // ===================================================
   // MAIN LAYOUT
   // ===================================================
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-canvas dark:bg-slate-950">
 
       {/* MOBILE BACKDROP */}
 
@@ -248,10 +249,11 @@ export default function AppLayout() {
       ================================================= */}
 
       <aside
+        aria-label="Application navigation"
         className={`
           fixed inset-y-0 left-0 z-50
           flex w-64 flex-col
-          bg-slate-950 text-white
+          border-r border-white/5 bg-brand-950 text-white shadow-2xl shadow-slate-950/10
           transition-transform duration-300
           lg:translate-x-0
           ${
@@ -264,17 +266,17 @@ export default function AppLayout() {
 
         {/* LOGO */}
 
-        <div className="flex h-20 shrink-0 items-center justify-between border-b border-white/10 px-5">
+        <div className="flex h-[76px] shrink-0 items-center justify-between border-b border-white/[0.08] px-5">
 
           <div className="flex min-w-0 items-center gap-2.5">
 
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-emerald-500">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-emerald-500 shadow-lg shadow-emerald-950/30">
               <Activity size={15} className="text-white" />
             </div>
 
             <div className="min-w-0">
 
-              <p className="text-sm font-bold tracking-wide text-white">
+              <p className="text-[13px] font-bold tracking-[0.07em] text-white">
                 DUMO YOUTH NETWORK
               </p>
 
@@ -299,8 +301,8 @@ export default function AppLayout() {
 
         {/* WORKSPACE LABEL */}
 
-        <div className="px-5 pb-3 pt-7">
-          <p className="text-[11px] font-semibold uppercase tracking-widest text-slate-500">
+        <div className="px-5 pb-3 pt-6">
+          <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-500">
             Main Workspace
           </p>
         </div>
@@ -309,51 +311,45 @@ export default function AppLayout() {
 
         <nav
           aria-label="Main navigation"
-          className="min-h-0 flex-1 space-y-1 overflow-y-auto px-3 pb-6"
+          className="min-h-0 flex-1 overflow-y-auto px-3 pb-6"
         >
 
-          {visibleNavigation.map((item) => {
+          {visibleNavigation.map((item, index) => {
             const Icon = item.icon;
-
-            if (!item.available) {
-              return (
-                <div
-                  key={item.name}
-                  title="Coming soon"
-                  className="flex cursor-not-allowed items-center gap-3 rounded-xl px-4 py-3 text-sm text-slate-500"
-                >
-                  <Icon size={18} />
-
-                  <span>{item.name}</span>
-
-                  <span className="ml-auto text-[10px]">
-                    Soon
-                  </span>
-                </div>
-              );
-            }
+            const showSection =
+              index === 0 ||
+              item.section !== visibleNavigation[index - 1].section;
 
             return (
-              <NavLink
-                key={item.name}
-                to={item.path}
-                onClick={() => setSidebarOpen(false)}
-                className={({ isActive }) => `
-                  flex items-center gap-3
-                  rounded-xl px-4 py-3
-                  text-sm font-medium
-                  transition-colors duration-200
-                  ${
-                    isActive
-                      ? "bg-emerald-500 text-white"
-                      : "text-slate-300 hover:bg-white/10 hover:text-white"
-                  }
-                `}
-              >
-                <Icon size={18} />
-
-                <span>{item.name}</span>
-              </NavLink>
+              <Fragment key={item.name}>
+                {showSection && (
+                  <p
+                    className={`px-3 pb-2 text-[10px] font-bold uppercase tracking-[0.16em] text-slate-500 ${
+                      index === 0 ? "pt-6" : "pt-5"
+                    }`}
+                  >
+                    {item.section}
+                  </p>
+                )}
+                <NavLink
+                  to={item.path}
+                  onClick={() => setSidebarOpen(false)}
+                  className={({ isActive }) => `
+                    flex min-h-11 items-center gap-3
+                    rounded-lg border-l-2 px-3 py-2.5
+                    text-[13px] font-medium
+                    transition-colors duration-200
+                    ${
+                      isActive
+                        ? "border-emerald-400 bg-emerald-400/10 text-emerald-200"
+                        : "border-transparent text-slate-400 hover:bg-white/[0.06] hover:text-white"
+                    }
+                  `}
+                >
+                  <Icon size={18} />
+                  <span>{item.name}</span>
+                </NavLink>
+              </Fragment>
             );
           })}
 
@@ -363,34 +359,34 @@ export default function AppLayout() {
             SIDEBAR FOOTER
         ================================================= */}
 
-        <div className="shrink-0 border-t border-white/10 p-4">
+        <div className="shrink-0 border-t border-white/[0.08] p-4">
 
-          {/* DEVELOPMENT NOTICE */}
+          {/* DATA NOTICE */}
 
-          <div className="mb-4 rounded-xl border border-white/10 bg-white/5 p-4">
+          <div className="mb-4 rounded-xl border border-white/[0.08] bg-white/[0.035] p-3.5">
 
             <div className="flex items-center gap-2">
 
-              <CircleHelp
+              <ShieldCheck
                 size={16}
                 className="text-emerald-400"
               />
 
               <p className="text-xs font-semibold text-white">
-                Development Workspace
+                Election data
               </p>
 
             </div>
 
             <p className="mt-2 text-xs leading-5 text-slate-400">
-              Election monitoring tools are currently under development.
+              Monitoring figures are unofficial and agent-submitted.
             </p>
 
           </div>
 
           {/* USER PROFILE */}
 
-          <div className="mb-3 flex items-center gap-3 rounded-xl bg-white/5 p-3">
+          <div className="mb-3 flex items-center gap-3 rounded-xl border border-white/[0.06] bg-white/[0.04] p-3">
 
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-500/20 text-sm font-bold text-emerald-300">
               {userInitials}
@@ -433,7 +429,7 @@ export default function AppLayout() {
 
         {/* TOP HEADER */}
 
-        <header className="sticky top-0 z-30 flex h-20 shrink-0 items-center justify-between border-b border-slate-200 bg-white px-4 shadow-sm sm:px-6 lg:px-8">
+        <header className="sticky top-0 z-30 flex h-[76px] shrink-0 items-center justify-between border-b border-slate-200/80 bg-white/95 px-4 backdrop-blur-xl dark:border-slate-800 dark:bg-slate-900/95 sm:px-6 lg:px-8">
 
           {/* LEFT HEADER */}
 
@@ -446,7 +442,7 @@ export default function AppLayout() {
               aria-label="Open navigation"
               aria-expanded={sidebarOpen}
               onClick={() => setSidebarOpen(true)}
-              className="rounded-lg p-2 text-slate-600 hover:bg-slate-100 lg:hidden"
+              className="flex min-h-11 min-w-11 items-center justify-center rounded-lg text-slate-600 hover:bg-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600 lg:hidden"
             >
               <Menu size={22} />
             </button>
@@ -455,12 +451,12 @@ export default function AppLayout() {
 
             <div className="min-w-0">
 
-              <h2 className="truncate text-lg font-bold text-slate-900">
-                Command Center
-              </h2>
+              <h1 className="truncate text-base font-semibold tracking-tight text-slate-900">
+                {currentPage?.name ?? "Dumo Network"}
+              </h1>
 
-              <p className="hidden text-xs text-slate-500 sm:block">
-                Dumo Network Election Monitoring Platform
+              <p className="hidden text-[11px] font-medium text-emerald-700 sm:block">
+                {currentPage?.section ?? "Rivers State"}
               </p>
 
             </div>
@@ -471,13 +467,11 @@ export default function AppLayout() {
 
           <div className="flex items-center gap-3">
 
-            {/* DEVELOPMENT BADGE */}
+            {/* OPERATING AREA */}
 
-            <div className="hidden items-center gap-2 rounded-full bg-amber-50 px-3 py-2 text-xs font-medium text-amber-700 md:flex">
-
-              <span className="h-2 w-2 rounded-full bg-amber-500" />
-
-              Development
+            <div className="hidden items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-[11px] font-semibold text-slate-600 md:flex">
+              <MapPin size={13} className="text-emerald-700" />
+              Rivers State
 
             </div>
 
@@ -486,11 +480,14 @@ export default function AppLayout() {
             <div ref={notificationsRef} className="relative">
               <button
                 type="button"
-                title="Open notifications"
-                aria-label="Open notifications"
+                title="Notification options"
+                aria-label="Open notification options"
                 aria-expanded={notificationsOpen}
                 aria-haspopup="dialog"
-                onClick={() => setNotificationsOpen((open) => !open)}
+                onClick={() => {
+                  setProfileOpen(false);
+                  setNotificationsOpen((open) => !open);
+                }}
                 className={`relative rounded-xl border p-2.5 transition focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 ${
                   notificationsOpen
                     ? "border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-700 dark:bg-emerald-950 dark:text-emerald-300"
@@ -498,7 +495,6 @@ export default function AppLayout() {
                 }`}
               >
                 <Bell size={20} />
-                <span className="absolute right-2 top-2 h-2 w-2 rounded-full border-2 border-white bg-emerald-500" />
               </button>
 
               {notificationsOpen && (
@@ -507,37 +503,28 @@ export default function AppLayout() {
                   aria-label="Notifications panel"
                   className="fixed inset-x-3 top-[4.75rem] z-50 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl shadow-slate-950/20 sm:absolute sm:inset-x-auto sm:right-0 sm:top-14 sm:w-[25rem]"
                 >
-                  <div className="relative overflow-hidden bg-slate-950 px-5 py-5 text-white">
-                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_85%_10%,rgba(16,185,129,.28),transparent_38%)]" />
-                    <div className="relative flex items-start justify-between gap-4">
+                  <div className="bg-slate-950 px-5 py-5 text-white">
+                    <div className="flex items-start justify-between gap-4">
                       <div>
                         <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.16em] text-emerald-300">
-                          <BellRing size={14} /> Live communications
+                          <BellRing size={14} /> Notification settings
                         </div>
-                        <h3 className="mt-2 text-xl font-black">Notifications</h3>
+                        <h3 className="mt-2 text-xl font-bold">Manage notifications</h3>
                         <p className="mt-1 text-xs leading-5 text-slate-300">
-                          Operational alerts and election updates from Dumo Network.
+                          Configure this browser or review campaign delivery.
                         </p>
                       </div>
-                      <span className="mt-0.5 inline-flex items-center gap-1.5 rounded-full border border-emerald-400/25 bg-emerald-400/10 px-2.5 py-1 text-[10px] font-bold text-emerald-200">
-                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" /> Online
-                      </span>
                     </div>
                   </div>
 
                   <div className="p-4">
-                    <div className="rounded-2xl border border-emerald-100 bg-emerald-50/70 p-4 dark:border-emerald-800 dark:bg-emerald-950/60">
-                      <div className="flex gap-3">
-                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-emerald-700 text-white">
-                          <CheckCircle2 size={18} />
-                        </span>
-                        <div>
-                          <p className="text-sm font-black text-slate-900 dark:text-white">You are all caught up</p>
-                          <p className="mt-1 text-xs leading-5 text-slate-600 dark:text-slate-300">
-                            New urgent updates will appear as browser notifications on enabled devices.
-                          </p>
-                        </div>
-                      </div>
+                    <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800">
+                      <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+                        No in-app notification feed
+                      </p>
+                      <p className="mt-1 text-xs leading-5 text-slate-600 dark:text-slate-300">
+                        Browser subscription settings and campaign delivery reports are available in their respective sections.
+                      </p>
                     </div>
 
                     <div className="mt-4 space-y-2">
@@ -555,7 +542,7 @@ export default function AppLayout() {
                           </span>
                           <span className="min-w-0 flex-1">
                             <strong className="block text-sm text-slate-900 dark:text-slate-100">Open Notification Centre</strong>
-                            <span className="mt-0.5 block text-xs text-slate-500 dark:text-slate-400">Create and review delivery campaigns</span>
+                            <span className="mt-0.5 block text-xs text-slate-500 dark:text-slate-400">Send campaigns and review delivery outcomes</span>
                           </span>
                           <ChevronRight size={17} className="text-slate-400 group-hover:text-emerald-700" />
                         </button>
@@ -582,7 +569,7 @@ export default function AppLayout() {
                   </div>
 
                   <div className="border-t border-slate-100 bg-slate-50 px-4 py-3 text-center text-[11px] font-medium text-slate-500">
-                    Push delivery is protected by your browser permissions.
+                    Delivery is reported by the notification service; device receipt is not guaranteed.
                   </div>
                 </div>
               )}
@@ -590,24 +577,54 @@ export default function AppLayout() {
 
             {/* ACCOUNT */}
 
-            <div className="flex items-center gap-3 border-l border-slate-200 pl-3">
+            <div ref={profileRef} className="relative border-l border-slate-200 pl-3 sm:pl-4">
+              <button
+                type="button"
+                aria-label={`Account options for ${user?.full_name || "Dumo User"}`}
+                aria-expanded={profileOpen}
+                onClick={() => {
+                  setNotificationsOpen(false);
+                  setProfileOpen((open) => !open);
+                }}
+                className="flex min-h-11 items-center gap-2 rounded-xl px-1.5 text-left hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600 sm:gap-3 sm:px-2"
+              >
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-950 text-xs font-bold text-white ring-2 ring-brand-100">
+                  {userInitials}
+                </span>
+                <span className="hidden min-w-0 md:block">
+                  <span className="block max-w-36 truncate text-sm font-semibold text-slate-900">
+                    {user?.full_name || "Dumo User"}
+                  </span>
+                  <span className="block text-xs capitalize text-slate-500">
+                    {user?.role || "Observer"}
+                  </span>
+                </span>
+              </button>
 
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-900 text-sm font-bold text-white">
-                {userInitials}
-              </div>
-
-              <div className="hidden min-w-0 md:block">
-
-                <p className="max-w-36 truncate text-sm font-semibold text-slate-900">
-                  {user?.full_name || "Dumo User"}
-                </p>
-
-                <p className="text-xs capitalize text-slate-500">
-                  {user?.role || "Observer"}
-                </p>
-
-              </div>
-
+              {profileOpen && (
+                <div
+                  className="absolute right-0 top-14 z-50 w-56 overflow-hidden rounded-xl border border-slate-200 bg-white p-1.5 shadow-xl dark:border-slate-700 dark:bg-slate-900"
+                >
+                  <nav aria-label="Account options">
+                    <NavLink
+                      to="/settings"
+                      onClick={() => setProfileOpen(false)}
+                      className="flex min-h-11 items-center gap-3 rounded-lg px-3 text-sm font-medium text-slate-700 hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-emerald-600 dark:text-slate-200 dark:hover:bg-slate-800"
+                    >
+                      <Settings size={17} />
+                      Account settings
+                    </NavLink>
+                    <button
+                      type="button"
+                      onClick={handleLogout}
+                      className="flex min-h-11 w-full items-center gap-3 rounded-lg px-3 text-sm font-medium text-red-700 hover:bg-red-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-red-600 dark:text-red-300 dark:hover:bg-red-950/50"
+                    >
+                      <LogOut size={17} />
+                      Sign out
+                    </button>
+                  </nav>
+                </div>
+              )}
             </div>
 
           </div>
@@ -618,9 +635,9 @@ export default function AppLayout() {
             PAGE CONTENT
         ================================================= */}
 
-        <main className="min-w-0 flex-1 p-4 sm:p-6 lg:p-8">
+        <main className="min-w-0 flex-1 px-4 py-7 sm:px-6 sm:py-8 lg:px-9 lg:py-9">
 
-          <div className="mx-auto w-full max-w-7xl min-w-0">
+          <div className="mx-auto w-full max-w-[1440px] min-w-0">
             <Outlet />
           </div>
 
@@ -628,10 +645,10 @@ export default function AppLayout() {
 
         {/* FOOTER */}
 
-        <footer className="border-t border-slate-200 bg-white px-4 py-4 text-center sm:px-6">
+        <footer className="border-t border-slate-200/80 bg-white/80 px-4 py-4 text-center dark:border-slate-800 dark:bg-slate-900/80 sm:px-6">
 
           <p className="text-xs text-slate-400">
-            © {new Date().getFullYear()} Dumo Network.
+            © {CURRENT_YEAR} Dumo Network.
             Election Monitoring Platform.
           </p>
 

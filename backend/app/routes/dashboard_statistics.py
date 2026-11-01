@@ -99,15 +99,17 @@ def dashboard_statistics(
             "total_polling_units": total_polling_units,
             "assigned_polling_units": 0,
             "submitted_polling_units": 0,
+            "missing_assigned_polling_units": 0,
             "submission_coverage_percent": None,
             "accredited_voters": None,
             "valid_votes": None,
             "rejected_votes": None,
-            "verification_summary": {},
-            "active_flags": 0,
-            "open_incidents": 0,
+            "verification_summary": None,
+            "active_flags": None,
+            "open_incidents": None,
             "party_totals": [],
             "lga_progress": [],
+            "recent_submissions": [],
             "message": "No election has been created yet.",
         }
 
@@ -155,6 +157,29 @@ def dashboard_statistics(
         )
     ) or 0
 
+    missing_assigned_polling_units = db.scalar(
+        select(
+            func.count(
+                func.distinct(AgentAssignment.polling_unit_id)
+            )
+        )
+        .select_from(AgentAssignment)
+        .join(
+            PollingUnit,
+            PollingUnit.id == AgentAssignment.polling_unit_id,
+        )
+        .outerjoin(
+            ResultSubmission,
+            (ResultSubmission.polling_unit_id == AgentAssignment.polling_unit_id)
+            & (ResultSubmission.election_id == election.id),
+        )
+        .where(
+            AgentAssignment.election_id == election.id,
+            PollingUnit.state == "Rivers",
+            ResultSubmission.id.is_(None),
+        )
+    ) or 0
+
     # --------------------------------------
     # SUBMISSION COVERAGE
     # --------------------------------------
@@ -194,17 +219,17 @@ def dashboard_statistics(
     valid_votes = vote_totals[1]
     rejected_votes = vote_totals[2]
 
-    # Deployments can briefly run new application code before Alembic finishes.
-    # Keep the core dashboard available during that window and expose advanced
-    # workflow metrics as zero until their schema is present.
+    # Keep the core dashboard available while an Alembic deployment is in
+    # progress, but distinguish unavailable workflow metrics from real zeroes.
     schema = inspect(db.get_bind())
     table_names = set(schema.get_table_names())
     submission_columns = {
         column["name"] for column in schema.get_columns("result_submissions")
     }
 
-    verification_summary = {}
+    verification_summary = None
     if "verification_status" in submission_columns:
+        verification_summary = {}
         verification_rows = db.execute(
             select(
                 ResultSubmission.verification_status,
@@ -217,7 +242,7 @@ def dashboard_statistics(
             status: count for status, count in verification_rows
         }
 
-    active_flags = 0
+    active_flags = None
     if "result_flags" in table_names:
         active_flags = db.scalar(
             select(func.count(ResultFlag.id))
@@ -231,7 +256,7 @@ def dashboard_statistics(
             )
         ) or 0
 
-    open_incidents = 0
+    open_incidents = None
     if "incidents" in table_names:
         open_incidents = db.scalar(
             select(func.count(Incident.id)).where(
@@ -332,6 +357,43 @@ def dashboard_statistics(
             }
         )
 
+    recent_submission_rows = db.execute(
+        select(
+            ResultSubmission.id,
+            ResultSubmission.submitted_at,
+            PollingUnit.lga,
+            PollingUnit.ward,
+            PollingUnit.name,
+            PollingUnit.code,
+        )
+        .join(
+            PollingUnit,
+            PollingUnit.id == ResultSubmission.polling_unit_id,
+        )
+        .where(
+            ResultSubmission.election_id == election.id,
+            PollingUnit.state == "Rivers",
+        )
+        .order_by(
+            ResultSubmission.submitted_at.desc(),
+            ResultSubmission.id.desc(),
+        )
+        .limit(8)
+    ).all()
+
+    recent_submissions = [
+        {
+            "id": submission_id,
+            "submitted_at": submitted_at,
+            "lga": lga,
+            "ward": ward,
+            "polling_unit_name": name,
+            "polling_unit_code": code,
+        }
+        for submission_id, submitted_at, lga, ward, name, code
+        in recent_submission_rows
+    ]
+
     # --------------------------------------
     # RESPONSE
     # --------------------------------------
@@ -347,6 +409,7 @@ def dashboard_statistics(
         "total_polling_units": total_polling_units,
         "assigned_polling_units": assigned_polling_units,
         "submitted_polling_units": submitted_polling_units,
+        "missing_assigned_polling_units": missing_assigned_polling_units,
         "submission_coverage_percent": coverage,
         "accredited_voters": accredited_voters,
         "valid_votes": valid_votes,
@@ -354,6 +417,7 @@ def dashboard_statistics(
         "verification_summary": verification_summary,
         "active_flags": active_flags,
         "open_incidents": open_incidents,
+        "recent_submissions": recent_submissions,
         "party_totals": party_totals,
         "lga_progress": lga_progress,
     }

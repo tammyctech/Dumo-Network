@@ -1,28 +1,20 @@
 import { useCallback, useEffect, useState } from "react";
 
 import {
-
+  ArrowRight,
   Activity,
-
   AlertCircle,
-
   BarChart3,
-
   CalendarDays,
-
   CheckCircle2,
-
+  Clock3,
   ClipboardList,
-
   MapPin,
-
   RefreshCw,
-
   Users,
-
   Vote,
-
 } from "lucide-react";
+import { Link } from "react-router-dom";
 
 import {
 
@@ -91,7 +83,15 @@ type LgaProgress = {
   submitted_polling_units: number;
 
   coverage_percent: number | null;
+};
 
+type RecentSubmission = {
+  id: number;
+  submitted_at: string;
+  lga: string;
+  ward: string;
+  polling_unit_name: string;
+  polling_unit_code: string;
 };
 
 type DashboardStatistics = {
@@ -103,10 +103,9 @@ type DashboardStatistics = {
   election: Election | null;
 
   total_polling_units: number;
-
   assigned_polling_units: number;
-
   submitted_polling_units: number;
+  missing_assigned_polling_units: number;
 
   submission_coverage_percent: number | null;
 
@@ -116,18 +115,14 @@ type DashboardStatistics = {
 
   rejected_votes: number | null;
 
-  verification_summary: Record<string, number>;
-
-  active_flags: number;
-
-  open_incidents: number;
+  verification_summary: Record<string, number> | null;
+  active_flags: number | null;
+  open_incidents: number | null;
 
   party_totals: PartyTotal[];
-
   lga_progress: LgaProgress[];
-
+  recent_submissions: RecentSubmission[];
   message?: string;
-
 };
 
 // ==========================================
@@ -186,6 +181,21 @@ const date = new Date(value);
 
   });
 
+}
+
+function formatDateTime(value: string) {
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return "Time unavailable";
+  }
+
+  return date.toLocaleString("en-NG", {
+    day: "numeric",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 }
 
 async function readApiError(response: Response) {
@@ -248,19 +258,19 @@ description,
 
   return (
 
-    <div className="min-w-0 w-full rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+    <div className="group min-w-0 w-full rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_1px_2px_rgba(15,23,42,0.03)] transition duration-200 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md sm:p-5">
 
       <div className="flex min-w-0 items-start justify-between gap-3">
 
         <div className="min-w-0 flex-1">
 
-          <p className="whitespace-normal break-words text-sm font-medium leading-relaxed text-slate-500">
+          <p className="whitespace-normal break-words text-[13px] font-medium leading-relaxed text-slate-500">
 
             {title}
 
           </p>
 
-          <p className="mt-3 break-words text-2xl font-bold leading-tight text-slate-900 sm:text-3xl">
+          <p className="mt-3 break-words text-[28px] font-semibold leading-tight tracking-tight text-slate-900 sm:text-3xl">
 
             {value}
 
@@ -268,7 +278,7 @@ description,
 
         </div>
 
-        <div className="shrink-0 rounded-xl bg-emerald-50 p-3 text-emerald-600">
+        <div className="shrink-0 rounded-xl bg-emerald-50 p-3 text-emerald-700 ring-1 ring-emerald-100 transition group-hover:bg-emerald-100">
 
           <Icon size={22} />
 
@@ -276,7 +286,7 @@ description,
 
       </div>
 
-      <p className="mt-4 whitespace-normal break-words text-xs leading-relaxed text-slate-500">
+      <p className="mt-4 whitespace-normal break-words border-t border-slate-100 pt-3 text-xs leading-relaxed text-slate-500">
 
         {description}
 
@@ -288,10 +298,39 @@ description,
 
 }
 
+function DashboardSkeleton() {
+  return (
+    <div role="status" aria-label="Loading election monitoring statistics" className="space-y-6">
+      <span className="sr-only">Loading election monitoring statistics…</span>
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4">
+        {Array.from({ length: 4 }, (_, index) => (
+          <div
+            key={index}
+            aria-hidden="true"
+            className="h-36 animate-pulse rounded-2xl border border-slate-200 bg-white p-5"
+          >
+            <div className="h-4 w-2/5 rounded bg-slate-100" />
+            <div className="mt-5 h-8 w-1/3 rounded bg-slate-100" />
+            <div className="mt-5 h-3 w-4/5 rounded bg-slate-100" />
+          </div>
+        ))}
+      </div>
+      <div aria-hidden="true" className="h-44 animate-pulse rounded-2xl border border-slate-200 bg-white p-6">
+        <div className="h-5 w-1/3 rounded bg-slate-100" />
+        <div className="mt-4 h-3 w-2/3 rounded bg-slate-100" />
+        <div className="mt-7 h-4 rounded-full bg-slate-100" />
+      </div>
+      <div aria-hidden="true" className="h-72 animate-pulse rounded-2xl border border-slate-200 bg-white p-6">
+        <div className="h-5 w-1/4 rounded bg-slate-100" />
+        <div className="mt-4 h-3 w-1/2 rounded bg-slate-100" />
+        <div className="mt-8 h-40 rounded-xl bg-slate-100" />
+      </div>
+    </div>
+  );
+}
+
 // ==========================================
-
 // DASHBOARD
-
 // ==========================================
 
 export default function Dashboard() {
@@ -549,6 +588,16 @@ const sortedLgaData = [...lgaData].sort(
       (a.coverage_percent ?? -1)
 
   );
+const missingAssignedUnits =
+  statistics?.missing_assigned_polling_units ?? 0;
+const alertsAreAvailable = Boolean(
+  statistics &&
+    statistics.active_flags !== null &&
+    statistics.open_incidents !== null
+);
+const workflowUnavailableMessage = statistics?.election
+  ? "Unavailable until the operations workflow migration is applied."
+  : "No election is available for this metric.";
 
   // ========================================
 
@@ -558,7 +607,7 @@ const sortedLgaData = [...lgaData].sort(
 
   return (
 
-    <div className="w-full min-w-0 max-w-full space-y-7 break-words">
+    <div className="w-full min-w-0 max-w-full space-y-6 break-words">
       {/* =====================================
 
           HEADER
@@ -569,11 +618,11 @@ const sortedLgaData = [...lgaData].sort(
 
         <div>
 
-          <div className="flex items-center gap-2 text-emerald-600">
+          <div className="flex items-center gap-2 text-emerald-700">
 
-            <Activity size={19} />
+            <Activity size={16} />
 
-            <span className="text-xs font-semibold uppercase tracking-widest">
+            <span className="text-[11px] font-bold uppercase tracking-[0.16em]">
 
               Rivers State Monitoring
 
@@ -581,13 +630,13 @@ const sortedLgaData = [...lgaData].sort(
 
           </div>
 
-          <h1 className="mt-2 text-2xl font-bold leading-tight text-slate-900 sm:text-3xl">
+          <h1 className="mt-2 text-[26px] font-semibold leading-tight tracking-tight text-slate-950 sm:text-3xl">
 
             Election Monitoring Dashboard
 
           </h1>
 
-          <p className="mt-2 text-sm text-slate-500">
+          <p className="mt-2 text-[13px] leading-6 text-slate-500">
 
             Polling-unit submissions and election monitoring statistics.
 
@@ -603,7 +652,7 @@ const sortedLgaData = [...lgaData].sort(
 
           disabled={loading || refreshing}
 
-          className="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-50"
+          className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-[13px] font-semibold text-slate-700 shadow-sm transition hover:border-slate-300 hover:bg-slate-50 disabled:opacity-50"
 
         >
 
@@ -627,7 +676,7 @@ const sortedLgaData = [...lgaData].sort(
 
       ===================================== */}
 
-      <div className="rounded-2xl border border-amber-200 bg-amber-50 p-5">
+      <div className="rounded-2xl border border-amber-200/80 bg-amber-50/80 p-4 sm:p-5">
 
         <div className="flex items-start gap-3">
 
@@ -672,7 +721,6 @@ const sortedLgaData = [...lgaData].sort(
       ===================================== */}
 
       {error && (
-
         <div
 
           role="alert"
@@ -689,16 +737,15 @@ const sortedLgaData = [...lgaData].sort(
 
           </div>
 
-          <p className="mt-2 text-xs">
-
-            Confirm that your FastAPI backend is running
-
-            and that /api/dashboard/statistics is available.
-
-          </p>
-
+          <button
+            type="button"
+            onClick={() => loadStatistics(undefined, true)}
+            disabled={refreshing}
+            className="mt-3 min-h-11 rounded-lg bg-red-700 px-4 py-2 text-xs font-semibold text-white hover:bg-red-800 disabled:opacity-60"
+          >
+            {refreshing ? "Retrying…" : "Try again"}
+          </button>
         </div>
-
       )}
 
       {/* =====================================
@@ -708,31 +755,7 @@ const sortedLgaData = [...lgaData].sort(
       ===================================== */}
 
       {loading && (
-
-        <div
-
-          role="status"
-
-          className="rounded-2xl border border-slate-200 bg-white p-10 text-center"
-
-        >
-
-          <RefreshCw
-
-            size={28}
-
-            className="mx-auto animate-spin text-emerald-600"
-
-          />
-
-          <p className="mt-4 text-sm text-slate-600">
-
-            Loading election monitoring statistics...
-
-          </p>
-
-        </div>
-
+        <DashboardSkeleton />
       )}
 
       {/* =====================================
@@ -747,7 +770,7 @@ const sortedLgaData = [...lgaData].sort(
 
           {/* ELECTION INFORMATION */}
 
-          <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+          <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_1px_2px_rgba(15,23,42,0.03)] sm:p-6">
 
             <div className="flex flex-wrap items-center justify-between gap-5">
 
@@ -763,7 +786,7 @@ const sortedLgaData = [...lgaData].sort(
 
                   />
 
-                  <h2 className="font-semibold text-slate-900">
+                  <h2 className="text-sm font-semibold text-slate-800">
 
                     Current Election
 
@@ -771,7 +794,7 @@ const sortedLgaData = [...lgaData].sort(
 
                 </div>
 
-                <p className="mt-3 break-words text-lg font-bold text-slate-900 sm:text-xl">
+                <p className="mt-3 break-words text-lg font-semibold tracking-tight text-slate-950 sm:text-xl">
 
                   {statistics.election?.name ??
 
@@ -891,6 +914,228 @@ const sortedLgaData = [...lgaData].sort(
 
           )}
 
+          {/* OPERATIONS AND QUICK ACTIONS */}
+
+          <section className="grid min-w-0 gap-5 xl:grid-cols-2">
+            <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm sm:p-6">
+              <div className="flex items-start gap-3">
+                <span className="rounded-xl bg-amber-50 p-2.5 text-amber-700">
+                  <AlertCircle size={19} />
+                </span>
+                <div>
+                  <h2 className="font-semibold text-slate-900">
+                    Monitoring alerts
+                  </h2>
+                  <p className="mt-1 text-sm text-slate-500">
+                    Based on current assignment and workflow records.
+                  </p>
+                </div>
+              </div>
+              <div className="mt-5 space-y-3">
+                {!statistics.election ? (
+                  <p className="rounded-xl bg-slate-50 p-4 text-sm text-slate-600">
+                    Alerts will appear after a Rivers State election is created.
+                  </p>
+                ) : (
+                  <>
+                    {statistics.assigned_polling_units === 0 && (
+                      <Link
+                        to={
+                          user?.role === "admin"
+                            ? "/admin/assignments"
+                            : "/agent-results"
+                        }
+                        className="flex min-h-11 items-center justify-between gap-3 rounded-xl border border-amber-200 bg-amber-50/70 px-4 py-3 text-sm text-amber-950 hover:bg-amber-50"
+                      >
+                        <span>No polling units are assigned for this election</span>
+                        <ArrowRight size={17} className="shrink-0" />
+                      </Link>
+                    )}
+                    {missingAssignedUnits > 0 && (
+                      <Link
+                        to={
+                          user?.role === "admin"
+                            ? "/admin/assignments"
+                            : "/agent-results"
+                        }
+                        className="flex min-h-11 items-center justify-between gap-3 rounded-xl border border-amber-200 bg-amber-50/70 px-4 py-3 text-sm text-amber-950 hover:bg-amber-50"
+                      >
+                        <span>
+                          <strong>{formatNumber(missingAssignedUnits)}</strong>{" "}
+                          assigned polling units have no submission
+                        </span>
+                        <ArrowRight size={17} className="shrink-0" />
+                      </Link>
+                    )}
+                    {statistics.active_flags !== null &&
+                      statistics.active_flags > 0 && (
+                        <Link
+                          to="/results"
+                          className="flex min-h-11 items-center justify-between gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-900 hover:bg-red-100"
+                        >
+                          <span>
+                            <strong>{formatNumber(statistics.active_flags)}</strong>{" "}
+                            unresolved result flags
+                          </span>
+                          <ArrowRight size={17} className="shrink-0" />
+                        </Link>
+                      )}
+                    {statistics.open_incidents !== null &&
+                      statistics.open_incidents > 0 && (
+                        <Link
+                          to="/incidents"
+                          className="flex min-h-11 items-center justify-between gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-900 hover:bg-red-100"
+                        >
+                          <span>
+                            <strong>{formatNumber(statistics.open_incidents)}</strong>{" "}
+                            open or investigating incidents
+                          </span>
+                          <ArrowRight size={17} className="shrink-0" />
+                        </Link>
+                      )}
+                    {missingAssignedUnits === 0 &&
+                      statistics.assigned_polling_units > 0 &&
+                      alertsAreAvailable &&
+                      statistics.active_flags === 0 &&
+                      statistics.open_incidents === 0 && (
+                        <p className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-900">
+                          No outstanding alerts in the current monitoring data.
+                        </p>
+                      )}
+                    {!alertsAreAvailable && (
+                      <p className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-600">
+                        Some workflow alerts are unavailable until the operations workflow migration is applied.
+                      </p>
+                    )}
+                    {missingAssignedUnits === 0 &&
+                      statistics.assigned_polling_units > 0 &&
+                      alertsAreAvailable &&
+                      statistics.active_flags === 0 &&
+                      statistics.open_incidents === 0 && (
+                        <p className="text-xs text-slate-500">
+                          Alert counts reflect available records, not official verification.
+                        </p>
+                      )}
+                  </>
+                )}
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm sm:p-6">
+              <h2 className="font-semibold text-slate-900">Quick actions</h2>
+              <p className="mt-1 text-sm text-slate-500">
+                Shortcuts to your election monitoring tasks.
+              </p>
+              <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                {user?.role === "admin" ? (
+                  <>
+                    <Link
+                      to="/admin/elections"
+                      className="flex min-h-12 items-center justify-between gap-2 rounded-xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-700 hover:border-emerald-300 hover:bg-emerald-50"
+                    >
+                      Manage elections <ArrowRight size={16} />
+                    </Link>
+                    <Link
+                      to="/admin/assignments"
+                      className="flex min-h-12 items-center justify-between gap-2 rounded-xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-700 hover:border-emerald-300 hover:bg-emerald-50"
+                    >
+                      Assign agents <ArrowRight size={16} />
+                    </Link>
+                    <Link
+                      to="/results"
+                      className="flex min-h-12 items-center justify-between gap-2 rounded-xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-700 hover:border-emerald-300 hover:bg-emerald-50"
+                    >
+                      Review submissions <ArrowRight size={16} />
+                    </Link>
+                    <Link
+                      to="/admin/notifications"
+                      className="flex min-h-12 items-center justify-between gap-2 rounded-xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-700 hover:border-emerald-300 hover:bg-emerald-50"
+                    >
+                      Notification centre <ArrowRight size={16} />
+                    </Link>
+                  </>
+                ) : user?.role === "agent" ? (
+                  <>
+                    <Link
+                      to="/agent-results"
+                      className="flex min-h-12 items-center justify-between gap-2 rounded-xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-700 hover:border-emerald-300 hover:bg-emerald-50"
+                    >
+                      Submit a result <ArrowRight size={16} />
+                    </Link>
+                    <Link
+                      to="/incidents"
+                      className="flex min-h-12 items-center justify-between gap-2 rounded-xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-700 hover:border-emerald-300 hover:bg-emerald-50"
+                    >
+                      Report an incident <ArrowRight size={16} />
+                    </Link>
+                  </>
+                ) : null}
+                <Link
+                  to="/analytics"
+                  className="flex min-h-12 items-center justify-between gap-2 rounded-xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-700 hover:border-emerald-300 hover:bg-emerald-50"
+                >
+                  View analytics <ArrowRight size={16} />
+                </Link>
+              </div>
+            </div>
+          </section>
+
+          {/* RECENT SUBMISSIONS */}
+
+          <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm sm:p-6">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <h2 className="font-semibold text-slate-900">
+                  Recent submissions
+                </h2>
+                <p className="mt-1 text-sm text-slate-500">
+                  Latest agent reports for the selected election.
+                </p>
+              </div>
+              {(user?.role === "admin" || user?.role === "agent") && (
+                <Link
+                  to="/results"
+                  className="inline-flex min-h-11 items-center gap-2 rounded-lg px-3 text-sm font-semibold text-emerald-800 hover:bg-emerald-50"
+                >
+                  View results <ArrowRight size={16} />
+                </Link>
+              )}
+            </div>
+            {statistics.recent_submissions.length === 0 ? (
+              <p className="mt-5 rounded-xl bg-slate-50 p-5 text-sm text-slate-600">
+                No submissions have been received for this election yet.
+              </p>
+            ) : (
+              <ul className="mt-4 divide-y divide-slate-100">
+                {statistics.recent_submissions.map((submission) => (
+                  <li
+                    key={submission.id}
+                    className="flex flex-wrap items-center justify-between gap-3 py-4 first:pt-2 last:pb-2"
+                  >
+                    <div className="flex min-w-0 items-start gap-3">
+                      <span className="mt-0.5 rounded-lg bg-emerald-50 p-2 text-emerald-700">
+                        <ClipboardList size={17} />
+                      </span>
+                      <div className="min-w-0">
+                        <p className="break-words text-sm font-semibold text-slate-900">
+                          {submission.polling_unit_name}
+                        </p>
+                        <p className="mt-1 break-words text-xs text-slate-500">
+                          {submission.polling_unit_code} · {submission.ward},{" "}
+                          {submission.lga}
+                        </p>
+                      </div>
+                    </div>
+                    <span className="inline-flex items-center gap-1.5 whitespace-nowrap text-xs text-slate-500">
+                      <Clock3 size={14} />
+                      {formatDateTime(submission.submitted_at)}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+
           {/* SUMMARY CARDS */}
 
           <section className="grid min-w-0 grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4">
@@ -982,29 +1227,51 @@ const sortedLgaData = [...lgaData].sort(
           <section className="grid min-w-0 grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4">
             <StatCard
               title="Verified Results"
-              value={formatNumber(statistics.verification_summary?.verified ?? 0)}
-              description="Submissions approved through the review workflow."
+              value={formatNumber(
+                statistics.verification_summary
+                  ? statistics.verification_summary.verified ?? 0
+                  : null
+              )}
+              description={
+                statistics.verification_summary
+                  ? "Submissions approved through the review workflow."
+                  : workflowUnavailableMessage
+              }
               icon={CheckCircle2}
             />
             <StatCard
               title="Pending Review"
               value={formatNumber(
-                (statistics.verification_summary?.submitted ?? 0) +
-                (statistics.verification_summary?.under_review ?? 0)
+                statistics.verification_summary
+                  ? (statistics.verification_summary.submitted ?? 0) +
+                    (statistics.verification_summary.under_review ?? 0)
+                  : null
               )}
-              description="Submitted results still awaiting a final review decision."
+              description={
+                statistics.verification_summary
+                  ? "Submitted results still awaiting a final review decision."
+                  : workflowUnavailableMessage
+              }
               icon={ClipboardList}
             />
             <StatCard
               title="Active Anomaly Flags"
-              value={formatNumber(statistics.active_flags ?? 0)}
-              description="Automated data-quality observations requiring attention."
+              value={formatNumber(statistics.active_flags)}
+              description={
+                statistics.active_flags === null
+                  ? workflowUnavailableMessage
+                  : "Automated data-quality observations requiring attention."
+              }
               icon={AlertCircle}
             />
             <StatCard
               title="Open Incidents"
-              value={formatNumber(statistics.open_incidents ?? 0)}
-              description="Operational incidents currently open or under investigation."
+              value={formatNumber(statistics.open_incidents)}
+              description={
+                statistics.open_incidents === null
+                  ? workflowUnavailableMessage
+                  : "Operational incidents currently open or under investigation."
+              }
               icon={Activity}
             />
           </section>
@@ -1065,9 +1332,9 @@ const sortedLgaData = [...lgaData].sort(
 
           {/* SUBMISSION COVERAGE BAR */}
 
-          <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_1px_2px_rgba(15,23,42,0.03)] sm:p-6">
 
-            <h2 className="text-lg font-bold text-slate-900">
+            <h2 className="text-lg font-semibold tracking-tight text-slate-900">
 
               Polling-Unit Submission Coverage
 
@@ -1081,25 +1348,30 @@ const sortedLgaData = [...lgaData].sort(
 
             </p>
 
-            <div className="mt-6 h-4 overflow-hidden rounded-full bg-slate-100">
-
+            {statistics.submission_coverage_percent === null ? (
+              <p className="mt-6 rounded-xl bg-slate-50 px-4 py-3 text-sm text-slate-600">
+                Coverage is unavailable because no polling-unit denominator is available.
+              </p>
+            ) : (
               <div
-
-                className="h-full rounded-full bg-emerald-500 transition-all duration-500"
-
-                style={{
-
-                  width: `${
-
-                    statistics.submission_coverage_percent ?? 0
-
-                  }%`,
-
-                }}
-
-              />
-
-            </div>
+                className="mt-6 h-4 overflow-hidden rounded-full bg-slate-100"
+                role="progressbar"
+                aria-label="Polling-unit submission coverage"
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-valuenow={Math.min(
+                  100,
+                  Math.max(0, statistics.submission_coverage_percent)
+                )}
+              >
+                <div
+                  className="h-full rounded-full bg-emerald-500 transition-all duration-500"
+                  style={{
+                    width: `${Math.min(100, Math.max(0, statistics.submission_coverage_percent))}%`,
+                  }}
+                />
+              </div>
+            )}
 
             <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-sm">
 
@@ -1131,7 +1403,7 @@ const sortedLgaData = [...lgaData].sort(
 
           {/* PARTY RESULTS */}
 
-          <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_1px_2px_rgba(15,23,42,0.03)] sm:p-6">
 
             <div className="flex items-center gap-3">
 
@@ -1261,7 +1533,7 @@ const sortedLgaData = [...lgaData].sort(
 
           {/* LGA MONITORING */}
 
-          <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+          <section className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-[0_1px_2px_rgba(15,23,42,0.03)]">
 
             <div className="border-b border-slate-200 p-6">
 

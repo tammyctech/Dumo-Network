@@ -32,7 +32,7 @@ interface DashboardStats {
 interface DashboardStatisticsResponse {
   total_polling_units: number;
   submitted_polling_units: number;
-  verification_summary?: Record<string, number>;
+  verification_summary?: Record<string, number> | null;
   data_type: string;
   message?: string;
 }
@@ -97,16 +97,19 @@ export default function Analytics() {
           await dashboardResponse.json();
 
         const verification =
-          dashboardResponseData.verification_summary ?? {};
+          dashboardResponseData.verification_summary;
         const dashboardData: DashboardStats = {
           total_polling_units:
             dashboardResponseData.total_polling_units,
           reported_polling_units:
             dashboardResponseData.submitted_polling_units,
-          verified_results: verification.verified ?? 0,
-          pending_verification:
-            (verification.submitted ?? 0) +
-            (verification.under_review ?? 0),
+          verified_results: verification
+            ? verification.verified ?? 0
+            : null,
+          pending_verification: verification
+            ? (verification.submitted ?? 0) +
+              (verification.under_review ?? 0)
+            : null,
           data_type: dashboardResponseData.data_type,
           message:
             dashboardResponseData.message ??

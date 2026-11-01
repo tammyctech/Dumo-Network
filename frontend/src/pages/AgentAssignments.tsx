@@ -94,7 +94,8 @@ export default function AgentAssignments() {
     return !q || [a.election.name, a.agent.full_name, a.agent.email, a.polling_unit.name, a.polling_unit.code, a.polling_unit.lga, a.polling_unit.ward].some(value => (value || "").toLowerCase().includes(q));
   }), [electionAssignments, filterLga, filterWard, search]);
   const pages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
-  const visible = filtered.slice((Math.min(page, pages) - 1) * PAGE_SIZE, Math.min(page, pages) * PAGE_SIZE);
+  const currentPage = Math.min(page, pages);
+  const visible = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
   const covered = coveredUnitIds.size;
   const uncovered = filterElection ? Math.max(0, units.length - covered) : null;
 
@@ -131,6 +132,37 @@ export default function AgentAssignments() {
     finally { setRemovingId(null); }
   }
 
+  function renderAssignmentRow(assignment: Assignment) {
+    return (
+      <tr key={assignment.id}>
+        <td className="px-5 py-4">{assignment.election.name}</td>
+        <td className="px-5 py-4">
+          <div className="font-medium text-slate-900">{assignment.agent.full_name}</div>
+          <div className="text-xs text-slate-500">{assignment.agent.email}</div>
+        </td>
+        <td className="px-5 py-4">
+          <div>{assignment.polling_unit.name}</div>
+          <div className="text-xs text-slate-500">{assignment.polling_unit.code}</div>
+        </td>
+        <td className="px-5 py-4">
+          {assignment.polling_unit.lga}
+          <div className="text-xs text-slate-500">{assignment.polling_unit.ward}</div>
+        </td>
+        <td className="px-5 py-4">
+          <button
+            type="button"
+            disabled={removingId === assignment.id}
+            onClick={() => void removeAssignment(assignment)}
+            className="flex min-h-11 items-center gap-1 rounded-lg border border-red-200 px-3 py-2 text-xs font-medium text-red-700 disabled:opacity-50"
+          >
+            <Trash2 size={14} />
+            {removingId === assignment.id ? "Removing..." : "Remove"}
+          </button>
+        </td>
+      </tr>
+    );
+  }
+
   if (!isAdmin) return <div className="rounded-xl border border-red-200 bg-red-50 p-6 text-red-800">Administrator access required.</div>;
   const inputClass = "w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-800";
   const labelClass = "mb-1 block text-sm font-medium text-slate-700";
@@ -138,7 +170,7 @@ export default function AgentAssignments() {
   return <div className="space-y-6">
     <header className="flex flex-wrap items-center justify-between gap-3">
       <div><h1 className="text-2xl font-bold text-slate-900">Agent Assignment Management</h1><p className="mt-1 text-sm text-slate-500">Assign registered agents to imported Rivers State polling units.</p></div>
-      <button type="button" onClick={() => setRefreshKey(x => x + 1)} disabled={loading} className="flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm disabled:opacity-50"><RefreshCw size={16} /> Refresh</button>
+      <button type="button" onClick={() => setRefreshKey(x => x + 1)} disabled={loading} className="flex min-h-11 items-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm disabled:opacity-50"><RefreshCw size={16} className={loading ? "animate-spin" : ""} /> Refresh</button>
     </header>
 
     {error && <div role="alert" className="flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700"><AlertCircle size={18} className="shrink-0" />{error}</div>}
@@ -150,33 +182,71 @@ export default function AgentAssignments() {
         ["Assigned Agents", coveredAgentIds.size],
         ["Covered Polling Units", covered],
         ["Uncovered Polling Units", uncovered === null ? "Select election" : uncovered],
-      ].map(([label, value]) => <div key={String(label)} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"><div className="mb-2 flex items-center gap-2 text-sm text-slate-500"><Users size={17} />{label}</div><div className="text-2xl font-bold text-slate-900">{loading ? "..." : value}</div></div>)}
+      ].map(([label, value]) => <div key={String(label)} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"><div className="mb-2 flex items-center gap-2 text-sm text-slate-500"><Users size={17} />{label}</div><div className="text-2xl font-bold text-slate-900">{loading || (error && assignments.length === 0) ? "—" : value}</div></div>)}
     </section>
     {!filterElection && <p className="text-sm text-amber-700">Choose an election in the directory filters to calculate election-specific uncovered polling units.</p>}
 
     <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
       <h2 className="mb-4 text-lg font-semibold text-slate-900">Assign an Agent</h2>
       <form onSubmit={createAssignment} className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        <div><label className={labelClass}>Election</label><select required className={inputClass} value={selection.electionId} onChange={e => setSelection(s => ({ ...s, electionId: e.target.value }))}><option value="">Select election</option>{elections.map(e => <option key={e.id} value={e.id}>{e.name}</option>)}</select></div>
-        <div><label className={labelClass}>Active Agent</label><select required className={inputClass} value={selection.agentId} onChange={e => setSelection(s => ({ ...s, agentId: e.target.value }))}><option value="">Select agent</option>{agents.map(a => <option key={a.id} value={a.id}>{a.full_name} ({a.email})</option>)}</select></div>
-        <div><label className={labelClass}>LGA</label><select className={inputClass} value={selection.lga} onChange={e => setSelection(s => ({ ...s, lga: e.target.value, ward: "", unitId: "" }))}><option value="">All LGAs</option>{lgas.map(lga => <option key={lga}>{lga}</option>)}</select></div>
-        <div><label className={labelClass}>Ward</label><select className={inputClass} value={selection.ward} onChange={e => setSelection(s => ({ ...s, ward: e.target.value, unitId: "" }))}><option value="">All wards</option>{formWards.map(ward => <option key={ward}>{ward}</option>)}</select></div>
-        <div><label className={labelClass}>Polling Unit</label><select required className={inputClass} value={selection.unitId} onChange={e => setSelection(s => ({ ...s, unitId: e.target.value }))}><option value="">Select polling unit</option>{availableUnits.map(unit => <option key={unit.id} value={unit.id}>{unit.code} — {unit.name} ({unit.ward})</option>)}</select></div>
-        <div className="flex items-end"><button type="submit" disabled={saving || loading} className="w-full rounded-xl bg-emerald-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-emerald-800 disabled:opacity-50">{saving ? "Assigning..." : "Assign Agent"}</button></div>
+        <div><label htmlFor="assignment-election" className={labelClass}>Election</label><select id="assignment-election" required disabled={loading || elections.length === 0} className={inputClass} value={selection.electionId} onChange={e => setSelection(s => ({ ...s, electionId: e.target.value }))}><option value="">{elections.length ? "Select election" : "No elections available"}</option>{elections.map(e => <option key={e.id} value={e.id}>{e.name}</option>)}</select></div>
+        <div><label htmlFor="assignment-agent" className={labelClass}>Active Agent</label><select id="assignment-agent" required disabled={loading || agents.length === 0} className={inputClass} value={selection.agentId} onChange={e => setSelection(s => ({ ...s, agentId: e.target.value }))}><option value="">{agents.length ? "Select agent" : "No active agents available"}</option>{agents.map(a => <option key={a.id} value={a.id}>{a.full_name} ({a.email})</option>)}</select></div>
+        <div><label htmlFor="assignment-lga" className={labelClass}>LGA</label><select id="assignment-lga" disabled={loading || units.length === 0} className={inputClass} value={selection.lga} onChange={e => setSelection(s => ({ ...s, lga: e.target.value, ward: "", unitId: "" }))}><option value="">All LGAs</option>{lgas.map(lga => <option key={lga}>{lga}</option>)}</select></div>
+        <div><label htmlFor="assignment-ward" className={labelClass}>Ward</label><select id="assignment-ward" disabled={loading || units.length === 0} className={inputClass} value={selection.ward} onChange={e => setSelection(s => ({ ...s, ward: e.target.value, unitId: "" }))}><option value="">All wards</option>{formWards.map(ward => <option key={ward}>{ward}</option>)}</select></div>
+        <div><label htmlFor="assignment-unit" className={labelClass}>Polling Unit</label><select id="assignment-unit" required disabled={loading || availableUnits.length === 0} className={inputClass} value={selection.unitId} onChange={e => setSelection(s => ({ ...s, unitId: e.target.value }))}><option value="">{availableUnits.length ? "Select polling unit" : "No polling units available for this filter"}</option>{availableUnits.map(unit => <option key={unit.id} value={unit.id}>{unit.code} — {unit.name} ({unit.ward})</option>)}</select></div>
+        <div className="flex items-end"><button type="submit" disabled={saving || loading || elections.length === 0 || agents.length === 0 || availableUnits.length === 0} className="min-h-11 w-full rounded-xl bg-emerald-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-emerald-800 disabled:opacity-50">{saving ? "Assigning..." : "Assign Agent"}</button></div>
       </form>
+      {!loading && !error && elections.length === 0 && <p className="mt-4 text-sm text-amber-800">Create a Rivers State election before assigning agents.</p>}
+      {!loading && !error && agents.length === 0 && <p className="mt-2 text-sm text-amber-800">No active agent accounts are available to assign.</p>}
+      {!loading && !error && units.length === 0 && <p className="mt-2 text-sm text-amber-800">No Rivers State polling units are available. Import the polling-unit register first.</p>}
     </section>
 
     <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
       <div className="space-y-4 border-b border-slate-200 p-5"><h2 className="text-lg font-semibold text-slate-900">Assignment Directory</h2>
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-          <select className={inputClass} value={filterElection} onChange={e => setFilterElection(e.target.value)}><option value="">All elections</option>{elections.map(e => <option key={e.id} value={e.id}>{e.name}</option>)}</select>
-          <select className={inputClass} value={filterLga} onChange={e => { setFilterLga(e.target.value); setFilterWard(""); }}><option value="">All LGAs</option>{lgas.map(lga => <option key={lga}>{lga}</option>)}</select>
-          <select className={inputClass} value={filterWard} onChange={e => setFilterWard(e.target.value)}><option value="">All wards</option>{assignmentWards.map(ward => <option key={ward}>{ward}</option>)}</select>
-          <div className="relative"><Search size={16} className="absolute left-3 top-3 text-slate-400" /><input className={`${inputClass} pl-9`} placeholder="Search assignments" value={search} onChange={e => setSearch(e.target.value)} /></div>
+          <select aria-label="Filter assignments by election" disabled={loading} className={inputClass} value={filterElection} onChange={e => setFilterElection(e.target.value)}><option value="">All elections</option>{elections.map(e => <option key={e.id} value={e.id}>{e.name}</option>)}</select>
+          <select aria-label="Filter assignments by LGA" disabled={loading} className={inputClass} value={filterLga} onChange={e => { setFilterLga(e.target.value); setFilterWard(""); }}><option value="">All LGAs</option>{lgas.map(lga => <option key={lga}>{lga}</option>)}</select>
+          <select aria-label="Filter assignments by ward" disabled={loading} className={inputClass} value={filterWard} onChange={e => setFilterWard(e.target.value)}><option value="">All wards</option>{assignmentWards.map(ward => <option key={ward}>{ward}</option>)}</select>
+          <div className="relative"><Search size={16} className="absolute left-3 top-3 text-slate-400" /><input aria-label="Search assignments" className={`${inputClass} min-h-11 pl-9`} placeholder="Search assignments" value={search} onChange={e => setSearch(e.target.value)} /></div>
         </div>
       </div>
-      <div className="overflow-x-auto"><table className="w-full min-w-[850px] text-left text-sm"><thead className="bg-slate-50 text-slate-600"><tr><th className="px-5 py-3">Election</th><th className="px-5 py-3">Agent</th><th className="px-5 py-3">Polling Unit</th><th className="px-5 py-3">LGA / Ward</th><th className="px-5 py-3">Action</th></tr></thead><tbody className="divide-y divide-slate-100">{visible.map(a => <tr key={a.id}><td className="px-5 py-4">{a.election.name}</td><td className="px-5 py-4"><div className="font-medium text-slate-900">{a.agent.full_name}</div><div className="text-xs text-slate-500">{a.agent.email}</div></td><td className="px-5 py-4"><div>{a.polling_unit.name}</div><div className="text-xs text-slate-500">{a.polling_unit.code}</div></td><td className="px-5 py-4">{a.polling_unit.lga}<div className="text-xs text-slate-500">{a.polling_unit.ward}</div></td><td className="px-5 py-4"><button type="button" disabled={removingId === a.id} onClick={() => void removeAssignment(a)} className="flex items-center gap-1 rounded-lg border border-red-200 px-3 py-2 text-xs font-medium text-red-700 disabled:opacity-50"><Trash2 size={14} />{removingId === a.id ? "Removing..." : "Remove"}</button></td></tr>)}{!loading && visible.length === 0 && <tr><td colSpan={5} className="px-5 py-10 text-center text-slate-500">No assignments found.</td></tr>}</tbody></table></div>
-      <footer className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 p-4 text-sm text-slate-600"><span>{filtered.length} matching assignments</span><div className="flex items-center gap-3"><button type="button" className="rounded-lg border px-3 py-1.5 disabled:opacity-40" disabled={page <= 1} onClick={() => setPage(p => p - 1)}>Previous</button><span>Page {Math.min(page, pages)} of {pages}</span><button type="button" className="rounded-lg border px-3 py-1.5 disabled:opacity-40" disabled={page >= pages} onClick={() => setPage(p => p + 1)}>Next</button></div></footer>
+      <div className="overflow-x-auto">
+        <table className="w-full min-w-[850px] text-left text-sm">
+          <thead className="bg-slate-50 text-slate-600">
+            <tr>
+              <th scope="col" className="px-5 py-3">Election</th>
+              <th scope="col" className="px-5 py-3">Agent</th>
+              <th scope="col" className="px-5 py-3">Polling Unit</th>
+              <th scope="col" className="px-5 py-3">LGA / Ward</th>
+              <th scope="col" className="px-5 py-3">Action</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-100">
+            {loading ? (
+              <tr>
+                <td colSpan={5} className="px-5 py-10 text-center text-slate-500">
+                  <span role="status">Loading assignments…</span>
+                </td>
+              </tr>
+            ) : error && assignments.length === 0 ? (
+              <tr>
+                <td colSpan={5} className="px-5 py-10 text-center text-slate-500">
+                  Assignment records are unavailable. Use Refresh to try again.
+                </td>
+              </tr>
+            ) : visible.length === 0 ? (
+              <tr>
+                <td colSpan={5} className="px-5 py-10 text-center text-slate-500">
+                  No assignments match these filters.
+                </td>
+              </tr>
+            ) : (
+              visible.map(renderAssignmentRow)
+            )}
+          </tbody>
+        </table>
+      </div>
+      <footer className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 p-4 text-sm text-slate-600"><span>{loading || (error && assignments.length === 0) ? "— matching assignments" : `${filtered.length} matching assignments`}</span><div className="flex items-center gap-3"><button type="button" className="min-h-11 rounded-lg border px-3 py-1.5 disabled:opacity-40" disabled={currentPage <= 1} onClick={() => setPage(p => Math.max(1, p - 1))}>Previous</button><span>Page {currentPage} of {pages}</span><button type="button" className="min-h-11 rounded-lg border px-3 py-1.5 disabled:opacity-40" disabled={currentPage >= pages} onClick={() => setPage(p => Math.min(pages, p + 1))}>Next</button></div></footer>
     </section>
   </div>;
 }

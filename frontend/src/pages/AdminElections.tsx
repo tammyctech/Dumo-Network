@@ -287,7 +287,17 @@ const [electionsData, unitsData, agentsData] = await Promise.all([
 
   const wards = useMemo(() => uniqueSorted(registeredWards.map((ward) => ward.name)), [registeredWards]);
 
-const filteredPollingUnits = useMemo(() => {
+  const sortedElections = useMemo(
+    () =>
+      [...elections].sort(
+        (a, b) =>
+          new Date(b.election_date).getTime() -
+          new Date(a.election_date).getTime()
+      ),
+    [elections]
+  );
+
+  const filteredPollingUnits = useMemo(() => {
     if (!selectedLga || !selectedWard) return [];
     return pollingUnits.filter((unit) =>
       unit.lga?.trim().toLowerCase() === selectedLga.toLowerCase() &&
@@ -495,7 +505,7 @@ const inputClass = "mt-2 w-full rounded-xl border border-slate-300 bg-white px-4
 
 
 
-      {error && <div role="alert" className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">{error}</div>}
+      {error && <div role="alert" className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700"><span>{error}</span><button type="button" disabled={loadingOptions} onClick={() => setRefreshKey((value) => value + 1)} className="min-h-11 rounded-lg border border-red-300 px-3 font-semibold hover:bg-red-100 disabled:opacity-50">{loadingOptions ? "Refreshing…" : "Retry loading data"}</button></div>}
 
       {success && <div role="status" className="flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-700"><CheckCircle2 size={18} />{success}</div>}
 
@@ -509,7 +519,7 @@ const inputClass = "mt-2 w-full rounded-xl border border-slate-300 bg-white px-4
 
           { label: "Polling Units", value: pollingUnits.length, icon: MapPin },
 
-          { label: "Registered Agents", value: agents.length, icon: Users },
+          { label: "Active Agents", value: agents.length, icon: Users },
 
         ].map((card) => {
 
@@ -531,6 +541,78 @@ const Icon = card.icon;
 
       </div>
 
+      <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+        <div className="border-b border-slate-200 px-5 py-4 sm:px-6">
+          <h2 className="text-lg font-semibold text-slate-900">
+            Rivers State elections
+          </h2>
+          <p className="mt-1 text-sm text-slate-500">
+            Select an election to use it in the agent assignment form.
+          </p>
+        </div>
+
+        {loadingOptions && elections.length === 0 ? (
+          <div role="status" className="space-y-3 p-5">
+            <span className="sr-only">Loading elections</span>
+            {[0, 1, 2].map((row) => (
+              <div
+                key={row}
+                aria-hidden="true"
+                className="h-14 animate-pulse rounded-xl bg-slate-100"
+              />
+            ))}
+          </div>
+        ) : sortedElections.length === 0 ? (
+          <div className="p-6 text-sm text-slate-600">
+            {error
+              ? "Election records are unavailable. Refresh to try again."
+              : "No Rivers State elections have been created yet."}
+          </div>
+        ) : (
+          <ul className="divide-y divide-slate-100">
+            {sortedElections.map((election) => {
+              const isSelected =
+                selectedElection === String(election.id);
+
+              return (
+                <li
+                  key={election.id}
+                  className="flex flex-wrap items-center justify-between gap-3 px-5 py-4 sm:px-6"
+                >
+                  <div className="min-w-0">
+                    <p className="break-words text-sm font-semibold text-slate-900">
+                      {election.name}
+                    </p>
+                    <p className="mt-1 text-xs text-slate-500">
+                      {new Date(election.election_date).toLocaleString(
+                        "en-NG",
+                        {
+                          dateStyle: "medium",
+                          timeStyle: "short",
+                        }
+                      )}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    aria-pressed={isSelected}
+                    onClick={() =>
+                      setSelectedElection(String(election.id))
+                    }
+                    className={`min-h-11 rounded-lg border px-4 py-2 text-sm font-semibold transition ${
+                      isSelected
+                        ? "border-emerald-200 bg-emerald-50 text-emerald-800"
+                        : "border-slate-200 text-slate-700 hover:border-emerald-300 hover:bg-emerald-50"
+                    }`}
+                  >
+                    {isSelected ? "Selected for assignment" : "Use for assignments"}
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </section>
 
 
       <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -631,7 +713,7 @@ const Icon = card.icon;
 
 
 
-          {wardError && <p role="alert" className="text-sm text-red-700">Unable to load wards: {wardError}</p>}
+          {wardError && <div role="alert" className="flex flex-wrap items-center gap-3 text-sm text-red-700"><span>Unable to load wards: {wardError}</span><button type="button" onClick={() => setRefreshKey((value) => value + 1)} className="min-h-11 rounded-lg border border-red-200 px-3 font-semibold hover:bg-red-50">Retry</button></div>}
           {selectedWard && filteredPollingUnits.length === 0 && <p className="text-sm text-amber-700">No polling units registered for this ward.</p>}
 
           <label className="block text-sm font-medium text-slate-700">Select Polling Unit
