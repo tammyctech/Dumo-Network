@@ -147,6 +147,7 @@ export default function AppLayout() {
   const { user, logout } = useAuth();
   const { pathname } = useLocation();
   const navigate = useNavigate();
+  const isDashboardPage = pathname === "/dashboard";
 
   useEffect(() => {
     function closeMenusOutside(event: PointerEvent) {
@@ -637,7 +638,11 @@ export default function AppLayout() {
             PAGE CONTENT
         ================================================= */}
 
-        <main className="min-w-0 flex-1 bg-canvas px-4 py-7 sm:px-6 sm:py-8 lg:px-9 lg:py-9">
+        <main
+          className={`min-w-0 flex-1 px-4 py-7 sm:px-6 sm:py-8 lg:px-9 lg:py-9 ${
+            isDashboardPage ? "dashboard-canvas" : "bg-canvas"
+          }`}
+        >
 
           <div className="mx-auto w-full max-w-[1440px] min-w-0">
             <Outlet />

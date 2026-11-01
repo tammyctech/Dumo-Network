@@ -59,6 +59,15 @@ body {
   .input {
     @apply w-full rounded-xl border border-slate-300 bg-white px-3 py-3 text-slate-900 outline-none transition focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100;
   }
+
+  .dashboard-canvas {
+    background-color: #f5f7fa;
+    background-image: radial-gradient(
+      circle at 84% 0%,
+      rgb(52 211 153 / 0.12),
+      transparent 24rem
+    );
+  }
 }
 
 /* ==========================================
