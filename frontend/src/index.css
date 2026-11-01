@@ -146,3 +146,7 @@ header h2,
 header h3 {
   color: #0f172a;
 }
+
+.landing-page main .command-center-title {
+  color: #fff;
+}

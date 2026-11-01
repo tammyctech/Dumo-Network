@@ -671,7 +671,7 @@ const workflowUnavailableMessage = statistics?.election
 
       ===================================== */}
 
-      <div className="rounded-xl border border-slate-200 bg-white p-4 sm:p-5">
+      <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 sm:p-5">
 
         <div className="flex items-start gap-3">
 
@@ -679,19 +679,19 @@ const workflowUnavailableMessage = statistics?.election
 
             size={22}
 
-            className="mt-0.5 shrink-0 text-amber-700"
+            className="mt-0.5 shrink-0 text-amber-600"
 
           />
 
           <div>
 
-            <h2 className="font-bold text-slate-900">
+            <h2 className="font-bold text-amber-900">
 
               Unofficial — Agent-Submitted Data
 
             </h2>
 
-            <p className="mt-2 text-sm leading-6 text-slate-600">
+            <p className="mt-2 text-sm leading-6 text-amber-800">
 
               These statistics are compiled from submissions
 

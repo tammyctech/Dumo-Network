@@ -844,7 +844,7 @@ export default function LandingPage() {
             <div className="mt-14 flex flex-col gap-6 rounded-3xl bg-emerald-900 p-7 text-white sm:flex-row sm:items-center sm:justify-between sm:p-10">
               <div>
                 <p className="text-sm font-bold text-emerald-100">Part of the monitoring network?</p>
-                <h3 className="mt-2 text-3xl font-black">Sign in to your command center.</h3>
+                <h3 className="command-center-title mt-2 text-3xl font-black text-white">Sign in to your command center.</h3>
               </div>
               <Link
                 to="/login"
