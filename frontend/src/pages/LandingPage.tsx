@@ -1,9 +1,10 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   Activity,
   ArrowRight,
   BarChart3,
+  Camera,
   ChevronRight,
   Clock3,
   Database,
@@ -17,6 +18,8 @@ import {
   ShieldCheck,
   X,
 } from "lucide-react";
+import { toBlob } from "html-to-image";
+import ScreenshotPreview from "../components/ScreenshotPreview";
 
 const API_URL = (
   import.meta.env.VITE_API_URL || "http://127.0.0.1:8000"
@@ -164,10 +167,14 @@ function MapPanel({
   geoJson,
   lgaResults,
   mapLoading,
+  mapError,
+  onRetry,
 }: {
   geoJson: GeoJson | null;
   lgaResults: LgaResult[];
   mapLoading: boolean;
+  mapError: string;
+  onRetry: () => void;
 }) {
   const [selected, setSelected] = useState<string | null>(null);
   const results = useMemo(
@@ -184,9 +191,9 @@ function MapPanel({
     const maxX = Math.max(...longitudes);
     const minY = Math.min(...latitudes);
     const maxY = Math.max(...latitudes);
-    const width = 720;
+    const width = 450;
     const height = 500;
-    const padding = 20;
+    const padding = 14;
     const scale = Math.min(
       (width - padding * 2) / (maxX - minX),
       (height - padding * 2) / (maxY - minY)
@@ -226,14 +233,14 @@ function MapPanel({
 
   return (
     <div className="grid gap-6 xl:grid-cols-[minmax(0,1.45fr)_minmax(260px,0.55fr)]">
-      <div className="relative min-h-[420px] overflow-hidden rounded-3xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6">
+      <div className="relative min-h-[420px] overflow-hidden rounded-2xl border border-slate-200 bg-white p-1 shadow-sm sm:rounded-3xl sm:p-6">
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_30%,rgba(16,185,129,0.08),transparent_55%)]" />
         {geoJson && projection ? (
           <svg
             viewBox={`0 0 ${projection.width} ${projection.height}`}
             role="img"
             aria-label="Rivers State election leaders by local government area"
-            className="relative h-full min-h-[390px] w-full drop-shadow-2xl"
+            className="relative block h-[400px] w-full drop-shadow-2xl sm:h-[500px] xl:h-[620px]"
           >
             {geoJson.features.map((feature) => {
               const name = feature.properties.ADM2_EN || "Unknown LGA";
@@ -243,12 +250,12 @@ function MapPanel({
                 <path
                   key={name}
                   d={featurePath(feature)}
-                  fill={partyColor(result?.leader?.party)}
+                  fill={result?.leader ? partyColor(result.leader.party) : "#e8f3ed"}
                   fillOpacity={
-                    result?.leader ? 0.5 + leaderVoteShare(result) * 0.5 : 0.32
+                    result?.leader ? 0.5 + leaderVoteShare(result) * 0.5 : 1
                   }
-                  stroke={active ? "#047857" : "#a7f3d0"}
-                  strokeWidth={active ? 3 : 1.15}
+                  stroke={active ? "#047857" : "#86a995"}
+                  strokeWidth={active ? 3 : 1.5}
                   className="cursor-pointer transition hover:brightness-125"
                   onMouseEnter={() => setSelected(name)}
                   onFocus={() => setSelected(name)}
@@ -268,11 +275,19 @@ function MapPanel({
           <div className="flex min-h-[390px] flex-col items-center justify-center px-6 text-center text-emerald-700">
             <MapIcon size={30} />
             <p className="mt-3 font-semibold text-slate-900">
-              Map boundaries are temporarily unavailable
+              {mapError || "Map boundaries are temporarily unavailable"}
             </p>
             <p className="mt-1 max-w-sm text-sm">
-              Statewide totals and election updates remain available below.
+              Statewide totals and election updates remain available below. Try again to reload the map.
             </p>
+            <button
+              type="button"
+              onClick={onRetry}
+              className="mt-4 inline-flex min-h-10 items-center gap-2 rounded-lg border border-emerald-200 bg-white px-3 text-sm font-semibold text-emerald-800 hover:bg-emerald-50"
+            >
+              <RefreshCw size={15} />
+              Retry map
+            </button>
           </div>
         )}
       </div>
@@ -369,20 +384,74 @@ export default function LandingPage() {
   const [geoJson, setGeoJson] = useState<GeoJson | null>(null);
   const [loading, setLoading] = useState(true);
   const [mapLoading, setMapLoading] = useState(true);
+  const [mapError, setMapError] = useState("");
   const [error, setError] = useState("");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [screenshotMessage, setScreenshotMessage] = useState("");
+  const [savingScreenshot, setSavingScreenshot] = useState(false);
+  const [screenshotImageUrl, setScreenshotImageUrl] = useState("");
+  const screenshotContentRef = useRef<HTMLElement>(null);
+
+  async function saveScreenshot() {
+    const content = screenshotContentRef.current;
+    if (!content) {
+      setScreenshotMessage("The page is not ready to capture yet.");
+      return;
+    }
+
+    setScreenshotMessage("");
+    setSavingScreenshot(true);
+    try {
+      const image = await toBlob(content, {
+        backgroundColor: "#f5f7f6",
+        cacheBust: true,
+        pixelRatio: 2,
+      });
+      if (!image) throw new Error("Image could not be generated.");
+      setScreenshotImageUrl(URL.createObjectURL(image));
+      setScreenshotMessage("Screenshot ready to preview or download.");
+    } catch (caught) {
+      setScreenshotMessage(
+        caught instanceof Error
+          ? `Unable to save screenshot: ${caught.message}`
+          : "Unable to save screenshot."
+      );
+    } finally {
+      setSavingScreenshot(false);
+    }
+  }
 
   useEffect(() => {
     const controller = new AbortController();
     async function load() {
       setLoading(true);
       setMapLoading(true);
+      setMapError("");
       setError("");
+      void fetch(RIVERS_GEOJSON_URL, { signal: controller.signal })
+        .then(async (response) => {
+          if (!response.ok) {
+            throw new Error(`Map service returned HTTP ${response.status}.`);
+          }
+          const boundaries = (await response.json()) as GeoJson;
+          if (!Array.isArray(boundaries.features) || boundaries.features.length === 0) {
+            throw new Error("The map service returned no Rivers State boundaries.");
+          }
+          if (!controller.signal.aborted) setGeoJson(boundaries);
+        })
+        .catch((caught: unknown) => {
+          if (controller.signal.aborted) return;
+          setMapError(
+            caught instanceof Error
+              ? caught.message
+              : "Map boundaries could not be loaded."
+          );
+        })
+        .finally(() => {
+          if (!controller.signal.aborted) setMapLoading(false);
+        });
       try {
-        const mapRequest = fetch(RIVERS_GEOJSON_URL, {
-          signal: controller.signal,
-        }).catch(() => null);
         const overviewResponse = await fetch(
           `${API_URL}/api/public/election-overview`,
           { signal: controller.signal }
@@ -392,10 +461,6 @@ export default function LandingPage() {
         }
         const overviewData = (await overviewResponse.json()) as PublicOverview;
         setOverview(overviewData);
-        const mapResponse = await mapRequest;
-        if (mapResponse?.ok) {
-          setGeoJson((await mapResponse.json()) as GeoJson);
-        }
       } catch (caught) {
         if (controller.signal.aborted) return;
         setError(
@@ -522,7 +587,7 @@ export default function LandingPage() {
         )}
       </header>
 
-      <main>
+      <main ref={screenshotContentRef}>
         <section className="relative isolate overflow-hidden border-b border-emerald-950/5 bg-[#f7f8f5] pb-16 pt-14 text-slate-950 sm:pb-20 sm:pt-20">
           <div className="pointer-events-none absolute -right-36 -top-40 h-[34rem] w-[34rem] rounded-full border border-emerald-900/[0.06]" />
           <div className="pointer-events-none absolute -right-16 -top-20 h-[25rem] w-[25rem] rounded-full border border-emerald-900/[0.06]" />
@@ -658,8 +723,8 @@ export default function LandingPage() {
           </div>
         </section>
 
-        <section id="results" className="scroll-mt-24 bg-[#f5f7f6] py-20 sm:py-24">
-          <div className="mx-auto max-w-7xl px-5 lg:px-8">
+        <section id="results" className="scroll-mt-24 bg-[#f5f7f6] py-16 sm:py-24">
+          <div className="mx-auto max-w-7xl px-2 sm:px-5 lg:px-8">
             <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
               <div>
                 <p className="text-xs font-black uppercase tracking-[0.2em] text-emerald-700">
@@ -685,11 +750,37 @@ export default function LandingPage() {
               </div>
             )}
 
-            <div className="mt-10 rounded-[1.75rem] border border-slate-200/80 bg-white p-3 shadow-xl shadow-slate-900/[0.04] sm:p-5">
+            <div className="mt-8 flex flex-wrap items-center gap-3">
+              <button
+                type="button"
+                onClick={() => void saveScreenshot()}
+                disabled={savingScreenshot}
+                className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 text-sm font-semibold text-emerald-800 transition hover:border-emerald-300 hover:bg-emerald-100"
+              >
+                <Camera size={17} />
+                {savingScreenshot ? "Preparing screenshot…" : "Save screenshot"}
+              </button>
+              {screenshotMessage && (
+                <span
+                  role={screenshotMessage.startsWith("Unable") ? "alert" : "status"}
+                  className={`text-sm ${
+                    screenshotMessage.startsWith("Unable")
+                      ? "text-red-700"
+                      : "text-emerald-800"
+                  }`}
+                >
+                  {screenshotMessage}
+                </span>
+              )}
+            </div>
+
+            <div className="mt-8 -mx-1 rounded-2xl border border-slate-200/80 bg-white p-1 shadow-xl shadow-slate-900/[0.04] sm:mx-0 sm:mt-10 sm:rounded-[1.75rem] sm:p-5">
               <MapPanel
                 geoJson={geoJson}
                 lgaResults={displayOverview.lga_results}
                 mapLoading={mapLoading}
+                mapError={mapError}
+                onRetry={() => setRefreshKey((value) => value + 1)}
               />
             </div>
 
@@ -862,6 +953,18 @@ export default function LandingPage() {
           </div>
         </section>
       </main>
+
+      {screenshotImageUrl && (
+        <ScreenshotPreview
+          imageUrl={screenshotImageUrl}
+          filename="dumo-youth-network-election-results.png"
+          onClose={() => {
+            URL.revokeObjectURL(screenshotImageUrl);
+            setScreenshotImageUrl("");
+            setScreenshotMessage("");
+          }}
+        />
+      )}
 
       <footer className="border-t border-slate-200 bg-white py-10">
         <div className="mx-auto flex max-w-7xl flex-col gap-6 px-5 text-sm text-slate-500 sm:flex-row sm:items-center sm:justify-between lg:px-8">

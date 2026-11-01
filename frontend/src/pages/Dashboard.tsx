@@ -274,7 +274,7 @@ description,
 
         </div>
 
-        <div className="shrink-0 rounded-xl bg-slate-100 p-3 text-slate-600 ring-1 ring-slate-200 transition group-hover:bg-slate-200">
+        <div className="shrink-0 rounded-xl bg-emerald-50 p-3 text-emerald-800 ring-1 ring-emerald-100 transition group-hover:bg-emerald-100">
           <Icon size={21} />
 
         </div>
@@ -914,7 +914,7 @@ const workflowUnavailableMessage = statistics?.election
           <section className="grid min-w-0 gap-5 xl:grid-cols-2">
             <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm sm:p-6">
               <div className="flex items-start gap-3">
-                <span className="rounded-xl bg-slate-100 p-2.5 text-slate-600">
+                <span className="rounded-xl bg-emerald-50 p-2.5 text-emerald-800">
                   <AlertCircle size={19} />
                 </span>
                 <div>
@@ -1108,7 +1108,7 @@ const workflowUnavailableMessage = statistics?.election
                     className="flex flex-wrap items-center justify-between gap-3 py-4 first:pt-2 last:pb-2"
                   >
                     <div className="flex min-w-0 items-start gap-3">
-                      <span className="mt-0.5 rounded-lg bg-slate-100 p-2 text-slate-600">
+                      <span className="mt-0.5 rounded-lg bg-emerald-50 p-2 text-emerald-800">
                         <ClipboardList size={17} />
                       </span>
                       <div className="min-w-0">
@@ -1402,7 +1402,9 @@ const workflowUnavailableMessage = statistics?.election
 
             <div className="flex items-center gap-3">
 
-              <BarChart3 size={21} className="text-slate-500" />
+              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-50 text-emerald-800">
+                <BarChart3 size={21} />
+              </span>
 
               <h2 className="text-lg font-bold text-slate-900">
 

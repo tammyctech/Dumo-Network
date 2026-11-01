@@ -4,7 +4,8 @@ import {
   Route,
   Routes,
 } from "react-router-dom";
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
+import { Activity } from "lucide-react";
 
 // Authentication
 import { AuthProvider } from "./context/AuthContext";
@@ -43,10 +44,24 @@ const AdminNotifications = lazy(() => import("./pages/AdminNotifications"));
 const BulkImport = lazy(() => import("./pages/BulkImport"));
 
 export default function App() {
+  const [initialLoadingComplete, setInitialLoadingComplete] = useState(false);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      setInitialLoadingComplete(true);
+    }, 2000);
+
+    return () => window.clearTimeout(timer);
+  }, []);
+
+  if (!initialLoadingComplete) {
+    return <LoadingScreen />;
+  }
+
   return (
     <BrowserRouter>
       <AuthProvider>
-        <Suspense fallback={<div className="flex min-h-screen items-center justify-center bg-slate-50 text-sm font-semibold text-slate-600">Loading Dumo Youth Network Election Monitoring System…</div>}>
+        <Suspense fallback={<LoadingScreen />}>
         <Routes>
 
           {/* ============================================
@@ -189,5 +204,31 @@ export default function App() {
         </Suspense>
       </AuthProvider>
     </BrowserRouter>
+  );
+}
+
+function LoadingScreen() {
+  return (
+    <main
+      role="status"
+      aria-live="polite"
+      className="flex min-h-screen items-center justify-center bg-[#F5F7FA] px-5"
+    >
+      <div className="flex flex-col items-center text-center">
+        <span className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-700 text-white shadow-lg shadow-emerald-900/15">
+          <Activity size={26} />
+        </span>
+        <p className="text-sm font-extrabold uppercase tracking-[0.12em] text-slate-900">
+          Dumo Youth Network
+        </p>
+        <p className="mt-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-emerald-800">
+          Election Monitoring System
+        </p>
+        <span className="mt-6 h-1 w-24 overflow-hidden rounded-full bg-emerald-100">
+          <span className="block h-full w-1/2 animate-pulse rounded-full bg-emerald-700" />
+        </span>
+        <span className="sr-only">Loading application…</span>
+      </div>
+    </main>
   );
 }
