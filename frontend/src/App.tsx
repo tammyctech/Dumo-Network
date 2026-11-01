@@ -43,25 +43,22 @@ const AdminNotifications = lazy(() => import("./pages/AdminNotifications"));
 const BulkImport = lazy(() => import("./pages/BulkImport"));
 
 export default function App() {
-  const [initialLoadingComplete, setInitialLoadingComplete] = useState(false);
+  const [showInitialLoading, setShowInitialLoading] = useState(true);
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
-      setInitialLoadingComplete(true);
+      setShowInitialLoading(false);
     }, 2000);
 
     return () => window.clearTimeout(timer);
   }, []);
 
-  if (!initialLoadingComplete) {
-    return <LoadingScreen />;
-  }
-
   return (
-    <BrowserRouter>
-      <AuthProvider>
-        <Suspense fallback={<LoadingScreen />}>
-        <Routes>
+    <>
+      <BrowserRouter>
+        <AuthProvider>
+          <Suspense fallback={<div className="min-h-screen bg-[#F5F7FA]" />}>
+            <Routes>
 
           {/* ============================================
               PUBLIC ROUTES
@@ -199,10 +196,12 @@ export default function App() {
             element={<Navigate to="/login" replace />}
           />
 
-        </Routes>
-        </Suspense>
-      </AuthProvider>
-    </BrowserRouter>
+            </Routes>
+          </Suspense>
+        </AuthProvider>
+      </BrowserRouter>
+      {showInitialLoading && <LoadingScreen />}
+    </>
   );
 }
 
@@ -211,7 +210,7 @@ function LoadingScreen() {
     <main
       role="status"
       aria-live="polite"
-      className="flex min-h-screen items-center justify-center bg-[#F5F7FA] px-5"
+      className="fixed inset-0 z-[200] flex min-h-screen items-center justify-center bg-[#F5F7FA] px-5"
     >
       <div className="flex flex-col items-center text-center">
         <p className="text-sm font-extrabold uppercase tracking-[0.12em] text-slate-900">
