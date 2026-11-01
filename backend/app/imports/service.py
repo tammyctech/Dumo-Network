@@ -28,7 +28,7 @@ MAX_ROWS = 10000
 # ============================================================
 
 # Alternative names commonly found in CSV files.
-# Each maps to the canonical LGA name used by Dumo Network.
+# Each maps to the canonical LGA name used by the Dumo Youth Network Election Monitoring System.
 
 LGA_ALIASES = {
     "abua odual": "Abua/Odual",

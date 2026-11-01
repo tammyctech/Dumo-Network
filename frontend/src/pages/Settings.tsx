@@ -15,16 +15,11 @@ import {
   Eye,
   EyeOff,
   LockKeyhole,
-  Sun,
-  Moon,
-  Monitor,
 } from "lucide-react";
 
 import { useAuth } from "../context/AuthContext";
 import { changePassword } from "../services/api";
 import EnableNotifications from "../components/EnableNotifications";
-import { useTheme } from "../context/useTheme";
-import type { ThemePreference } from "../context/theme";
 import { useSearchParams } from "react-router-dom";
 
 type SettingsTab =
@@ -36,7 +31,6 @@ type SettingsTab =
 
 export default function Settings() {
   const { user, token, updateProfile } = useAuth();
-  const { preference, resolvedTheme, setPreference } = useTheme();
   const [searchParams] = useSearchParams();
 
   // ==========================================
@@ -302,7 +296,7 @@ export default function Settings() {
             </h1>
 
             <p className="text-sm text-slate-500">
-              Manage your Dumo Network account and preferences.
+              Manage your Dumo Youth Network Election Monitoring System account and preferences.
             </p>
           </div>
         </div>
@@ -607,7 +601,7 @@ export default function Settings() {
 
                     <p className="mt-1 text-sm text-slate-500">
                       Manage your password and protect your
-                      Dumo Network account.
+                      Dumo Youth Network Election Monitoring System account.
                     </p>
                   </div>
                 </div>
@@ -849,100 +843,21 @@ export default function Settings() {
                 </h2>
 
                 <p className="text-sm text-slate-500">
-                  Customize the appearance of your workspace.
+                  The workspace uses a consistent light theme with restrained green accents.
                 </p>
 
-                <div className="grid gap-4 md:grid-cols-3">
-                  {(
-                    [
-                      {
-                        id: "light",
-                        name: "Light",
-                        description: "Use a bright workspace.",
-                        icon: Sun,
-                        preview: "#ffffff",
-                      },
-                      {
-                        id: "dark",
-                        name: "Dark",
-                        description: "Reduce glare in low light.",
-                        icon: Moon,
-                        preview: "#0f172a",
-                      },
-                      {
-                        id: "system",
-                        name: "System",
-                        description: "Match your device setting.",
-                        icon: Monitor,
-                        preview:
-                          "linear-gradient(to right, #ffffff 50%, #0f172a 50%)",
-                      },
-                    ] as const
-                  ).map((option) => {
-                    const Icon = option.icon;
-                    const selected = preference === option.id;
-
-                    return (
-                      <button
-                        key={option.id}
-                        type="button"
-                        aria-pressed={selected}
-                        onClick={() =>
-                          setPreference(option.id as ThemePreference)
-                        }
-                        className={`rounded-2xl border p-4 text-left transition ${
-                          selected
-                            ? "border-emerald-500 bg-emerald-50 ring-2 ring-emerald-500/20"
-                            : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50"
-                        }`}
-                      >
-                        <div
-                          className="h-24 rounded-xl border border-slate-200 p-3 shadow-inner"
-                          style={{ background: option.preview }}
-                        >
-                          <div className="flex gap-2">
-                            <span className="h-2 w-10 rounded-full bg-emerald-500" />
-                            <span className="h-2 w-5 rounded-full bg-slate-300" />
-                          </div>
-                          <div className="mt-3 h-2 w-3/4 rounded-full bg-slate-400/50" />
-                          <div className="mt-2 h-2 w-1/2 rounded-full bg-slate-400/30" />
-                        </div>
-
-                        <div className="mt-4 flex items-start gap-3">
-                          <Icon
-                            size={19}
-                            className={
-                              selected
-                                ? "text-emerald-700"
-                                : "text-slate-500"
-                            }
-                          />
-                          <div className="min-w-0 flex-1">
-                            <div className="flex items-center justify-between gap-2">
-                              <p className="font-semibold text-slate-900">
-                                {option.name}
-                              </p>
-                              {selected && (
-                                <CheckCircle2
-                                  size={17}
-                                  className="text-emerald-600"
-                                />
-                              )}
-                            </div>
-                            <p className="mt-1 text-xs text-slate-500">
-                              {option.description}
-                            </p>
-                          </div>
-                        </div>
-                      </button>
-                    );
-                  })}
-                </div>
-
-                <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-600">
-                  Current appearance: <strong className="capitalize text-slate-900">
-                    {resolvedTheme}
-                  </strong>. Your preference is saved on this device.
+                <div className="flex items-start gap-4 rounded-2xl border border-emerald-200 bg-emerald-50/70 p-5">
+                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white text-emerald-700 shadow-sm">
+                    <Palette size={21} />
+                  </span>
+                  <div>
+                    <p className="font-semibold text-slate-900">
+                      Light appearance is enabled
+                    </p>
+                    <p className="mt-1 text-sm leading-6 text-slate-600">
+                      Pages, navigation, and forms stay bright and readable, with green reserved for key actions and status highlights.
+                    </p>
+                  </div>
                 </div>
               </div>
             )}
@@ -958,7 +873,7 @@ export default function Settings() {
                 </h2>
 
                 <p className="text-sm text-slate-500">
-                  Configure Dumo Network administration settings.
+                  Configure Dumo Youth Network Election Monitoring System administration settings.
                 </p>
 
                 <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-5 text-sm text-emerald-800">

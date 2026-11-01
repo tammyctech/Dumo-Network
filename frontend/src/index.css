@@ -7,12 +7,11 @@
   --color-brand-100: #dcfce7;
   --color-brand-600: #059669;
   --color-brand-700: #047857;
-  --color-brand-950: #0b1715;
   --color-canvas: #f6f8f7;
 }
 
 /* ==========================================
-   DUMO NETWORK — GLOBAL STYLES
+   DUMO YOUTH NETWORK ELECTION MONITORING SYSTEM — GLOBAL STYLES
 ========================================== */
 
 :root {
@@ -108,154 +107,6 @@ video {
   }
 }
 
-/* ==========================================
-   APPLICATION DARK THEME
-========================================== */
-
-html,
-body,
-#root {
-  transition:
-    background-color 160ms ease,
-    color 160ms ease;
-}
-
-html.dark,
-html.dark body,
-html.dark #root {
-  color: #e2e8f0;
-  background-color: #020617;
-}
-
-.dark .bg-white {
-  background-color: #0f172a;
-}
-
-.dark .bg-slate-50 {
-  background-color: #020617;
-}
-
-.dark .bg-slate-100 {
-  background-color: #1e293b;
-}
-
-.dark .bg-slate-200 {
-  background-color: #334155;
-}
-
-.dark .text-slate-900,
-.dark .text-gray-900,
-.dark main h1,
-.dark main h2,
-.dark main h3,
-.dark main h4,
-.dark header h1,
-.dark header h2,
-.dark header h3 {
-  color: #f8fafc;
-}
-
-.dark .text-slate-800,
-.dark .text-gray-800 {
-  color: #e2e8f0;
-}
-
-.dark .text-slate-700,
-.dark .text-gray-700 {
-  color: #cbd5e1;
-}
-
-.dark .text-slate-600,
-.dark .text-gray-600 {
-  color: #94a3b8;
-}
-
-.dark .text-slate-500,
-.dark .text-gray-500 {
-  color: #94a3b8;
-}
-
-.dark .text-slate-400,
-.dark .text-gray-400 {
-  color: #cbd5e1;
-}
-
-.dark .border-slate-100,
-.dark .border-gray-100 {
-  border-color: #1e293b;
-}
-
-.dark .border-slate-200,
-.dark .border-gray-200 {
-  border-color: #334155;
-}
-
-.dark .border-slate-300,
-.dark .border-gray-300 {
-  border-color: #475569;
-}
-
-.dark .bg-emerald-50 {
-  background-color: #052e2b;
-}
-
-.dark .bg-emerald-100 {
-  background-color: #064e3b;
-}
-
-.dark .bg-blue-50 {
-  background-color: #172554;
-}
-
-.dark .bg-amber-50 {
-  background-color: #451a03;
-}
-
-.dark .bg-red-50 {
-  background-color: #450a0a;
-}
-
-.dark .border-emerald-200 {
-  border-color: #047857;
-}
-
-.dark .border-blue-200 {
-  border-color: #1d4ed8;
-}
-
-.dark .border-amber-200 {
-  border-color: #b45309;
-}
-
-.dark .border-red-200 {
-  border-color: #b91c1c;
-}
-
-.dark input,
-.dark select,
-.dark textarea {
-  color: #f8fafc;
-  background-color: #0f172a;
-}
-
-.dark input::placeholder,
-.dark textarea::placeholder {
-  color: #64748b;
-}
-
-.dark option {
-  color: #f8fafc;
-  background-color: #0f172a;
-}
-
-.dark .shadow-sm,
-.dark .shadow-md,
-.dark .shadow-lg,
-.dark .shadow-xl,
-.dark .shadow-2xl {
-  --tw-shadow-color: rgb(0 0 0 / 0.35);
-}
-
 @media (prefers-reduced-motion: reduce) {
   html,
   body,
@@ -272,121 +123,11 @@ html.dark #root {
     transition-duration: 0.01ms !important;
   }
 }
-
-.dark .light-page {
-  color: #0f172a;
-  background-color: #f5f7f6;
-  color-scheme: light;
-}
-
-.dark .light-page .bg-white {
-  background-color: #fff;
-}
-
-.dark .light-page .bg-slate-50 {
-  background-color: #f8fafc;
-}
-
-.dark .light-page .bg-slate-100 {
-  background-color: #f1f5f9;
-}
-
-.dark .light-page .bg-slate-200 {
-  background-color: #e2e8f0;
-}
-
-.dark .light-page .bg-emerald-50 {
-  background-color: #ecfdf5;
-}
-
-.dark .light-page .bg-emerald-100 {
-  background-color: #d1fae5;
-}
-
-.dark .light-page .bg-amber-50 {
-  background-color: #fffbeb;
-}
-
-.dark .light-page .bg-red-50 {
-  background-color: #fef2f2;
-}
-
-.dark .light-page .text-slate-900,
-.dark .light-page .text-gray-900 {
-  color: #0f172a;
-}
-
-.dark .light-page .text-slate-800,
-.dark .light-page .text-gray-800 {
-  color: #1e293b;
-}
-
-.dark .light-page .text-slate-700,
-.dark .light-page .text-gray-700 {
-  color: #334155;
-}
-
-.dark .light-page .text-slate-600,
-.dark .light-page .text-gray-600 {
-  color: #475569;
-}
-
-.dark .light-page .text-slate-500,
-.dark .light-page .text-gray-500 {
-  color: #64748b;
-}
-
-.dark .light-page .text-slate-400,
-.dark .light-page .text-gray-400 {
-  color: #94a3b8;
-}
-
-.dark .light-page h1,
-.dark .light-page h2,
-.dark .light-page h3,
-.dark .light-page h4 {
-  color: inherit;
-}
-
-.dark .light-page #methodology h2 {
-  color: transparent;
-}
-
-.dark .light-page .border-slate-100,
-.dark .light-page .border-gray-100 {
-  border-color: #f1f5f9;
-}
-
-.dark .light-page .border-slate-200,
-.dark .light-page .border-gray-200 {
-  border-color: #e2e8f0;
-}
-
-.dark .light-page .border-slate-300,
-.dark .light-page .border-gray-300 {
-  border-color: #cbd5e1;
-}
-
-.dark .light-page .border-emerald-200 {
-  border-color: #a7f3d0;
-}
-
-.dark .light-page .border-blue-200 {
-  border-color: #bfdbfe;
-}
-
-.dark .light-page .border-amber-200 {
-  border-color: #fde68a;
-}
-
-.dark .light-page .border-red-200 {
-  border-color: #fecaca;
-}
 /* ==========================================
-   DUMO NETWORK — HEADING VISIBILITY FIX
+   DUMO YOUTH NETWORK ELECTION MONITORING SYSTEM — HEADING VISIBILITY FIX
 ========================================== */
 
-/* Dark headings on light backgrounds */
+/* Keep headings legible on light backgrounds. */
 main h1,
 main h2,
 main h3,
@@ -395,11 +136,4 @@ header h1,
 header h2,
 header h3 {
   color: #0f172a;
-}
-
-/* Keep white headings visible on dark backgrounds */
-.bg-slate-950 h1,
-.bg-slate-950 h2,
-.bg-slate-950 h3 {
-  color: #ffffff;
 }

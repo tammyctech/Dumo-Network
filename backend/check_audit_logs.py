@@ -21,7 +21,7 @@ def check_audit_logs():
             print("No audit logs found.")
             return
 
-        print("\nDUMO NETWORK - AUDIT LOGS")
+        print("\nDUMO YOUTH NETWORK ELECTION MONITORING SYSTEM - AUDIT LOGS")
         print("=" * 40)
 
         for log in logs:

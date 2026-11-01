@@ -164,19 +164,19 @@ export default function Register() {
           LEFT PANEL — BRAND EXPERIENCE
       ===================================== */}
 
-      <div className="relative hidden min-h-screen overflow-hidden bg-[#071C25] text-white lg:flex lg:flex-col">
+      <div className="relative hidden min-h-screen overflow-hidden bg-gradient-to-br from-white via-white to-emerald-50 text-slate-900 lg:flex lg:flex-col">
 
         {/* BACKGROUND EFFECTS */}
 
-        <div className="pointer-events-none absolute -left-40 -top-40 h-[500px] w-[500px] rounded-full bg-emerald-500/10 blur-[100px]" />
+        <div className="pointer-events-none absolute -left-40 -top-40 h-[500px] w-[500px] rounded-full bg-emerald-200/30 blur-[100px]" />
 
-        <div className="pointer-events-none absolute -bottom-40 -right-40 h-[500px] w-[500px] rounded-full bg-teal-400/10 blur-[120px]" />
+        <div className="pointer-events-none absolute -bottom-40 -right-40 h-[500px] w-[500px] rounded-full bg-emerald-100/70 blur-[120px]" />
 
         <div
           className="pointer-events-none absolute inset-0 opacity-[0.035]"
           style={{
             backgroundImage:
-              "linear-gradient(#ffffff 1px, transparent 1px), linear-gradient(90deg, #ffffff 1px, transparent 1px)",
+              "linear-gradient(#047857 1px, transparent 1px), linear-gradient(90deg, #047857 1px, transparent 1px)",
             backgroundSize: "45px 45px",
           }}
         />
@@ -185,7 +185,7 @@ export default function Register() {
 
         <div className="relative z-10 flex items-center gap-3 px-12 pt-12 xl:px-20">
 
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-500 shadow-lg shadow-emerald-500/20">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-700 text-white shadow-lg shadow-emerald-900/15">
             <Activity size={25} strokeWidth={2.5} />
           </div>
 
@@ -194,8 +194,8 @@ export default function Register() {
               DUMO YOUTH NETWORK
             </h1>
 
-            <p className="text-xs font-medium tracking-[0.2em] text-emerald-400">
-              ELECTION MONITORING
+            <p className="text-xs font-medium tracking-[0.2em] text-emerald-700">
+              ELECTION MONITORING SYSTEM
             </p>
           </div>
 
@@ -207,11 +207,11 @@ export default function Register() {
 
           {/* BADGE */}
 
-          <div className="mb-9 inline-flex w-fit items-center gap-2 rounded-full border border-emerald-400/20 bg-emerald-400/10 px-4 py-2">
+          <div className="mb-9 inline-flex w-fit items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2">
 
-            <span className="h-2 w-2 rounded-full bg-emerald-400" />
+            <span className="h-2 w-2 rounded-full bg-emerald-600" />
 
-            <span className="text-xs font-semibold tracking-wide text-emerald-300">
+            <span className="text-xs font-semibold tracking-wide text-emerald-800">
               RIVERS STATE · NIGERIA
             </span>
 
@@ -224,12 +224,12 @@ export default function Register() {
             <br />
             Something
             <br />
-            <span className="text-emerald-400">
+            <span className="text-emerald-700">
               Meaningful.
             </span>
           </h2>
 
-          <p className="mt-8 max-w-lg text-base leading-8 text-slate-300">
+          <p className="mt-8 max-w-lg text-base leading-8 text-slate-600">
             Join a digital community supporting organised
             election monitoring, transparent reporting,
             and civic participation across Rivers State.
@@ -241,8 +241,8 @@ export default function Register() {
 
             <div className="flex items-center gap-4">
 
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-white/5">
-                <Users size={21} className="text-emerald-400" />
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-emerald-100 bg-white shadow-sm">
+                <Users size={21} className="text-emerald-700" />
               </div>
 
               <div>
@@ -250,7 +250,7 @@ export default function Register() {
                   Community Participation
                 </h3>
 
-                <p className="mt-1 text-xs text-slate-400">
+                <p className="mt-1 text-xs text-slate-500">
                   Join the election monitoring workspace.
                 </p>
               </div>
@@ -259,8 +259,8 @@ export default function Register() {
 
             <div className="flex items-center gap-4">
 
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-white/5">
-                <MapPinned size={21} className="text-emerald-400" />
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-emerald-100 bg-white shadow-sm">
+                <MapPinned size={21} className="text-emerald-700" />
               </div>
 
               <div>
@@ -268,7 +268,7 @@ export default function Register() {
                   Rivers State Coverage
                 </h3>
 
-                <p className="mt-1 text-xs text-slate-400">
+                <p className="mt-1 text-xs text-slate-500">
                   Access information relevant to local polling units.
                 </p>
               </div>
@@ -277,8 +277,8 @@ export default function Register() {
 
             <div className="flex items-center gap-4">
 
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-white/5">
-                <BarChart3 size={21} className="text-emerald-400" />
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-emerald-100 bg-white shadow-sm">
+                <BarChart3 size={21} className="text-emerald-700" />
               </div>
 
               <div>
@@ -286,7 +286,7 @@ export default function Register() {
                   Election Monitoring Insights
                 </h3>
 
-                <p className="mt-1 text-xs text-slate-400">
+                <p className="mt-1 text-xs text-slate-500">
                   Explore structured agent-submitted data.
                 </p>
               </div>
@@ -299,10 +299,10 @@ export default function Register() {
 
         {/* LEFT FOOTER */}
 
-        <div className="relative z-10 flex items-center justify-between border-t border-white/10 px-12 py-7 text-xs text-slate-400 xl:px-20">
+        <div className="relative z-10 flex items-center justify-between border-t border-slate-200 px-12 py-7 text-xs text-slate-500 xl:px-20">
 
           <span>
-            © {new Date().getFullYear()} Dumo Youth Network
+            © {new Date().getFullYear()} Dumo Youth Network Election Monitoring System
           </span>
 
           <span>
@@ -333,7 +333,7 @@ export default function Register() {
             </h1>
 
             <p className="text-[10px] font-semibold tracking-widest text-emerald-600">
-              ELECTION MONITORING
+              ELECTION MONITORING SYSTEM
             </p>
           </div>
 
@@ -371,7 +371,7 @@ export default function Register() {
 
               <p className="mt-3 text-sm leading-6 text-slate-500">
                 Create your observer account to access
-                the Dumo Youth Network monitoring workspace.
+                the Dumo Youth Network Election Monitoring System workspace.
               </p>
 
             </div>
@@ -777,7 +777,7 @@ export default function Register() {
         <footer className="border-t border-slate-100 px-6 py-5 text-center">
 
           <p className="text-xs text-slate-400">
-            © {new Date().getFullYear()} Dumo Youth Network.
+            © {new Date().getFullYear()} Dumo Youth Network Election Monitoring System.
             Unofficial — Agent-Submitted Data.
           </p>
 

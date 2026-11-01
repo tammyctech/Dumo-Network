@@ -69,8 +69,8 @@ from .imports import routes as import_routes
 # =====================================================
 
 app = FastAPI(
-    title="Dumo Network API",
-    description="AI-Powered Election Monitoring Platform",
+    title="Dumo Youth Network Election Monitoring System API",
+    description="Dumo Youth Network Election Monitoring System",
     version="1.0.0",
 )
 
@@ -229,8 +229,8 @@ app.include_router(import_routes.router)
 @app.get("/")
 def home():
     return {
-        "application": "Dumo Network",
-        "message": "Welcome to Dumo Network",
+        "application": "Dumo Youth Network Election Monitoring System",
+        "message": "Welcome to the Dumo Youth Network Election Monitoring System",
         "status": "running",
     }
 

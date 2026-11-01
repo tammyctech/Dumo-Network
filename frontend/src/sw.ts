@@ -9,7 +9,7 @@ precacheAndRoute(self.__WB_MANIFEST);
 
 // Receive incoming push notifications
 self.addEventListener("push", (event: PushEvent) => {
-  let title = "Dumo Youth Network";
+  let title = "Dumo Youth Network Election Monitoring System";
   let body = "You have a new notification.";
   let url = "/";
 
@@ -48,7 +48,7 @@ self.addEventListener("push", (event: PushEvent) => {
   );
 });
 
-// Open Dumo Network when a notification is clicked
+// Open the Dumo Youth Network Election Monitoring System when a notification is clicked
 self.addEventListener("notificationclick", (event: NotificationEvent) => {
   event.notification.close();
 

@@ -602,7 +602,7 @@ const workflowUnavailableMessage = statistics?.election
 
   return (
 
-    <div className="light-page w-full min-w-0 max-w-full space-y-6 break-words">
+    <div className="w-full min-w-0 max-w-full space-y-6 break-words">
       {/* =====================================
 
           HEADER

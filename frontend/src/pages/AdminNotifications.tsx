@@ -126,15 +126,14 @@ export default function AdminNotifications() {
 
   return (
     <div className="space-y-7">
-      <section className="relative overflow-hidden rounded-[1.75rem] bg-slate-950 px-6 py-7 text-white shadow-xl sm:px-8">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_85%_20%,rgba(16,185,129,.22),transparent_30%),radial-gradient(circle_at_15%_100%,rgba(14,116,144,.15),transparent_35%)]" />
+      <section className="relative overflow-hidden rounded-[1.75rem] border border-slate-200 bg-gradient-to-br from-white via-white to-emerald-50 px-6 py-7 text-slate-900 shadow-sm sm:px-8">
         <div className="relative flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
           <div>
-            <div className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.2em] text-emerald-300"><Radio size={15}/> Communications command centre</div>
+            <div className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.2em] text-emerald-700"><Radio size={15}/> Communications command centre</div>
             <h1 className="mt-3 text-3xl font-black tracking-tight sm:text-4xl">Notification Centre</h1>
-            <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300">Create targeted operational alerts, preview the recipient experience, and track delivery health across the monitoring network.</p>
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600">Create targeted operational alerts, preview the recipient experience, and track delivery health across the monitoring network.</p>
           </div>
-          <button onClick={() => void load()} disabled={loading} className="inline-flex w-fit items-center gap-2 rounded-xl border border-white/15 bg-white/10 px-4 py-3 text-sm font-bold backdrop-blur transition hover:bg-white/15 disabled:opacity-50"><RefreshCw size={17} className={loading ? "animate-spin" : ""}/> Refresh data</button>
+          <button onClick={() => void load()} disabled={loading} className="inline-flex w-fit items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-700 transition hover:bg-slate-50 disabled:opacity-50"><RefreshCw size={17} className={loading ? "animate-spin" : ""}/> Refresh data</button>
         </div>
         <div className="relative mt-7 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
           <Summary label="Delivery status" value={readiness?.ready ? "Operational" : "Needs attention"} icon={readiness?.ready ? CheckCircle2 : AlertCircle} accent={readiness?.ready ? "emerald" : "amber"}/>
@@ -180,7 +179,7 @@ export default function AdminNotifications() {
           <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
             <SectionHeading step="03" title="Review and send" description="Preview the notification before delivery." icon={Smartphone}/>
             <div className="mx-auto mt-6 max-w-sm rounded-[2rem] border-[7px] border-slate-900 bg-slate-100 p-3 shadow-xl">
-              <div className="mb-3 flex items-center justify-between px-2 text-[10px] font-bold text-slate-500"><span>DUMO NETWORK</span><span>now</span></div>
+              <div className="mb-3 flex items-center justify-between px-2 text-[10px] font-bold text-slate-500"><span>DUMO YOUTH NETWORK ELECTION MONITORING SYSTEM</span><span>now</span></div>
               <div className="rounded-2xl bg-white p-4 shadow-sm"><div className="flex items-start gap-3"><span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-emerald-600 text-white"><BellRing size={17}/></span><div className="min-w-0"><p className="truncate text-sm font-black text-slate-950">{form.title || "Notification title"}</p><p className="mt-1 line-clamp-4 text-xs leading-5 text-slate-600">{form.body || "Your message preview will appear here as you type."}</p></div></div></div>
             </div>
             <div className="mt-5 rounded-2xl bg-slate-50 p-4 text-sm"><div className="flex justify-between gap-4"><span className="text-slate-500">Audience</span><strong className="text-right capitalize text-slate-900">{audiences.find(item => item.value === form.audience_type)?.label}</strong></div><div className="mt-3 flex justify-between gap-4"><span className="text-slate-500">Destination</span><strong className="text-right text-slate-900">{form.url}</strong></div></div>
@@ -199,8 +198,8 @@ export default function AdminNotifications() {
 }
 
 function Summary({ label, value, icon: Icon, accent = "slate" }: { label: string; value: string; icon: typeof Users; accent?: "slate" | "emerald" | "amber" }) {
-  const color = accent === "emerald" ? "text-emerald-300" : accent === "amber" ? "text-amber-300" : "text-slate-300";
-  return <div className="rounded-2xl border border-white/10 bg-white/[0.06] p-4 backdrop-blur"><div className={`flex items-center gap-2 text-xs font-semibold ${color}`}><Icon size={15}/>{label}</div><p className="mt-2 text-2xl font-black">{value}</p></div>;
+  const color = accent === "emerald" ? "text-emerald-700" : accent === "amber" ? "text-amber-700" : "text-slate-600";
+  return <div className="rounded-2xl border border-slate-200 bg-white/80 p-4"><div className={`flex items-center gap-2 text-xs font-semibold ${color}`}><Icon size={15}/>{label}</div><p className="mt-2 text-2xl font-black text-slate-900">{value}</p></div>;
 }
 function Notice({ kind, title, message }: { kind: "error" | "success"; title: string; message: string }) {
   const success = kind === "success";

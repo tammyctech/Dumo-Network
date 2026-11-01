@@ -150,7 +150,7 @@ function describePushSubscriptionError(error: unknown): string {
   ) {
     return (
       "This browser could not use the configured notification key. " +
-      "Please contact the Dumo Network administrator."
+      "Please contact the Dumo Youth Network Election Monitoring System administrator."
     );
   }
 

@@ -146,7 +146,7 @@ export default function BulkImport() {
     const description = isWardPreview(preview)
       ? `${preview.ready_count} new wards`
       : `${preview.new_wards} new wards and ${preview.new_polling_units} new polling units`;
-    if (!window.confirm(`Import ${description} into Dumo Network?`)) return;
+    if (!window.confirm(`Import ${description} into Dumo Youth Network Election Monitoring System?`)) return;
     setImporting(true);
     setError("");
     try {
@@ -169,7 +169,7 @@ export default function BulkImport() {
     <div className="space-y-8">
       <header>
         <h1 className="text-3xl font-bold text-slate-900">Bulk Data Import</h1>
-        <p className="mt-2 text-sm text-slate-500">Preview and validate electoral records before saving them to Dumo Network.</p>
+        <p className="mt-2 text-sm text-slate-500">Preview and validate electoral records before saving them to the Dumo Youth Network Election Monitoring System.</p>
       </header>
 
       <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -180,7 +180,7 @@ export default function BulkImport() {
             ["wards", "Wards Only"],
           ] as const).map(([value, label]) => (
             <button key={value} type="button" disabled={busy} onClick={() => reset(value)}
-              className={`rounded-xl px-5 py-3 text-sm font-semibold transition disabled:opacity-50 ${mode === value ? "bg-slate-900 text-white" : "border border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100"}`}>
+              className={`rounded-xl px-5 py-3 text-sm font-semibold transition disabled:opacity-50 ${mode === value ? "bg-emerald-700 text-white" : "border border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100"}`}>
               {label}
             </button>
           ))}
@@ -200,7 +200,7 @@ export default function BulkImport() {
         </div>
 
         <button type="button" onClick={handlePreview} disabled={!file || busy}
-          className="mt-6 rounded-xl bg-slate-900 px-6 py-3 font-semibold text-white hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-50">
+          className="mt-6 rounded-xl bg-emerald-700 px-6 py-3 font-semibold text-white hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-50">
           {loading ? "Validating..." : "Preview Import"}
         </button>
 

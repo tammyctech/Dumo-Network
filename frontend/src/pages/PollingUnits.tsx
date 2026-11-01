@@ -911,7 +911,7 @@ export default function PollingUnits() {
                           <button
                             type="button"
                             onClick={() => startEditing(unit)}
-                            className="rounded-lg bg-blue-700 px-4 py-2 text-white hover:bg-blue-800"
+                            className="rounded-lg bg-emerald-700 px-4 py-2 text-white hover:bg-emerald-800"
                           >
                             Edit
                           </button>

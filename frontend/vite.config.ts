@@ -23,13 +23,13 @@ export default defineConfig({
         "dyn-favicon-32.png",
       ],
 
-      // Dumo Youth Network app configuration
+      // Dumo Youth Network Election Monitoring System app configuration
       manifest: {
         id: "/",
-        name: "Dumo Youth Network",
+        name: "Dumo Youth Network Election Monitoring System",
         short_name: "DYN",
         description:
-          "Dumo Youth Network Election Monitoring Platform",
+          "Dumo Youth Network Election Monitoring System",
 
         theme_color: "#064e3b",
         background_color: "#ffffff",

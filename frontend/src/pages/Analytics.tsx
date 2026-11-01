@@ -208,16 +208,16 @@ export default function Analytics() {
 
       {/* ANALYTICS BANNER */}
 
-      <section className="rounded-2xl bg-slate-950 p-7 text-white">
+      <section className="rounded-2xl border border-slate-200 bg-white p-7 text-slate-900 shadow-sm">
         <div className="flex items-center gap-3">
-          <BarChart3 size={30} className="text-emerald-400" />
+          <BarChart3 size={30} className="text-emerald-700" />
 
           <div>
             <h2 className="text-xl font-bold">
-              Dumo Analytics Center
+              Dumo Youth Network Election Monitoring System Analytics
             </h2>
 
-            <p className="mt-1 text-sm text-slate-300">
+            <p className="mt-1 text-sm text-slate-600">
               Data-driven election monitoring and reporting.
             </p>
           </div>

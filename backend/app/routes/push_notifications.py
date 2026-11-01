@@ -435,7 +435,7 @@ def test_push_notification(
         try:
             result = send_push_notification(
                 subscription=subscription,
-                title="Dumo Network Test Notification",
+                title="Dumo Youth Network Election Monitoring System Test Notification",
                 body=(
                     "Push notifications are now connected "
                     "to your DYN account."

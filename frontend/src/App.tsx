@@ -46,7 +46,7 @@ export default function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <Suspense fallback={<div className="flex min-h-screen items-center justify-center bg-slate-50 text-sm font-semibold text-slate-600">Loading Dumo Network…</div>}>
+        <Suspense fallback={<div className="flex min-h-screen items-center justify-center bg-slate-50 text-sm font-semibold text-slate-600">Loading Dumo Youth Network Election Monitoring System…</div>}>
         <Routes>
 
           {/* ============================================

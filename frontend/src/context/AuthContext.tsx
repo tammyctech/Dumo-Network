@@ -105,7 +105,7 @@ export function AuthProvider({
           setUser(null);
         } else {
           setAuthError(
-            "Dumo Network could not restore your session because the API is temporarily unavailable. Your login has been preserved."
+            "The Dumo Youth Network Election Monitoring System could not restore your session because the API is temporarily unavailable. Your login has been preserved."
           );
         }
       } finally {

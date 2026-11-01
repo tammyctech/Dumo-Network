@@ -226,8 +226,8 @@ function MapPanel({
 
   return (
     <div className="grid gap-6 xl:grid-cols-[minmax(0,1.45fr)_minmax(260px,0.55fr)]">
-      <div className="relative min-h-[420px] overflow-hidden rounded-3xl border border-white/10 bg-[#071c19] p-4 sm:p-6">
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_30%,rgba(16,185,129,0.13),transparent_55%)]" />
+      <div className="relative min-h-[420px] overflow-hidden rounded-3xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_30%,rgba(16,185,129,0.08),transparent_55%)]" />
         {geoJson && projection ? (
           <svg
             viewBox={`0 0 ${projection.width} ${projection.height}`}
@@ -247,7 +247,7 @@ function MapPanel({
                   fillOpacity={
                     result?.leader ? 0.5 + leaderVoteShare(result) * 0.5 : 0.32
                   }
-                  stroke={active ? "#ffffff" : "#d1fae5"}
+                  stroke={active ? "#047857" : "#a7f3d0"}
                   strokeWidth={active ? 3 : 1.15}
                   className="cursor-pointer transition hover:brightness-125"
                   onMouseEnter={() => setSelected(name)}
@@ -260,14 +260,14 @@ function MapPanel({
             })}
           </svg>
         ) : mapLoading ? (
-          <div className="flex min-h-[390px] items-center justify-center text-emerald-100/70">
+          <div className="flex min-h-[390px] items-center justify-center text-emerald-700">
             <RefreshCw size={24} className="mr-3 animate-spin" />
             Loading Rivers State map…
           </div>
         ) : (
-          <div className="flex min-h-[390px] flex-col items-center justify-center px-6 text-center text-emerald-100/70">
+          <div className="flex min-h-[390px] flex-col items-center justify-center px-6 text-center text-emerald-700">
             <MapIcon size={30} />
-            <p className="mt-3 font-semibold text-white">
+            <p className="mt-3 font-semibold text-slate-900">
               Map boundaries are temporarily unavailable
             </p>
             <p className="mt-1 max-w-sm text-sm">
@@ -286,8 +286,8 @@ function MapPanel({
             <h3 className="text-2xl font-black text-slate-950">
               {selectedResult.lga}
             </h3>
-            <div className="mt-5 rounded-2xl bg-slate-950 p-5 text-white">
-              <p className="text-xs uppercase tracking-widest text-slate-400">
+            <div className="mt-5 rounded-2xl border border-emerald-100 bg-emerald-50/70 p-5">
+              <p className="text-xs uppercase tracking-widest text-slate-500">
                 Current leader
               </p>
               <div className="mt-2 flex items-center gap-3">
@@ -299,11 +299,11 @@ function MapPanel({
                     ),
                   }}
                 />
-                <span className="text-2xl font-black">
+                <span className="text-2xl font-black text-slate-900">
                   {selectedResult.leader?.party || "No report"}
                 </span>
               </div>
-              <p className="mt-2 text-sm text-slate-300">
+              <p className="mt-2 text-sm text-slate-600">
                 {formatNumber(selectedResult.leader?.votes)} reported votes
               </p>
             </div>
@@ -433,10 +433,10 @@ export default function LandingPage() {
             </span>
             <span>
               <span className="block text-sm font-black tracking-[0.12em]">
-                DUMO NETWORK
+                DUMO YOUTH NETWORK
               </span>
               <span className="mt-0.5 block text-[9px] uppercase tracking-[0.2em] text-slate-500">
-                Election monitoring
+                Election Monitoring System
               </span>
             </span>
           </Link>
@@ -567,7 +567,8 @@ export default function LandingPage() {
               <div className="mt-8 flex max-w-xl items-start gap-3 border-l-2 border-amber-500 pl-4 text-sm leading-6 text-slate-600">
                 <ShieldCheck size={18} className="mt-0.5 shrink-0 text-amber-700" aria-hidden="true" />
                 <p>
-                  Unofficial — Agent-Submitted Data. Dumo Network does not
+                  Unofficial — Agent-Submitted Data. Dumo Youth Network Election
+                  Monitoring System does not
                   declare election winners; only authorized electoral bodies
                   do.
                 </p>
@@ -865,8 +866,8 @@ export default function LandingPage() {
       <footer className="border-t border-slate-200 bg-white py-10">
         <div className="mx-auto flex max-w-7xl flex-col gap-6 px-5 text-sm text-slate-500 sm:flex-row sm:items-center sm:justify-between lg:px-8">
           <div className="flex items-center gap-3">
-            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-950 text-emerald-400"><Activity size={18} /></span>
-            <div><strong className="block text-slate-900">Dumo Network</strong><span>Election Monitoring Platform</span></div>
+            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-50 text-emerald-700"><Activity size={18} /></span>
+            <div><strong className="block text-slate-900">Dumo Youth Network</strong><span>Election Monitoring System</span></div>
           </div>
           <p>Unofficial — Agent-Submitted Data</p>
           <a href="https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer" target="_blank" rel="noreferrer" className="hover:text-emerald-700">Map boundary source <ArrowRight size={13} className="inline" /></a>

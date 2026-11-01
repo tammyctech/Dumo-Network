@@ -410,7 +410,8 @@ export default function AgentResults() {
           />
 
           <p className="text-sm text-amber-900">
-            Results displayed and submitted through Dumo Network are
+            Results displayed and submitted through the Dumo Youth Network
+            Election Monitoring System are
             unofficial agent-submitted figures, not officially declared
             election results.
           </p>
@@ -495,7 +496,7 @@ export default function AgentResults() {
             assignments.length === 0 && (
               <p className="mt-3 text-sm text-amber-700">
                 No polling units are assigned to your account yet.
-                Contact your Dumo Network administrator.
+                Contact your Dumo Youth Network Election Monitoring System administrator.
               </p>
             )}
 

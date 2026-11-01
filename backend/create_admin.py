@@ -9,7 +9,7 @@ from app.models import User
 def create_admin():
 
     print("\n====================================")
-    print("DUMO NETWORK - ADMIN SETUP")
+    print("DUMO YOUTH NETWORK ELECTION MONITORING SYSTEM - ADMIN SETUP")
     print("====================================\n")
 
     email = input(

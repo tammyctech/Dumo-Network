@@ -499,7 +499,7 @@ const inputClass = "mt-2 w-full rounded-xl border border-slate-300 bg-white px-4
 
         </div>
 
-        <p className="mt-2 text-sm text-amber-800">Dumo Youth Network collects unofficial election information submitted by assigned polling-unit agents. These figures are not officially declared election results.</p>
+        <p className="mt-2 text-sm text-amber-800">The Dumo Youth Network Election Monitoring System collects unofficial election information submitted by assigned polling-unit agents. These figures are not officially declared election results.</p>
 
       </div>
 

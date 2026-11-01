@@ -75,7 +75,7 @@ export default function Login() {
             </h1>
 
             <p className="text-[10px] font-semibold tracking-widest text-emerald-600">
-              ELECTION MONITORING
+              ELECTION MONITORING SYSTEM
             </p>
           </div>
 
@@ -274,7 +274,7 @@ export default function Login() {
               <div className="h-px flex-1 bg-slate-200" />
 
               <span className="text-xs font-medium text-slate-400">
-                NEW TO DUMO NETWORK?
+                NEW TO DUMO YOUTH NETWORK ELECTION MONITORING SYSTEM?
               </span>
 
               <div className="h-px flex-1 bg-slate-200" />
@@ -317,7 +317,7 @@ export default function Login() {
         <footer className="border-t border-slate-100 px-6 py-5 text-center">
 
           <p className="text-xs text-slate-400">
-            © {new Date().getFullYear()} Dumo Youth Network.
+            © {new Date().getFullYear()} Dumo Youth Network Election Monitoring System.
             Unofficial — Agent-Submitted Data.
           </p>
 

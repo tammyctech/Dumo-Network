@@ -147,7 +147,6 @@ export default function AppLayout() {
   const { user, logout } = useAuth();
   const { pathname } = useLocation();
   const navigate = useNavigate();
-  const isDashboardPage = pathname === "/dashboard";
 
   useEffect(() => {
     function closeMenusOutside(event: PointerEvent) {
@@ -233,9 +232,7 @@ export default function AppLayout() {
 
   return (
     <div
-      className={`min-h-screen bg-canvas ${
-        isDashboardPage ? "" : "dark:bg-slate-950"
-      }`}
+      className="min-h-screen bg-canvas"
     >
 
       {/* MOBILE BACKDROP */}
@@ -258,7 +255,7 @@ export default function AppLayout() {
         className={`
           fixed inset-y-0 left-0 z-50
           flex w-64 flex-col
-          border-r border-white/5 bg-brand-950 text-white shadow-2xl shadow-slate-950/10
+          border-r border-slate-200 bg-white text-slate-800 shadow-xl shadow-slate-900/5
           transition-transform duration-300
           lg:translate-x-0
           ${
@@ -271,22 +268,22 @@ export default function AppLayout() {
 
         {/* LOGO */}
 
-        <div className="flex h-[76px] shrink-0 items-center justify-between border-b border-white/[0.08] px-5">
+        <div className="flex h-[76px] shrink-0 items-center justify-between border-b border-slate-200 px-5">
 
           <div className="flex min-w-0 items-center gap-2.5">
 
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-emerald-500 shadow-lg shadow-emerald-950/30">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-emerald-700 shadow-sm shadow-emerald-900/15">
               <Activity size={15} className="text-white" />
             </div>
 
             <div className="min-w-0">
 
-              <p className="text-[13px] font-bold tracking-[0.07em] text-white">
+              <p className="text-[13px] font-bold tracking-[0.07em] text-slate-900">
                 DUMO YOUTH NETWORK
               </p>
 
-              <p className="text-[10px] text-emerald-400">
-                Election Monitoring System
+              <p className="text-[10px] text-emerald-700">
+                ELECTION MONITORING SYSTEM
               </p> 
 
             </div>
@@ -297,7 +294,7 @@ export default function AppLayout() {
             type="button"
             aria-label="Close sidebar"
             onClick={() => setSidebarOpen(false)}
-            className="rounded-lg p-2 text-slate-400 hover:bg-white/10 lg:hidden"
+            className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 lg:hidden"
           >
             <X size={20} />
           </button>
@@ -346,8 +343,8 @@ export default function AppLayout() {
                     transition-colors duration-200
                     ${
                       isActive
-                        ? "border-emerald-400 bg-emerald-400/10 text-emerald-200"
-                        : "border-transparent text-slate-400 hover:bg-white/[0.06] hover:text-white"
+                        ? "border-emerald-700 bg-emerald-50 text-emerald-800"
+                        : "border-transparent text-slate-600 hover:bg-slate-50 hover:text-slate-900"
                     }
                   `}
                 >
@@ -364,26 +361,26 @@ export default function AppLayout() {
             SIDEBAR FOOTER
         ================================================= */}
 
-        <div className="shrink-0 border-t border-white/[0.08] p-4">
+        <div className="shrink-0 border-t border-slate-200 p-4">
 
           {/* DATA NOTICE */}
 
-          <div className="mb-4 rounded-xl border border-white/[0.08] bg-white/[0.035] p-3.5">
+          <div className="mb-4 rounded-xl border border-slate-200 bg-slate-50 p-3.5">
 
             <div className="flex items-center gap-2">
 
               <ShieldCheck
                 size={16}
-                className="text-emerald-400"
+                className="text-emerald-700"
               />
 
-              <p className="text-xs font-semibold text-white">
+              <p className="text-xs font-semibold text-slate-800">
                 Election data
               </p>
 
             </div>
 
-            <p className="mt-2 text-xs leading-5 text-slate-400">
+            <p className="mt-2 text-xs leading-5 text-slate-500">
               Monitoring figures are unofficial and agent-submitted.
             </p>
 
@@ -391,9 +388,9 @@ export default function AppLayout() {
 
           {/* USER PROFILE */}
 
-          <div className="mb-3 flex items-center gap-3 rounded-xl border border-white/[0.06] bg-white/[0.04] p-3">
+          <div className="mb-3 flex items-center gap-3 rounded-xl border border-slate-200 bg-white p-3">
 
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-500/20 text-sm font-bold text-emerald-300">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-sm font-bold text-emerald-800">
               {userInitials}
             </div>
 
@@ -403,7 +400,7 @@ export default function AppLayout() {
                 {user?.full_name || "Dumo User"}
               </p>
 
-              <p className="text-xs capitalize text-slate-400">
+              <p className="text-xs capitalize text-slate-500">
                 {user?.role || "Observer"}
               </p>
 
@@ -416,7 +413,7 @@ export default function AppLayout() {
           <button
             type="button"
             onClick={handleLogout}
-            className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-slate-300 transition hover:bg-red-500/10 hover:text-red-400"
+            className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-slate-600 transition hover:bg-red-50 hover:text-red-700"
           >
             <LogOut size={18} />
             Sign Out
@@ -434,11 +431,7 @@ export default function AppLayout() {
 
         {/* TOP HEADER */}
 
-        <header
-          className={`sticky top-0 z-30 flex h-[76px] shrink-0 items-center justify-between border-b border-slate-200/80 bg-white/95 px-4 backdrop-blur-xl sm:px-6 lg:px-8 ${
-            isDashboardPage ? "" : "dark:border-slate-800 dark:bg-slate-900/95"
-          }`}
-        >
+        <header className="sticky top-0 z-30 flex h-[76px] shrink-0 items-center justify-between border-b border-slate-200/80 bg-white/95 px-4 backdrop-blur-xl sm:px-6 lg:px-8">
 
           {/* LEFT HEADER */}
 
@@ -461,7 +454,7 @@ export default function AppLayout() {
             <div className="min-w-0">
 
               <h1 className="truncate text-base font-semibold tracking-tight text-slate-900">
-                {currentPage?.name ?? "Dumo Network"}
+                {currentPage?.name ?? "Dumo Youth Network Election Monitoring System"}
               </h1>
 
               <p className="hidden text-[11px] font-medium text-emerald-700 sm:block">
@@ -499,8 +492,8 @@ export default function AppLayout() {
                 }}
                 className={`relative rounded-xl border p-2.5 transition focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 ${
                   notificationsOpen
-                    ? "border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-700 dark:bg-emerald-950 dark:text-emerald-300"
-                    : "border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-slate-600 dark:hover:bg-slate-800 dark:hover:text-white"
+                    ? "border-emerald-200 bg-emerald-50 text-emerald-800"
+                    : "border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900"
                 }`}
               >
                 <Bell size={20} />
@@ -512,14 +505,14 @@ export default function AppLayout() {
                   aria-label="Notifications panel"
                   className="fixed inset-x-3 top-[4.75rem] z-50 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl shadow-slate-950/20 sm:absolute sm:inset-x-auto sm:right-0 sm:top-14 sm:w-[25rem]"
                 >
-                  <div className="bg-slate-950 px-5 py-5 text-white">
+                  <div className="border-b border-slate-200 bg-white px-5 py-5 text-slate-900">
                     <div className="flex items-start justify-between gap-4">
                       <div>
-                        <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.16em] text-emerald-300">
+                        <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.16em] text-emerald-700">
                           <BellRing size={14} /> Notification settings
                         </div>
                         <h3 className="mt-2 text-xl font-bold">Manage notifications</h3>
-                        <p className="mt-1 text-xs leading-5 text-slate-300">
+                        <p className="mt-1 text-xs leading-5 text-slate-600">
                           Configure this browser or review campaign delivery.
                         </p>
                       </div>
@@ -527,11 +520,11 @@ export default function AppLayout() {
                   </div>
 
                   <div className="p-4">
-                    <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800">
-                      <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+                    <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                      <p className="text-sm font-semibold text-slate-900">
                         No in-app notification feed
                       </p>
-                      <p className="mt-1 text-xs leading-5 text-slate-600 dark:text-slate-300">
+                      <p className="mt-1 text-xs leading-5 text-slate-600">
                         Browser subscription settings and campaign delivery reports are available in their respective sections.
                       </p>
                     </div>
@@ -544,14 +537,14 @@ export default function AppLayout() {
                             setNotificationsOpen(false);
                             navigate("/admin/notifications");
                           }}
-                          className="group flex w-full items-center gap-3 rounded-xl border border-slate-200 p-3 text-left transition hover:border-emerald-200 hover:bg-emerald-50/60 dark:border-slate-700 dark:hover:border-emerald-700 dark:hover:bg-emerald-950/70"
+                          className="group flex w-full items-center gap-3 rounded-xl border border-slate-200 p-3 text-left transition hover:border-emerald-200 hover:bg-emerald-50/60"
                         >
-                          <span className="rounded-lg bg-slate-100 p-2 text-slate-700 group-hover:bg-emerald-100 group-hover:text-emerald-800 dark:bg-slate-800 dark:text-slate-300 dark:group-hover:bg-emerald-900 dark:group-hover:text-emerald-200">
+                          <span className="rounded-lg bg-slate-100 p-2 text-slate-700 group-hover:bg-emerald-100 group-hover:text-emerald-800">
                             <BellRing size={17} />
                           </span>
                           <span className="min-w-0 flex-1">
-                            <strong className="block text-sm text-slate-900 dark:text-slate-100">Open Notification Centre</strong>
-                            <span className="mt-0.5 block text-xs text-slate-500 dark:text-slate-400">Send campaigns and review delivery outcomes</span>
+                            <strong className="block text-sm text-slate-900">Open Notification Centre</strong>
+                            <span className="mt-0.5 block text-xs text-slate-500">Send campaigns and review delivery outcomes</span>
                           </span>
                           <ChevronRight size={17} className="text-slate-400 group-hover:text-emerald-700" />
                         </button>
@@ -563,14 +556,14 @@ export default function AppLayout() {
                           setNotificationsOpen(false);
                           navigate("/settings?tab=notifications");
                         }}
-                        className="group flex w-full items-center gap-3 rounded-xl border border-slate-200 p-3 text-left transition hover:border-emerald-200 hover:bg-emerald-50/60 dark:border-slate-700 dark:hover:border-emerald-700 dark:hover:bg-emerald-950/70"
+                        className="group flex w-full items-center gap-3 rounded-xl border border-slate-200 p-3 text-left transition hover:border-emerald-200 hover:bg-emerald-50/60"
                       >
-                        <span className="rounded-lg bg-slate-100 p-2 text-slate-700 group-hover:bg-emerald-100 group-hover:text-emerald-800 dark:bg-slate-800 dark:text-slate-300 dark:group-hover:bg-emerald-900 dark:group-hover:text-emerald-200">
+                        <span className="rounded-lg bg-slate-100 p-2 text-slate-700 group-hover:bg-emerald-100 group-hover:text-emerald-800">
                           <SlidersHorizontal size={17} />
                         </span>
                         <span className="min-w-0 flex-1">
-                          <strong className="block text-sm text-slate-900 dark:text-slate-100">Notification preferences</strong>
-                          <span className="mt-0.5 block text-xs text-slate-500 dark:text-slate-400">Manage this browser and registered devices</span>
+                          <strong className="block text-sm text-slate-900">Notification preferences</strong>
+                          <span className="mt-0.5 block text-xs text-slate-500">Manage this browser and registered devices</span>
                         </span>
                         <ChevronRight size={17} className="text-slate-400 group-hover:text-emerald-700" />
                       </button>
@@ -597,7 +590,7 @@ export default function AppLayout() {
                 }}
                 className="flex min-h-11 items-center gap-2 rounded-xl px-1.5 text-left hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600 sm:gap-3 sm:px-2"
               >
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-950 text-xs font-bold text-white ring-2 ring-brand-100">
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-xs font-bold text-emerald-800 ring-2 ring-white">
                   {userInitials}
                 </span>
                 <span className="hidden min-w-0 md:block">
@@ -612,13 +605,13 @@ export default function AppLayout() {
 
               {profileOpen && (
                 <div
-                  className="absolute right-0 top-14 z-50 w-56 overflow-hidden rounded-xl border border-slate-200 bg-white p-1.5 shadow-xl dark:border-slate-700 dark:bg-slate-900"
+                  className="absolute right-0 top-14 z-50 w-56 overflow-hidden rounded-xl border border-slate-200 bg-white p-1.5 shadow-xl"
                 >
                   <nav aria-label="Account options">
                     <NavLink
                       to="/settings"
                       onClick={() => setProfileOpen(false)}
-                      className="flex min-h-11 items-center gap-3 rounded-lg px-3 text-sm font-medium text-slate-700 hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-emerald-600 dark:text-slate-200 dark:hover:bg-slate-800"
+                      className="flex min-h-11 items-center gap-3 rounded-lg px-3 text-sm font-medium text-slate-700 hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-emerald-600"
                     >
                       <Settings size={17} />
                       Account settings
@@ -626,7 +619,7 @@ export default function AppLayout() {
                     <button
                       type="button"
                       onClick={handleLogout}
-                      className="flex min-h-11 w-full items-center gap-3 rounded-lg px-3 text-sm font-medium text-red-700 hover:bg-red-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-red-600 dark:text-red-300 dark:hover:bg-red-950/50"
+                      className="flex min-h-11 w-full items-center gap-3 rounded-lg px-3 text-sm font-medium text-red-700 hover:bg-red-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-red-600"
                     >
                       <LogOut size={17} />
                       Sign out
@@ -644,11 +637,7 @@ export default function AppLayout() {
             PAGE CONTENT
         ================================================= */}
 
-        <main
-          className={`min-w-0 flex-1 px-4 py-7 sm:px-6 sm:py-8 lg:px-9 lg:py-9 ${
-            isDashboardPage ? "bg-canvas" : ""
-          }`}
-        >
+        <main className="min-w-0 flex-1 bg-canvas px-4 py-7 sm:px-6 sm:py-8 lg:px-9 lg:py-9">
 
           <div className="mx-auto w-full max-w-[1440px] min-w-0">
             <Outlet />
@@ -658,15 +647,10 @@ export default function AppLayout() {
 
         {/* FOOTER */}
 
-        <footer
-          className={`border-t border-slate-200/80 bg-white/80 px-4 py-4 text-center sm:px-6 ${
-            isDashboardPage ? "" : "dark:border-slate-800 dark:bg-slate-900/80"
-          }`}
-        >
+        <footer className="border-t border-slate-200/80 bg-white/80 px-4 py-4 text-center sm:px-6">
 
           <p className="text-xs text-slate-400">
-            © {CURRENT_YEAR} Dumo Network.
-            Election Monitoring Platform.
+            © {CURRENT_YEAR} Dumo Youth Network Election Monitoring System.
           </p>
 
           <p className="mt-1 text-xs font-medium text-amber-700">

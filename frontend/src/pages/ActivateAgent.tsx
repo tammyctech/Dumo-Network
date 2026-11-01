@@ -87,59 +87,59 @@ export default function ActivateAgent() {
   }
 
   return (
-    <main className="min-h-screen bg-[#071521] px-4 py-12 text-white sm:px-6">
+    <main className="min-h-screen bg-canvas px-4 py-12 text-slate-900 sm:px-6">
       <div className="mx-auto w-full max-w-md">
         <header className="mb-8 text-center">
-          <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl border border-emerald-400/20 bg-emerald-400/10">
-            <ShieldCheck className="h-8 w-8 text-emerald-400" />
+          <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl border border-emerald-200 bg-emerald-50">
+            <ShieldCheck className="h-8 w-8 text-emerald-700" />
           </div>
-          <h1 className="text-3xl font-bold tracking-tight">Dumo Network</h1>
-          <p className="mt-2 text-sm text-slate-400">Secure Polling-Unit Agent Activation</p>
+          <h1 className="text-3xl font-bold tracking-tight">Dumo Youth Network Election Monitoring System</h1>
+          <p className="mt-2 text-sm text-slate-600">Secure Polling-Unit Agent Activation</p>
         </header>
 
-        <section className="rounded-3xl border border-white/10 bg-[#102332] p-6 shadow-2xl sm:p-8">
+        <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-xl shadow-slate-900/5 sm:p-8">
           {status === "success" ? (
             <div className="py-7 text-center">
-              <CheckCircle2 className="mx-auto mb-5 h-16 w-16 text-emerald-400" />
+              <CheckCircle2 className="mx-auto mb-5 h-16 w-16 text-emerald-700" />
               <h2 className="text-2xl font-semibold">Account Activated!</h2>
-              <p className="mt-4 text-sm leading-6 text-slate-300">Your agent account is now active. Sign in with your email address and new password.</p>
-              <button type="button" onClick={() => navigate("/login")} className="mt-8 flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-500 px-5 py-3 font-semibold text-[#071521] hover:bg-emerald-400">
+              <p className="mt-4 text-sm leading-6 text-slate-600">Your agent account is now active. Sign in with your email address and new password.</p>
+              <button type="button" onClick={() => navigate("/login")} className="mt-8 flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-700 px-5 py-3 font-semibold text-white hover:bg-emerald-800">
                 Continue to Login <ArrowRight className="h-5 w-5" />
               </button>
             </div>
           ) : (
             <>
               <div className="mb-7">
-                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-400/10"><KeyRound className="h-6 w-6 text-emerald-400" /></div>
+                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-50"><KeyRound className="h-6 w-6 text-emerald-700" /></div>
                 <h2 className="text-2xl font-semibold">Activate Your Account</h2>
-                <p className="mt-2 text-sm leading-6 text-slate-400">Create a secure password to activate your polling-unit agent account.</p>
+                <p className="mt-2 text-sm leading-6 text-slate-600">Create a secure password to activate your polling-unit agent account.</p>
               </div>
 
-              {error && <div role="alert" className="mb-6 flex gap-3 rounded-xl border border-red-400/20 bg-red-500/10 p-4 text-sm text-red-300"><XCircle className="h-5 w-5 shrink-0" /><span>{error}</span></div>}
+              {error && <div role="alert" className="mb-6 flex gap-3 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800"><XCircle className="h-5 w-5 shrink-0" /><span>{error}</span></div>}
 
               {token && (
                 <form onSubmit={handleSubmit} className="space-y-5">
                   <div>
-                    <label htmlFor="password" className="mb-2 block text-sm font-medium text-slate-200">New Password</label>
+                    <label htmlFor="password" className="mb-2 block text-sm font-medium text-slate-700">New Password</label>
                     <div className="relative">
                       <LockKeyhole className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-500" />
-                      <input id="password" type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Create a strong password" autoComplete="new-password" required minLength={12} maxLength={128} disabled={isSubmitting} className="w-full rounded-xl border border-white/10 bg-[#071521] py-3 pl-12 pr-12 text-white outline-none placeholder:text-slate-500 focus:border-emerald-400" />
-                      <button type="button" onClick={() => setShowPassword((v) => !v)} aria-label={showPassword ? "Hide password" : "Show password"} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white">{showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}</button>
+                      <input id="password" type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Create a strong password" autoComplete="new-password" required minLength={12} maxLength={128} disabled={isSubmitting} className="w-full rounded-xl border border-slate-300 bg-white py-3 pl-12 pr-12 text-slate-900 outline-none placeholder:text-slate-400 focus:border-emerald-600" />
+                      <button type="button" onClick={() => setShowPassword((v) => !v)} aria-label={showPassword ? "Hide password" : "Show password"} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-900">{showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}</button>
                     </div>
                   </div>
-                  <div className="rounded-xl border border-white/10 bg-[#071521]/60 p-4">
-                    <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-400">Password Requirements</p>
-                    <div className="space-y-2">{rules.map((rule) => <div key={rule.label} className="flex items-center gap-2 text-xs"><CheckCircle2 className={`h-4 w-4 ${rule.valid ? "text-emerald-400" : "text-slate-600"}`} /><span className={rule.valid ? "text-emerald-300" : "text-slate-400"}>{rule.label}</span></div>)}</div>
+                  <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                    <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-500">Password Requirements</p>
+                    <div className="space-y-2">{rules.map((rule) => <div key={rule.label} className="flex items-center gap-2 text-xs"><CheckCircle2 className={`h-4 w-4 ${rule.valid ? "text-emerald-700" : "text-slate-400"}`} /><span className={rule.valid ? "text-emerald-800" : "text-slate-500"}>{rule.label}</span></div>)}</div>
                   </div>
                   <div>
-                    <label htmlFor="confirmPassword" className="mb-2 block text-sm font-medium text-slate-200">Confirm Password</label>
+                    <label htmlFor="confirmPassword" className="mb-2 block text-sm font-medium text-slate-700">Confirm Password</label>
                     <div className="relative">
                       <LockKeyhole className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-500" />
-                      <input id="confirmPassword" type={showConfirmPassword ? "text" : "password"} value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="Re-enter your password" autoComplete="new-password" required disabled={isSubmitting} className="w-full rounded-xl border border-white/10 bg-[#071521] py-3 pl-12 pr-12 text-white outline-none placeholder:text-slate-500 focus:border-emerald-400" />
-                      <button type="button" onClick={() => setShowConfirmPassword((v) => !v)} aria-label={showConfirmPassword ? "Hide confirmation password" : "Show confirmation password"} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white">{showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}</button>
+                      <input id="confirmPassword" type={showConfirmPassword ? "text" : "password"} value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="Re-enter your password" autoComplete="new-password" required disabled={isSubmitting} className="w-full rounded-xl border border-slate-300 bg-white py-3 pl-12 pr-12 text-slate-900 outline-none placeholder:text-slate-400 focus:border-emerald-600" />
+                      <button type="button" onClick={() => setShowConfirmPassword((v) => !v)} aria-label={showConfirmPassword ? "Hide confirmation password" : "Show confirmation password"} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-900">{showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}</button>
                     </div>
                   </div>
-                  <button type="submit" disabled={isSubmitting || !passwordIsValid || password !== confirmPassword} className="flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-500 px-5 py-3 font-semibold text-[#071521] hover:bg-emerald-400 disabled:cursor-not-allowed disabled:opacity-50">
+                  <button type="submit" disabled={isSubmitting || !passwordIsValid || password !== confirmPassword} className="flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-700 px-5 py-3 font-semibold text-white hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-50">
                     {isSubmitting ? <><Loader2 className="h-5 w-5 animate-spin" /> Activating Account...</> : <>Activate Account <ArrowRight className="h-5 w-5" /></>}
                   </button>
                 </form>
@@ -147,7 +147,7 @@ export default function ActivateAgent() {
             </>
           )}
         </section>
-        <div className="mt-6 text-center"><Link to="/login" className="text-sm font-medium text-emerald-400 hover:text-emerald-300">Return to Login</Link></div>
+        <div className="mt-6 text-center"><Link to="/login" className="text-sm font-medium text-emerald-700 hover:text-emerald-800">Return to Login</Link></div>
         <p className="mt-8 text-center text-xs leading-5 text-slate-500">Agent accounts are created by authorized administrators only. Never share your activation link or password.</p>
       </div>
     </main>
