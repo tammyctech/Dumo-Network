@@ -245,6 +245,10 @@ def health(db: Session = Depends(get_db)):
             column["name"]
             for column in schema.get_columns("users")
         } if "users" in tables else set()
+        application_link_columns = {
+            column["name"]
+            for column in schema.get_columns("agent_application_links")
+        } if "agent_application_links" in tables else set()
         missing = sorted(
             {
                 "result_reviews",
@@ -262,6 +266,8 @@ def health(db: Session = Depends(get_db)):
             missing.append("result_submissions.verification_status")
         for column in {"must_change_password", "session_version"} - user_columns:
             missing.append(f"users.{column}")
+        if "election_id" in application_link_columns:
+            missing.append("agent_application_links.election_id (obsolete)")
         if missing:
             return JSONResponse(
                 status_code=503,

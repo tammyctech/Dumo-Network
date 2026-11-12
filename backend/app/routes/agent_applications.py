@@ -84,7 +84,14 @@ def create_link(payload: LinkCreate, db: Session = Depends(get_db), admin: User 
         expires_at=datetime.now(timezone.utc) + timedelta(days=payload.expires_in_days),
     )
     db.add(item)
-    db.commit()
+    try:
+        db.commit()
+    except IntegrityError as exc:
+        db.rollback()
+        raise HTTPException(
+            503,
+            "The application-link database migration is not complete. Run alembic upgrade head.",
+        ) from exc
     db.refresh(item)
     return {
         "id": item.id,
