@@ -130,7 +130,6 @@ def dashboard_statistics(
             PollingUnit.id == AgentAssignment.polling_unit_id,
         )
         .where(
-            AgentAssignment.election_id == election.id,
             PollingUnit.state == "Rivers",
         )
     ) or 0
@@ -174,7 +173,6 @@ def dashboard_statistics(
             & (ResultSubmission.election_id == election.id),
         )
         .where(
-            AgentAssignment.election_id == election.id,
             PollingUnit.state == "Rivers",
             ResultSubmission.id.is_(None),
         )

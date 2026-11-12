@@ -54,7 +54,6 @@ def list_assignments(
         select(
             AgentAssignment,
             User,
-            Election,
             PollingUnit,
         )
         .join(
@@ -62,15 +61,10 @@ def list_assignments(
             AgentAssignment.agent_id == User.id,
         )
         .join(
-            Election,
-            AgentAssignment.election_id == Election.id,
-        )
-        .join(
             PollingUnit,
             AgentAssignment.polling_unit_id == PollingUnit.id,
         )
         .where(
-            Election.state == "Rivers",
             PollingUnit.state == "Rivers",
         )
         .order_by(AgentAssignment.id.desc())
@@ -78,14 +72,11 @@ def list_assignments(
 
     assignments = []
 
-    for assignment, agent, election, unit in rows:
+    for assignment, agent, unit in rows:
         assignments.append(
             {
                 "id": assignment.id,
-                "election": {
-                    "id": election.id,
-                    "name": election.name,
-                },
+                "scope": "All elections",
                 "agent": {
                     "id": agent.id,
                     "full_name": agent.full_name,
@@ -131,20 +122,13 @@ def remove_assignment(
             detail="Assignment not found.",
         )
 
-    election = db.get(
-        Election,
-        assignment.election_id,
-    )
-
     unit = db.get(
         PollingUnit,
         assignment.polling_unit_id,
     )
 
     if (
-        not election
-        or not unit
-        or election.state != "Rivers"
+        not unit
         or unit.state != "Rivers"
     ):
         raise HTTPException(
@@ -160,8 +144,6 @@ def remove_assignment(
 
     existing_submission = db.scalar(
         select(ResultSubmission.id).where(
-            ResultSubmission.election_id
-            == assignment.election_id,
             ResultSubmission.polling_unit_id
             == assignment.polling_unit_id,
             ResultSubmission.agent_id

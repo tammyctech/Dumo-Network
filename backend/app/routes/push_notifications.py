@@ -221,7 +221,7 @@ def resolve_recipient_ids(payload: SendNotificationRequest, db: Session) -> list
     elif payload.audience_type == "election":
         query = query.join(
             AgentAssignment, AgentAssignment.agent_id == User.id
-        ).where(AgentAssignment.election_id == payload.election_id)
+        )
     elif payload.audience_type == "lga":
         query = (
             query.join(AgentAssignment, AgentAssignment.agent_id == User.id)

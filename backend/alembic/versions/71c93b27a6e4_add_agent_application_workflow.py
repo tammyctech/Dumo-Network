@@ -18,7 +18,6 @@ def upgrade() -> None:
         "agent_application_links",
         sa.Column("id", sa.Integer(), primary_key=True),
         sa.Column("token", sa.String(64), nullable=False, unique=True),
-        sa.Column("election_id", sa.Integer(), sa.ForeignKey("elections.id"), nullable=False),
         sa.Column("created_by", sa.Integer(), sa.ForeignKey("users.id"), nullable=False),
         sa.Column("is_active", sa.Boolean(), nullable=False, server_default=sa.true()),
         sa.Column("expires_at", sa.DateTime(timezone=True), nullable=False),

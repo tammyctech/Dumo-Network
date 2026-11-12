@@ -76,25 +76,25 @@ def template(_: User = Depends(require_admin)):
 
 
 @router.post("/preview")
-async def preview(election_id: int = Form(...), file: UploadFile = File(...),
+async def preview(file: UploadFile = File(...),
                   _: User = Depends(require_admin), db: Session = Depends(get_db)):
     try:
-        return validate_agents(db, parse_agent_file(await _read(file), file.filename or ""), election_id)
+        return validate_agents(db, parse_agent_file(await _read(file), file.filename or ""))
     except ValueError as exc:
         raise HTTPException(422, str(exc)) from exc
 
 
 @router.post("/confirm")
-async def confirm(election_id: int = Form(...), file: UploadFile = File(...),
+async def confirm(file: UploadFile = File(...),
                   admin: User = Depends(require_admin), db: Session = Depends(get_db)):
     try:
-        report = validate_agents(db, parse_agent_file(await _read(file), file.filename or ""), election_id)
+        report = validate_agents(db, parse_agent_file(await _read(file), file.filename or ""))
     except ValueError as exc:
         raise HTTPException(422, str(exc)) from exc
     if not report["valid_records"]:
         raise HTTPException(422, "No valid records are available to import.")
 
-    history = AgentImport(administrator_id=admin.id, election_id=election_id,
+    history = AgentImport(administrator_id=admin.id, election_id=None,
         filename=(file.filename or "upload")[:255], total_records=report["total_records"],
         failed_records=report["invalid_records"])
     db.add(history)
@@ -152,7 +152,7 @@ async def confirm(election_id: int = Form(...), file: UploadFile = File(...),
                 "phone_number": user.phone_number,
                 "temporary_password": DEFAULT_AGENT_PASSWORD,
             })
-        db.add(AgentAssignment(election_id=election_id, polling_unit_id=row["polling_unit_id"], agent_id=user.id))
+        db.add(AgentAssignment(election_id=None, polling_unit_id=row["polling_unit_id"], agent_id=user.id))
         assigned += 1
         db.add(AgentImportRow(import_id=history.id, row_number=row["row_number"], status="imported",
             phone_number=row["phone_number"], agent_id=user.id, polling_unit_id=row["polling_unit_id"],
@@ -173,9 +173,9 @@ async def confirm(election_id: int = Form(...), file: UploadFile = File(...),
 @router.get("")
 def history(_: User = Depends(require_admin), db: Session = Depends(get_db)):
     records = db.execute(select(AgentImport, User, Election).join(User, AgentImport.administrator_id == User.id)
-        .join(Election, AgentImport.election_id == Election.id).order_by(AgentImport.created_at.desc())).all()
+        .outerjoin(Election, AgentImport.election_id == Election.id).order_by(AgentImport.created_at.desc())).all()
     return [{"id": item.id, "import_date": item.created_at, "administrator": admin.full_name,
-             "filename": item.filename, "election": election.name, "total_records": item.total_records,
+             "filename": item.filename, "election": election.name if election else "All elections", "total_records": item.total_records,
              "registered_agents": item.registered_agents, "assigned_agents": item.assigned_agents,
              "skipped_records": item.skipped_records, "failed_records": item.failed_records}
             for item, admin, election in records]

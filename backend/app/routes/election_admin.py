@@ -74,20 +74,6 @@ def assign_agent(
     db: Session = Depends(get_db),
     admin: User = Depends(require_admin),
 ):
-    election = db.get(Election, payload.election_id)
-
-    if election is None:
-        raise HTTPException(
-            status_code=404,
-            detail="Election not found.",
-        )
-
-    if election.state.strip().lower() != "rivers":
-        raise HTTPException(
-            status_code=403,
-            detail="Only Rivers State elections are supported.",
-        )
-
     polling_unit = db.get(
         PollingUnit,
         payload.polling_unit_id,
@@ -127,20 +113,18 @@ def assign_agent(
 
     existing = db.scalar(
         select(AgentAssignment).where(
-            AgentAssignment.election_id == payload.election_id,
             AgentAssignment.polling_unit_id == payload.polling_unit_id,
-            AgentAssignment.agent_id == payload.agent_id,
         )
     )
 
     if existing is not None:
         raise HTTPException(
             status_code=409,
-            detail="This agent already has this assignment.",
+            detail="This polling unit already has a permanent agent.",
         )
 
     assignment = AgentAssignment(
-        election_id=payload.election_id,
+        election_id=None,
         polling_unit_id=payload.polling_unit_id,
         agent_id=payload.agent_id,
     )
@@ -162,5 +146,5 @@ def assign_agent(
         election_id=assignment.election_id,
         polling_unit_id=assignment.polling_unit_id,
         agent_id=assignment.agent_id,
-        message="Agent assigned successfully.",
+        message="Agent permanently assigned to this polling unit for all elections.",
     )

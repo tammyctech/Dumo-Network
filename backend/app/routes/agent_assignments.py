@@ -41,26 +41,16 @@ def get_my_assignments(
         )
 
     statement = (
-        select(
-            AgentAssignment,
-            Election,
-            PollingUnit,
-        )
-        .join(
-            Election,
-            AgentAssignment.election_id == Election.id,
-        )
+        select(AgentAssignment, PollingUnit)
         .join(
             PollingUnit,
             AgentAssignment.polling_unit_id == PollingUnit.id,
         )
         .where(
             AgentAssignment.agent_id == current_user.id,
-            Election.state == "Rivers",
             PollingUnit.state == "Rivers",
         )
         .order_by(
-            Election.election_date.desc(),
             PollingUnit.lga,
             PollingUnit.ward,
             PollingUnit.name,
@@ -68,13 +58,16 @@ def get_my_assignments(
     )
 
     records = db.execute(statement).all()
+    elections = db.scalars(
+        select(Election).where(Election.state == "Rivers").order_by(Election.election_date.desc())
+    ).all()
 
     assignments = []
 
-    for assignment, election, polling_unit in records:
-        assignments.append(
-            {
-                "assignment_id": assignment.id,
+    for assignment, polling_unit in records:
+        for election in elections:
+            assignments.append({
+                "assignment_id": f"{assignment.id}:{election.id}",
                 "election": {
                     "id": election.id,
                     "name": election.name,
@@ -88,8 +81,7 @@ def get_my_assignments(
                     "ward": polling_unit.ward,
                     "state": polling_unit.state,
                 },
-            }
-        )
+            })
 
     return {
         "state": "Rivers",

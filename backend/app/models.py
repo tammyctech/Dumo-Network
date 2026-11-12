@@ -211,9 +211,8 @@ class AgentAssignment(Base):
 
     __table_args__ = (
         UniqueConstraint(
-            "election_id",
             "polling_unit_id",
-            name="uq_assignment_election_polling_unit",
+            name="uq_assignment_polling_unit",
         ),
     )
 
@@ -222,9 +221,9 @@ class AgentAssignment(Base):
         primary_key=True,
     )
 
-    election_id: Mapped[int] = mapped_column(
+    election_id: Mapped[int | None] = mapped_column(
         ForeignKey("elections.id"),
-        nullable=False,
+        nullable=True,
     )
 
     polling_unit_id: Mapped[int] = mapped_column(
@@ -243,7 +242,6 @@ class AgentApplicationLink(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     token: Mapped[str] = mapped_column(String(64), unique=True, index=True, nullable=False)
-    election_id: Mapped[int] = mapped_column(ForeignKey("elections.id"), nullable=False)
     created_by: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
@@ -281,7 +279,7 @@ class AgentImport(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     administrator_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
-    election_id: Mapped[int] = mapped_column(ForeignKey("elections.id"), nullable=False)
+    election_id: Mapped[int | None] = mapped_column(ForeignKey("elections.id"), nullable=True)
     filename: Mapped[str] = mapped_column(String(255), nullable=False)
     total_records: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     registered_agents: Mapped[int] = mapped_column(Integer, default=0, nullable=False)

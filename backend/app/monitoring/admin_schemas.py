@@ -16,14 +16,13 @@ class ElectionResponse(BaseModel):
 
 
 class AgentAssignmentCreate(BaseModel):
-    election_id: int = Field(gt=0)
     polling_unit_id: int = Field(gt=0)
     agent_id: int = Field(gt=0)
 
 
 class AgentAssignmentResponse(BaseModel):
     id: int
-    election_id: int
+    election_id: int | None
     polling_unit_id: int
     agent_id: int
     message: str

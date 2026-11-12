@@ -9,7 +9,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 from email_validator import EmailNotValidError, validate_email
 
-from app.models import AgentAssignment, Election, PollingUnit, User
+from app.models import AgentAssignment, PollingUnit, User
 from app.utils.phone import normalize_nigerian_phone
 
 MAX_AGENT_FILE_SIZE = 10 * 1024 * 1024
@@ -76,20 +76,13 @@ def _polling_number_matches(code: str, number: str) -> bool:
     return bool(code_parts and code_parts[-1] == number)
 
 
-def validate_agents(db: Session, records: list[dict[str, str]], election_id: int) -> dict:
-    if db.get(Election, election_id) is None:
-        raise ValueError("The selected election does not exist.")
-
+def validate_agents(db: Session, records: list[dict[str, str]]) -> dict:
     units = db.scalars(select(PollingUnit).where(PollingUnit.state.ilike("Rivers"))).all()
     units_by_code = {_key(unit.code): unit for unit in units}
     units_by_location: dict[tuple[str, str], list[PollingUnit]] = {}
     for unit in units:
         units_by_location.setdefault((_key(unit.lga), _key(unit.ward)), []).append(unit)
-    assignments = {
-        item.polling_unit_id: item for item in db.scalars(
-            select(AgentAssignment).where(AgentAssignment.election_id == election_id)
-        ).all()
-    }
+    assignments = {item.polling_unit_id: item for item in db.scalars(select(AgentAssignment)).all()}
     existing_users = {u.phone_number: u for u in db.scalars(select(User).where(User.phone_number.is_not(None))).all()}
     seen_phones: set[str] = set()
     seen_units: set[int] = set()
@@ -131,7 +124,7 @@ def validate_agents(db: Session, records: list[dict[str, str]], election_id: int
             detail = "not found" if not matches else "is ambiguous; provide Polling Unit Code"
             errors.append(f"Polling Unit {number} was {detail} in {ward}, {lga} LGA.")
         elif unit.id in assignments:
-            errors.append("This polling unit already has an agent for the selected election.")
+            errors.append("This polling unit already has a permanent agent.")
         elif unit.id in seen_units:
             errors.append("This polling unit is duplicated in this file.")
         else:

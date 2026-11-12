@@ -85,7 +85,6 @@ def submit_election_result(
     assignment = db.scalar(
         select(AgentAssignment).where(
             AgentAssignment.agent_id == current_user.id,
-            AgentAssignment.election_id == payload.election_id,
             AgentAssignment.polling_unit_id == payload.polling_unit_id,
         )
     )
@@ -93,7 +92,7 @@ def submit_election_result(
     if assignment is None:
         raise HTTPException(
             status_code=403,
-            detail="You are not assigned to this polling unit for this election.",
+            detail="You are not assigned to this polling unit.",
         )
 
     # 7. Prevent duplicate first submissions.

@@ -20,7 +20,7 @@ type PartyResult = {
 };
 
 type AgentAssignment = {
-  assignment_id: number;
+  assignment_id: string;
   election: {
     id: number;
     name: string;

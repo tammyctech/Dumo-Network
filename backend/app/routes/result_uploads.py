@@ -79,7 +79,6 @@ async def upload_result_sheet(
     # 4. Confirm the agent is still assigned.
     assignment = db.query(AgentAssignment).filter(
         AgentAssignment.agent_id == current_user.id,
-        AgentAssignment.election_id == submission.election_id,
         AgentAssignment.polling_unit_id == submission.polling_unit_id,
     ).first()
 

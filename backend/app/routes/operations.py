@@ -115,7 +115,6 @@ def create_incident(payload: IncidentCreate, db: Session = Depends(get_db),
     if user.role == "agent" and payload.polling_unit_id is None:
         assigned_election = db.scalar(select(AgentAssignment.id).where(
             AgentAssignment.agent_id == user.id,
-            AgentAssignment.election_id == payload.election_id,
         ))
         if assigned_election is None:
             raise HTTPException(status_code=403, detail="You are not assigned to this election.")
@@ -126,7 +125,6 @@ def create_incident(payload: IncidentCreate, db: Session = Depends(get_db),
         if user.role == "agent":
             assignment = db.scalar(select(AgentAssignment.id).where(
                 AgentAssignment.agent_id == user.id,
-                AgentAssignment.election_id == payload.election_id,
                 AgentAssignment.polling_unit_id == payload.polling_unit_id,
             ))
             if assignment is None:
