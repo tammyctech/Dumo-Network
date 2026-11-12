@@ -377,6 +377,8 @@ class ChangePasswordRequest(BaseModel):
         min_length=1
     )
 
+    email: EmailStr | None = None
+
     model_config = ConfigDict(
         extra="forbid"
     )

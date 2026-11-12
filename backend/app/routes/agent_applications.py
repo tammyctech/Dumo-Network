@@ -18,6 +18,7 @@ from ..models import (
     User,
 )
 from ..security import hash_password, require_admin
+from ..services.email_service import send_agent_approval_email
 from ..utils.phone import normalize_nigerian_phone
 
 
@@ -163,12 +164,21 @@ def submit_application(token: str, payload: ApplicationCreate, db: Session = Dep
         phone = normalize_nigerian_phone(payload.phone_number)
     except ValueError as exc:
         raise HTTPException(422, str(exc)) from exc
+    email = str(payload.email).strip().lower()
+    existing_user = db.scalar(
+        select(User.id).where((User.email == email) | (User.phone_number == phone))
+    )
+    if existing_user is not None:
+        raise HTTPException(
+            409,
+            "An account already uses this email address or phone number. Sign in or contact an administrator.",
+        )
     item = AgentApplication(
         link_id=link.id,
         polling_unit_id=unit.id,
         full_name=payload.full_name.strip(),
         phone_number=phone,
-        email=str(payload.email).strip().lower(),
+        email=email,
     )
     db.add(item)
     try:
@@ -206,6 +216,9 @@ def approve_application(
     link = db.get(AgentApplicationLink, item.link_id)
     if link is None:
         raise HTTPException(409, "The application link no longer exists.")
+    unit = db.get(PollingUnit, item.polling_unit_id)
+    if unit is None:
+        raise HTTPException(409, "The selected polling unit no longer exists.")
     if db.scalar(select(User.id).where((User.email == item.email) | (User.phone_number == item.phone_number))):
         raise HTTPException(409, "An account already uses this email address or phone number.")
     if db.scalar(select(AgentAssignment.id).where(AgentAssignment.polling_unit_id == item.polling_unit_id)):
@@ -233,9 +246,21 @@ def approve_application(
     except IntegrityError as exc:
         db.rollback()
         raise HTTPException(409, "The account or polling-unit assignment conflicts with existing data.") from exc
+    email_sent, email_error = send_agent_approval_email(
+        recipient=item.email,
+        full_name=item.full_name,
+        phone_number=item.phone_number,
+        temporary_password=DEFAULT_AGENT_PASSWORD,
+        lga=unit.lga,
+        ward=unit.ward,
+        polling_unit_code=unit.code,
+        polling_unit_name=unit.name,
+    )
     return {
         "message": "Application approved. The agent can log in with their phone number and the temporary password.",
         "temporary_password": DEFAULT_AGENT_PASSWORD,
+        "email_sent": email_sent,
+        "email_error": email_error,
     }
 
 
