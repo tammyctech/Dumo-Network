@@ -1,9 +1,11 @@
 import csv
 import io
+import logging
 from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 from fastapi.responses import StreamingResponse
+from fastapi.routing import APIRoute
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
@@ -15,7 +17,42 @@ from app.imports.agent_service import (
     HEADERS, MAX_AGENT_FILE_SIZE, parse_agent_file, temporary_password, validate_agents,
 )
 
-router = APIRouter(prefix="/api/admin/agent-imports", tags=["Bulk Agent Registration"])
+logger = logging.getLogger(__name__)
+
+
+class AgentImportRoute(APIRoute):
+    """Keep unexpected import failures visible to cross-origin admin clients."""
+
+    def get_route_handler(self):
+        handler = super().get_route_handler()
+
+        async def safe_handler(request):
+            try:
+                return await handler(request)
+            except HTTPException:
+                raise
+            except Exception as exc:
+                logger.exception(
+                    "Bulk agent import request failed",
+                    extra={"path": request.url.path},
+                )
+                raise HTTPException(
+                    status_code=500,
+                    detail=(
+                        "The server could not process this agent file. "
+                        "Please retry; if it continues, report whether this happened "
+                        "during validation or confirmation."
+                    ),
+                ) from exc
+
+        return safe_handler
+
+
+router = APIRouter(
+    prefix="/api/admin/agent-imports",
+    tags=["Bulk Agent Registration"],
+    route_class=AgentImportRoute,
+)
 
 
 async def _read(file: UploadFile) -> bytes:
