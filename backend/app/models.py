@@ -238,6 +238,44 @@ class AgentAssignment(Base):
     )
 
 
+class AgentApplicationLink(Base):
+    __tablename__ = "agent_application_links"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    token: Mapped[str] = mapped_column(String(64), unique=True, index=True, nullable=False)
+    election_id: Mapped[int] = mapped_column(ForeignKey("elections.id"), nullable=False)
+    created_by: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False
+    )
+
+
+class AgentApplication(Base):
+    __tablename__ = "agent_applications"
+    __table_args__ = (
+        UniqueConstraint("link_id", "phone_number", name="uq_agent_application_link_phone"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    link_id: Mapped[int] = mapped_column(
+        ForeignKey("agent_application_links.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    polling_unit_id: Mapped[int] = mapped_column(ForeignKey("polling_units.id"), nullable=False)
+    full_name: Mapped[str] = mapped_column(String(150), nullable=False)
+    phone_number: Mapped[str] = mapped_column(String(20), nullable=False)
+    email: Mapped[str] = mapped_column(String(255), nullable=False)
+    status: Mapped[str] = mapped_column(String(20), default="pending", nullable=False, index=True)
+    admin_notes: Mapped[str | None] = mapped_column(String(1000), nullable=True)
+    reviewed_by: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True)
+    reviewed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    agent_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False
+    )
+
+
 class AgentImport(Base):
     __tablename__ = "agent_imports"
 

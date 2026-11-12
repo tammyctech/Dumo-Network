@@ -1,7 +1,7 @@
 import csv
 import io
 import logging
-from datetime import datetime, timezone
+import os
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 from fastapi.responses import StreamingResponse
@@ -14,10 +14,11 @@ from app.database import get_db
 from app.models import AgentAssignment, AgentImport, AgentImportRow, Election, User
 from app.security import hash_password, require_admin
 from app.imports.agent_service import (
-    HEADERS, MAX_AGENT_FILE_SIZE, parse_agent_file, temporary_password, validate_agents,
+    HEADERS, MAX_AGENT_FILE_SIZE, parse_agent_file, validate_agents,
 )
 
 logger = logging.getLogger(__name__)
+DEFAULT_AGENT_PASSWORD = os.getenv("DEFAULT_AGENT_PASSWORD", "12345")
 
 
 class AgentImportRoute(APIRoute):
@@ -100,33 +101,58 @@ async def confirm(election_id: int = Form(...), file: UploadFile = File(...),
     db.flush()
     credentials = []
     registered = assigned = 0
+    valid_rows = [row for row in report["rows"] if row["valid"]]
+    phones = {row["phone_number"] for row in valid_rows}
+    existing_users = {
+        user.phone_number: user
+        for user in db.scalars(select(User).where(User.phone_number.in_(phones))).all()
+    }
+    candidate_emails = {
+        row["email"] or f"{row['phone_number'][1:]}@agents.dumo.invalid"
+        for row in valid_rows
+        if row["phone_number"] not in existing_users
+    }
+    used_emails = set(db.scalars(select(User.email).where(User.email.in_(candidate_emails))).all())
+    # All new accounts share one administrator-configured temporary password.
+    # Hash it once for the batch to avoid a proxy timeout, and force every agent
+    # to replace it immediately after their first login.
+    default_password_hash = hash_password(DEFAULT_AGENT_PASSWORD) if candidate_emails else ""
+    planned: list[tuple[dict, User, bool]] = []
+
     for row in report["rows"]:
         if not row["valid"]:
             db.add(AgentImportRow(import_id=history.id, row_number=row["row_number"], status="failed",
                 phone_number=row["phone_number"], polling_unit_id=row["polling_unit_id"],
                 message=" ".join(row["errors"])[:500]))
             continue
-        user = db.scalar(select(User).where(User.phone_number == row["phone_number"]))
+        user = existing_users.get(row["phone_number"])
         created = False
         if user is None:
-            password = temporary_password()
             email = row["email"] or f"{row['phone_number'][1:]}@agents.dumo.invalid"
-            if db.scalar(select(User.id).where(User.email == email)):
+            if email in used_emails:
                 row["errors"] = ["Email address is already registered."]
                 history.failed_records += 1
                 db.add(AgentImportRow(import_id=history.id, row_number=row["row_number"], status="failed",
                     phone_number=row["phone_number"], polling_unit_id=row["polling_unit_id"], message=row["errors"][0]))
                 continue
+            used_emails.add(email)
             user = User(full_name=row["full_name"], email=email, phone_number=row["phone_number"],
-                hashed_password=hash_password(password), role="agent", is_active=True, must_change_password=True)
+                hashed_password=default_password_hash, role="agent", is_active=True, must_change_password=True)
             db.add(user)
-            db.flush()
             registered += 1
             created = True
-            credentials.append({"full_name": user.full_name, "phone_number": user.phone_number,
-                                "temporary_password": password})
+        planned.append((row, user, created))
+
+    # Assign database IDs to all new users in one round trip.
+    db.flush()
+    for row, user, created in planned:
+        if created:
+            credentials.append({
+                "full_name": user.full_name,
+                "phone_number": user.phone_number,
+                "temporary_password": DEFAULT_AGENT_PASSWORD,
+            })
         db.add(AgentAssignment(election_id=election_id, polling_unit_id=row["polling_unit_id"], agent_id=user.id))
-        db.flush()
         assigned += 1
         db.add(AgentImportRow(import_id=history.id, row_number=row["row_number"], status="imported",
             phone_number=row["phone_number"], agent_id=user.id, polling_unit_id=row["polling_unit_id"],
@@ -141,7 +167,7 @@ async def confirm(election_id: int = Form(...), file: UploadFile = File(...),
         raise HTTPException(409, "The data changed after preview. Preview the file again.") from exc
     return {"import_id": history.id, "registered_agents": registered, "assigned_agents": assigned,
             "failed_records": history.failed_records, "credentials": credentials,
-            "credential_notice": "Shown once. Store and distribute these credentials securely."}
+            "credential_notice": "All new agents must change the shared temporary password after first login."}
 
 
 @router.get("")

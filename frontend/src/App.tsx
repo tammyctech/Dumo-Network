@@ -21,6 +21,7 @@ const Login = lazy(() => import("./pages/Login"));
 const Register = lazy(() => import("./pages/Register"));
 const ActivateAgent = lazy(() => import("./pages/ActivateAgent"));
 const LandingPage = lazy(() => import("./pages/LandingPage"));
+const AgentApplicationForm = lazy(() => import("./pages/AgentApplicationForm"));
 
 // Application pages
 const Dashboard = lazy(() => import("./pages/Dashboard"));
@@ -40,6 +41,7 @@ const AgentAssignments = lazy(() => import("./pages/AgentAssignments"));
 const AdminNotifications = lazy(() => import("./pages/AdminNotifications"));
 const BulkAgentRegistration = lazy(() => import("./pages/BulkAgentRegistration"));
 const MandatoryPasswordChange = lazy(() => import("./pages/MandatoryPasswordChange"));
+const AdminAgentApplications = lazy(() => import("./pages/AdminAgentApplications"));
 
 // Bulk Import Dashboard
 const BulkImport = lazy(() => import("./pages/BulkImport"));
@@ -85,6 +87,7 @@ export default function App() {
             path="/activate-agent"
             element={<ActivateAgent />}
           />
+          <Route path="/apply/agent/:token" element={<AgentApplicationForm />} />
 
           {/* ============================================
               AUTHENTICATED ROUTES
@@ -168,6 +171,7 @@ export default function App() {
                   element={<BulkImport />}
                 />
                 <Route path="/admin/agent-imports" element={<BulkAgentRegistration />} />
+                <Route path="/admin/agent-applications" element={<AdminAgentApplications />} />
 
                 {/* User Management */}
                 <Route

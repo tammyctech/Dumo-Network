@@ -37,6 +37,7 @@ from .routes import (
     push_notifications,
     public_results,
     operations,
+    agent_applications,
 )
 
 
@@ -184,6 +185,7 @@ app.include_router(push_notifications.router)
 # Privacy-safe, read-only election overview for the public landing page.
 app.include_router(public_results.router)
 app.include_router(operations.router)
+app.include_router(agent_applications.router)
 
 
 # =====================================================
@@ -251,6 +253,8 @@ def health(db: Session = Depends(get_db)):
                 "notification_campaigns",
                 "agent_imports",
                 "agent_import_rows",
+                "agent_application_links",
+                "agent_applications",
             }
             - tables
         )

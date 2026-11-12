@@ -29,6 +29,7 @@ import {
   ChevronRight,
   SlidersHorizontal,
   MapPin,
+  Link2,
 } from "lucide-react";
 
 import { useAuth } from "../context/AuthContext";
@@ -99,6 +100,13 @@ const navigation = [
     path: "/admin/agent-imports",
     section: "Administration",
     icon: Upload,
+    available: true,
+  },
+  {
+    name: "Agent Applications",
+    path: "/admin/agent-applications",
+    section: "Administration",
+    icon: Link2,
     available: true,
   },
   {
