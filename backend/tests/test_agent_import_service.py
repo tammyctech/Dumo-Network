@@ -72,6 +72,14 @@ class AgentImportServiceTests(unittest.TestCase):
         records = parse_agent_file(content.getvalue(), "agents.xlsx")
         self.assertEqual(records[0]["polling unit number"], "003")
 
+    def test_exact_code_resolves_unit_when_ward_label_differs(self):
+        records = parse_agent_file(self.csv(
+            "Ada Example,08012345678,Okrika,Ward 09,003,33-21-09-003,,\n"
+        ), "agents.csv")
+        report = validate_agents(self.db, records, self.election.id)
+        self.assertTrue(report["rows"][0]["valid"])
+        self.assertEqual(report["rows"][0]["polling_unit_id"], self.unit.id)
+
     def test_existing_election_assignment_is_a_conflict(self):
         user = User(full_name="Existing Agent", email="agent@example.com", phone_number="+2348011111111",
                     hashed_password="not-used", role="agent", is_active=True)

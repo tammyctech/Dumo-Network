@@ -81,6 +81,10 @@ def validate_agents(db: Session, records: list[dict[str, str]], election_id: int
         raise ValueError("The selected election does not exist.")
 
     units = db.scalars(select(PollingUnit).where(PollingUnit.state.ilike("Rivers"))).all()
+    units_by_code = {_key(unit.code): unit for unit in units}
+    units_by_location: dict[tuple[str, str], list[PollingUnit]] = {}
+    for unit in units:
+        units_by_location.setdefault((_key(unit.lga), _key(unit.ward)), []).append(unit)
     assignments = {
         item.polling_unit_id: item for item in db.scalars(
             select(AgentAssignment).where(AgentAssignment.election_id == election_id)
@@ -111,9 +115,15 @@ def validate_agents(db: Session, records: list[dict[str, str]], election_id: int
         if not lga or not ward or not number:
             errors.append("LGA, ward, and polling-unit number are required.")
 
-        candidates = [u for u in units if _key(u.lga) == _key(lga) and _key(u.ward) == _key(ward)]
+        candidates = units_by_location.get((_key(lga), _key(ward)), [])
         if code:
-            matches = [u for u in candidates if _key(u.code) == _key(code)]
+            # Polling-unit codes are globally unique. Spreadsheets commonly use
+            # numbered ward labels (for example, "Ward 1") while the database
+            # stores the official ward name (for example, "ABUA I"). Resolve an
+            # explicitly supplied code first so that this naming difference does
+            # not reject the correct polling unit.
+            coded_unit = units_by_code.get(_key(code))
+            matches = [coded_unit] if coded_unit and _key(coded_unit.lga) == _key(lga) else []
         else:
             matches = [u for u in candidates if _polling_number_matches(u.code, number)]
         unit = matches[0] if len(matches) == 1 else None
