@@ -9,6 +9,12 @@ type Preview = { total_records:number; valid_records:number; invalid_records:num
 type ImportRecord = { id:number; import_date:string; administrator:string; filename:string; election:string; total_records:number; registered_agents:number; assigned_agents:number; skipped_records:number; failed_records:number };
 
 async function detail(response: Response) { try { const data=await response.json(); return typeof data.detail === "string" ? data.detail : "Request failed."; } catch { return "Request failed."; } }
+function requestMessage(error: unknown) {
+  if (error instanceof TypeError) {
+    return `Could not reach the Dumo API at ${API}. Check that the backend is online and VITE_API_URL/CORS are configured for this site.`;
+  }
+  return error instanceof Error ? error.message : "Request failed.";
+}
 
 export default function BulkAgentRegistration() {
   const { token } = useAuth();
@@ -16,11 +22,11 @@ export default function BulkAgentRegistration() {
   const [elections,setElections]=useState<Election[]>([]), [history,setHistory]=useState<ImportRecord[]>([]);
   const [election,setElection]=useState(""), [file,setFile]=useState<File|null>(null), [preview,setPreview]=useState<Preview|null>(null);
   const [busy,setBusy]=useState(false), [error,setError]=useState(""), [credentials,setCredentials]=useState<Record<string,string>[]>([]);
-  const load=useCallback(async()=>{if(!token)return; const [a,b]=await Promise.all([fetch(`${API}/api/admin/elections`,{headers:headers()}),fetch(`${API}/api/admin/agent-imports`,{headers:headers()})]); if(a.ok){const d=await a.json();setElections(d.elections||[])} if(b.ok)setHistory(await b.json());},[token,headers]);
+  const load=useCallback(async()=>{if(!token)return; try { const [a,b]=await Promise.all([fetch(`${API}/api/admin/elections`,{headers:headers()}),fetch(`${API}/api/admin/agent-imports`,{headers:headers()})]); if(!a.ok)throw new Error(await detail(a)); if(!b.ok)throw new Error(await detail(b)); const d=await a.json();setElections(d.elections||[]);setHistory(await b.json()); } catch(value) { setError(requestMessage(value)); }},[token,headers]);
   useEffect(()=>{void load()},[load]);
   function choose(value:File|null){setFile(value);setPreview(null);setCredentials([]);setError("")}
   function drop(event:DragEvent){event.preventDefault();choose(event.dataTransfer.files[0]||null)}
-  async function send(path:string){if(!file||!election){setError("Select an election and file first.");return} setBusy(true);setError(""); const form=new FormData();form.append("election_id",election);form.append("file",file); try{const r=await fetch(`${API}/api/admin/agent-imports/${path}`,{method:"POST",headers:headers(),body:form});if(!r.ok)throw new Error(await detail(r));const data=await r.json();if(path==="preview")setPreview(data);else{setCredentials(data.credentials||[]);setPreview(null);await load()}}catch(e){setError(e instanceof Error?e.message:"Request failed.")}finally{setBusy(false)}}
+  async function send(path:string){if(!file||!election){setError("Select an election and file first.");return} if(file.size>10*1024*1024){setError("The file exceeds the 10 MB upload limit.");return} setBusy(true);setError(""); const form=new FormData();form.append("election_id",election);form.append("file",file); try{const r=await fetch(`${API}/api/admin/agent-imports/${path}`,{method:"POST",headers:headers(),body:form});if(!r.ok)throw new Error(await detail(r));const data=await r.json();if(path==="preview")setPreview(data);else{setCredentials(data.credentials||[]);setPreview(null);await load()}}catch(e){setError(requestMessage(e))}finally{setBusy(false)}}
   function downloadCredentials(){const rows=[["Full Name","Phone Number","Temporary Password"],...credentials.map(c=>[c.full_name,c.phone_number,c.temporary_password])];const csv=rows.map(r=>r.map(v=>`"${String(v).replaceAll('"','""')}"`).join(",")).join("\n");const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv"}));a.download="dumo-agent-credentials.csv";a.click();URL.revokeObjectURL(a.href)}
   return <div className="space-y-7 pb-10">
     <div><p className="text-xs font-bold uppercase tracking-widest text-emerald-700">Administration</p><h1 className="mt-2 text-3xl font-black text-slate-950">Bulk Agent Registration</h1><p className="mt-2 text-sm text-slate-600">Validate accounts and polling-unit assignments before writing anything to the database.</p></div>

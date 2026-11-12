@@ -248,17 +248,25 @@ def health(db: Session = Depends(get_db)):
             column["name"]
             for column in schema.get_columns("result_submissions")
         } if "result_submissions" in tables else set()
+        user_columns = {
+            column["name"]
+            for column in schema.get_columns("users")
+        } if "users" in tables else set()
         missing = sorted(
             {
                 "result_reviews",
                 "result_flags",
                 "incidents",
                 "notification_campaigns",
+                "agent_imports",
+                "agent_import_rows",
             }
             - tables
         )
         if "verification_status" not in result_columns:
             missing.append("result_submissions.verification_status")
+        for column in {"must_change_password", "session_version"} - user_columns:
+            missing.append(f"users.{column}")
         if missing:
             return JSONResponse(
                 status_code=503,
