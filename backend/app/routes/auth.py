@@ -1,4 +1,5 @@
 import os
+import logging
 from html import escape
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -10,7 +11,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from ..database import get_db
-from ..models import AgentApplication, User
+from ..models import AgentApplication, AgentAssignment, PollingUnit, User
 from ..utils.phone import normalize_nigerian_phone
 
 from ..schemas import (
@@ -40,6 +41,59 @@ router = APIRouter(
     prefix="/api/auth",
     tags=["Authentication"],
 )
+logger = logging.getLogger(__name__)
+
+
+def _send_first_login_welcome_email(db: Session, user: User) -> None:
+    assignment = db.execute(
+        select(AgentAssignment, PollingUnit)
+        .join(PollingUnit, AgentAssignment.polling_unit_id == PollingUnit.id)
+        .where(AgentAssignment.agent_id == user.id)
+        .order_by(AgentAssignment.id)
+    ).first()
+    if assignment:
+        _, unit = assignment
+        location_text = (
+            f"LGA: {unit.lga}\nWard: {unit.ward}\n"
+            f"Polling unit: {unit.code} - {unit.name}"
+        )
+        location_html = (
+            f"<strong>LGA:</strong> {escape(unit.lga)}<br>"
+            f"<strong>Ward:</strong> {escape(unit.ward)}<br>"
+            f"<strong>Polling unit:</strong> {escape(unit.code)} &middot; {escape(unit.name)}"
+        )
+    else:
+        location_text = "Your polling-unit assignment will appear on your dashboard when it is available."
+        location_html = escape(location_text)
+    login_url = f"{os.getenv('FRONTEND_URL', 'http://localhost:5173').rstrip('/')}/login"
+    plain = f"""Hello {user.full_name},
+
+Welcome to the Dumo Youth Network Election Monitoring System. Your account setup is complete.
+
+Your permanent assignment:
+{location_text}
+
+This assignment covers all current and future elections. Please submit accurate results promptly, report incidents through the Incident Centre, and keep your password private.
+
+Sign in: {login_url}
+"""
+    html = f"""<h2 style="color:#047857">Welcome to Dumo Youth Network</h2>
+<p>Hello {escape(user.full_name)},</p><p>Your account setup is complete. You can now use the Election Monitoring System.</p>
+<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;padding:18px"><strong>Your permanent assignment</strong><br>{location_html}</div>
+<p>Your assignment covers <strong>all current and future elections</strong>.</p>
+<ul><li>Submit accurate polling-unit results promptly.</li><li>Report incidents through the Incident Centre.</li><li>Keep your password private and never share your account.</li></ul>
+<p><a href="{escape(login_url)}" style="display:inline-block;background:#047857;color:white;text-decoration:none;border-radius:10px;padding:12px 20px;font-weight:bold">Go to login</a></p>"""
+    try:
+        sent, error = send_system_email(
+            recipient=user.email,
+            subject="Welcome to Dumo Youth Network Election Monitoring",
+            plain_text=plain,
+            html=html,
+        )
+        if not sent:
+            logger.warning("Welcome email was not sent to user %s: %s", user.id, error)
+    except Exception:
+        logger.exception("Unexpected welcome email failure for user %s", user.id)
 
 
 class ForgotPasswordRequest(BaseModel):
@@ -480,6 +534,9 @@ def change_password(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Unable to change password",
         )
+
+    if first_login:
+        _send_first_login_welcome_email(db, current_user)
 
     return {
         "message": "Password changed successfully. Please sign in again.",

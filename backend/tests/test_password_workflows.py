@@ -1,4 +1,5 @@
 import unittest
+from unittest.mock import patch
 
 from fastapi import HTTPException
 from sqlalchemy import create_engine
@@ -6,8 +7,8 @@ from sqlalchemy.orm import Session
 from sqlalchemy.pool import StaticPool
 
 from app.database import Base
-from app.models import User
-from app.routes.auth import ResetPasswordRequest, change_password, reset_password
+from app.models import AgentAssignment, PollingUnit, User
+from app.routes.auth import ResetPasswordRequest, _send_first_login_welcome_email, change_password, reset_password
 from app.schemas import ChangePasswordRequest
 from app.security import create_password_reset_token, hash_password, verify_password
 
@@ -42,6 +43,24 @@ class PasswordWorkflowTests(unittest.TestCase):
             change_password(ChangePasswordRequest(current_password="12345", new_password="private-password", confirm_password="private-password", email="agent@example.com"), user, db)
             self.assertEqual(user.email, "agent@example.com")
             self.assertFalse(user.must_change_password)
+
+    @patch("app.routes.auth.send_system_email", return_value=(True, None))
+    def test_welcome_email_contains_permanent_assignment(self, send_email):
+        with Session(self.engine) as db:
+            user = User(full_name="Ada Agent", email="ada@example.com", hashed_password=hash_password("private-password"), role="agent", is_active=True)
+            unit = PollingUnit(code="32/21/09/003", name="Town Hall", state="Rivers", lga="Okrika", ward="Ward 9")
+            db.add_all([user, unit]); db.flush()
+            db.add(AgentAssignment(election_id=None, polling_unit_id=unit.id, agent_id=user.id))
+            db.commit()
+
+            _send_first_login_welcome_email(db, user)
+
+            arguments = send_email.call_args.kwargs
+            self.assertEqual(arguments["recipient"], "ada@example.com")
+            self.assertIn("Okrika", arguments["plain_text"])
+            self.assertIn("Ward 9", arguments["plain_text"])
+            self.assertIn("32/21/09/003", arguments["plain_text"])
+            self.assertIn("all current and future elections", arguments["plain_text"])
 
 
 if __name__ == "__main__":

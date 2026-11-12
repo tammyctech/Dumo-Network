@@ -1,4 +1,5 @@
 from datetime import datetime, timezone
+import logging
 from typing import Literal
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -12,8 +13,10 @@ from ..models import (
     ResultReview, ResultSubmission, User,
 )
 from ..security import get_current_user
+from ..services.email_service import send_bulk_system_email
 
 router = APIRouter(prefix="/api/operations", tags=["Election Operations"])
+logger = logging.getLogger(__name__)
 
 ReviewStatus = Literal["under_review", "verified", "disputed", "correction_requested"]
 IncidentSeverity = Literal["low", "medium", "high", "critical"]
@@ -37,6 +40,53 @@ class IncidentUpdate(BaseModel):
     status: IncidentStatus
     resolution_notes: str | None = Field(default=None, max_length=3000)
     assigned_to: int | None = Field(default=None, gt=0)
+
+
+def _notify_admins_of_incident(
+    db: Session,
+    *,
+    reporter: User,
+    election: Election,
+    unit: PollingUnit | None,
+    incident: Incident,
+) -> None:
+    admins = db.scalars(select(User).where(User.role == "admin", User.is_active.is_(True))).all()
+    recipients = [
+        (admin.email, admin.full_name) for admin in admins
+        if not admin.email.casefold().endswith(".invalid")
+        and not admin.email.casefold().endswith("@dumo-network.vercel.app")
+    ]
+    if not recipients:
+        return
+    location = (
+        f"LGA: {unit.lga}\nWard: {unit.ward}\nPolling unit: {unit.code} - {unit.name}"
+        if unit else "Polling unit: Not specified"
+    )
+    body = (
+        "A new incident report has been submitted.\n\n"
+        f"Reported by: {reporter.full_name}\n"
+        f"Reporter phone: {reporter.phone_number or 'Not provided'}\n"
+        f"Election: {election.name}\n"
+        f"{location}\n"
+        f"Category: {incident.category}\n"
+        f"Severity: {incident.severity.upper()}\n"
+        f"Status: {incident.status}\n\n"
+        f"Description:\n{incident.description}\n\n"
+        f"Incident ID: {incident.id}"
+    )
+    try:
+        sent, failed, error = send_bulk_system_email(
+            recipients=recipients,
+            subject=f"{incident.severity.upper()} incident: {incident.category}",
+            body=body,
+        )
+        if error or failed:
+            logger.warning(
+                "Incident %s email notification incomplete: sent=%s failed=%s error=%s",
+                incident.id, sent, failed, error,
+            )
+    except Exception:
+        logger.exception("Unexpected incident notification failure for incident %s", incident.id)
 
 
 def require_admin(user: User = Depends(get_current_user)) -> User:
@@ -118,6 +168,7 @@ def create_incident(payload: IncidentCreate, db: Session = Depends(get_db),
         ))
         if assigned_election is None:
             raise HTTPException(status_code=403, detail="You are not assigned to this election.")
+    unit = None
     if payload.polling_unit_id:
         unit = db.get(PollingUnit, payload.polling_unit_id)
         if unit is None or unit.state.lower() != "rivers":
@@ -136,6 +187,13 @@ def create_incident(payload: IncidentCreate, db: Session = Depends(get_db),
     db.add(incident)
     db.commit()
     db.refresh(incident)
+    _notify_admins_of_incident(
+        db,
+        reporter=user,
+        election=election,
+        unit=unit,
+        incident=incident,
+    )
     return {"message": "Incident reported.", "incident_id": incident.id}
 
 
