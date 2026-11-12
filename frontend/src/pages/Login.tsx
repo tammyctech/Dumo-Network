@@ -235,6 +235,8 @@ export default function Login() {
 
               </div>
 
+              <div className="-mt-3 text-right"><Link to="/forgot-password" className="text-sm font-semibold text-emerald-700 hover:text-emerald-800">Forgot password?</Link></div>
+
               {/* SIGN IN BUTTON */}
 
               <button

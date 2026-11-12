@@ -22,6 +22,8 @@ const Register = lazy(() => import("./pages/Register"));
 const ActivateAgent = lazy(() => import("./pages/ActivateAgent"));
 const LandingPage = lazy(() => import("./pages/LandingPage"));
 const AgentApplicationForm = lazy(() => import("./pages/AgentApplicationForm"));
+const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
+const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 
 // Application pages
 const Dashboard = lazy(() => import("./pages/Dashboard"));
@@ -88,6 +90,8 @@ export default function App() {
             element={<ActivateAgent />}
           />
           <Route path="/apply/agent/:token" element={<AgentApplicationForm />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
 
           {/* ============================================
               AUTHENTICATED ROUTES

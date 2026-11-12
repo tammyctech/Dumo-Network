@@ -175,6 +175,21 @@ export interface ChangePasswordData {
   current_password: string;
   new_password: string;
   confirm_password: string;
+  email?: string;
+}
+
+export async function requestPasswordReset(email: string): Promise<{ message: string }> {
+  const response = await fetch(`${API_URL}/api/auth/forgot-password`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email }) });
+  const data = await response.json();
+  if (!response.ok) throw new Error(typeof data.detail === "string" ? data.detail : "Unable to request a reset link.");
+  return data;
+}
+
+export async function resetPassword(token: string, new_password: string, confirm_password: string): Promise<{ message: string }> {
+  const response = await fetch(`${API_URL}/api/auth/reset-password`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token, new_password, confirm_password }) });
+  const data = await response.json();
+  if (!response.ok) throw new Error(typeof data.detail === "string" ? data.detail : "Unable to reset password.");
+  return data;
 }
 
 // ==========================================

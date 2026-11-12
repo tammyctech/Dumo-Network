@@ -6,6 +6,7 @@ import {
   Clock3,
   Loader2,
   Megaphone,
+  Mail,
   Radio,
   RefreshCw,
   Search,
@@ -15,7 +16,9 @@ import {
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 
-const API_URL = (import.meta.env.VITE_API_URL || "http://127.0.0.1:8000").replace(/\/$/, "");
+const API_URL = import.meta.env.DEV
+  ? (import.meta.env.VITE_API_URL || "http://127.0.0.1:8000").replace(/\/$/, "")
+  : "";
 
 type Agent = { id: number; full_name: string; email: string };
 type Election = { id: number; name: string; election_date: string };
@@ -57,6 +60,8 @@ export default function AdminNotifications() {
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [emailSending,setEmailSending]=useState(false);
+  const [emailForm,setEmailForm]=useState({subject:"",body:""});
   const [form, setForm] = useState({
     title: "", body: "", url: "/dashboard", audience_type: "selected_agents" as AudienceType,
     election_id: "", lga: "", user_ids: [] as number[],
@@ -124,6 +129,11 @@ export default function AdminNotifications() {
     } finally { setSending(false); }
   }
 
+  async function sendEmail(event:FormEvent){
+    event.preventDefault();setEmailSending(true);setError("");setSuccess("");
+    try{const response=await fetch(`${API_URL}/api/admin/email/send-all`,{method:"POST",headers:{...headers(),"Content-Type":"application/json"},body:JSON.stringify(emailForm)});if(!response.ok)throw new Error(await apiError(response));const result=await response.json();setSuccess(`Email campaign processed: ${result.sent} sent, ${result.failed} failed, and ${result.skipped} placeholder addresses skipped.`);setEmailForm({subject:"",body:""})}catch(caught){setError(caught instanceof Error?caught.message:"Unable to send email campaign.")}finally{setEmailSending(false)}
+  }
+
   return (
     <div className="space-y-7">
       <section className="relative overflow-hidden rounded-[1.75rem] border border-slate-200 bg-gradient-to-br from-white via-white to-emerald-50 px-6 py-7 text-slate-900 shadow-sm sm:px-8">
@@ -152,6 +162,11 @@ export default function AdminNotifications() {
       {success && (
         <Notice kind="success" title="Campaign delivered" message={success}/>
       )}
+
+      <form onSubmit={sendEmail} className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7">
+        <SectionHeading step="Email" title="Email all users" description="Send an individual email to every active user with a real email address. Placeholder addresses are skipped." icon={Mail}/>
+        <div className="mt-6 grid gap-5"><Field label="Email subject" hint={`${emailForm.subject.length}/150`}><input required minLength={2} maxLength={150} className="input" value={emailForm.subject} onChange={event=>setEmailForm({...emailForm,subject:event.target.value})} placeholder="Message from Dumo Youth Network"/></Field><Field label="Email message" hint={`${emailForm.body.length}/5000`}><textarea required minLength={2} maxLength={5000} rows={7} className="input resize-y" value={emailForm.body} onChange={event=>setEmailForm({...emailForm,body:event.target.value})} placeholder="Write the message that every active user should receive."/></Field><button disabled={emailSending||loading} className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-emerald-700 px-5 py-3 font-black text-white disabled:opacity-50">{emailSending?<Loader2 className="animate-spin" size={18}/>:<Mail size={18}/>} {emailSending?"Sending emails…":"Send email to all users"}</button></div>
+      </form>
 
       <form onSubmit={send} className="grid gap-6 2xl:grid-cols-[minmax(0,1.2fr)_minmax(340px,.8fr)]">
         <div className="space-y-6">
