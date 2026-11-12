@@ -181,13 +181,32 @@ def login(
 
     identifier = form_data.username.strip()
     user = None
+    pending_application = None
     try:
         phone = normalize_nigerian_phone(identifier)
         user = db.scalar(select(User).where(User.phone_number == phone))
+        pending_application = db.scalar(
+            select(AgentApplication.id).where(
+                AgentApplication.phone_number == phone,
+                AgentApplication.status == "pending",
+            )
+        )
     except ValueError:
-        user = db.scalar(select(User).where(User.email == identifier.lower()))
+        email = identifier.lower()
+        user = db.scalar(select(User).where(User.email == email))
+        pending_application = db.scalar(
+            select(AgentApplication.id).where(
+                AgentApplication.email == email,
+                AgentApplication.status == "pending",
+            )
+        )
 
     if user is None:
+        if pending_application is not None:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Your agent account has not been approved by the admin yet.",
+            )
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid email/phone number or password",
