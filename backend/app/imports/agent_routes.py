@@ -2,6 +2,8 @@ import csv
 import io
 import logging
 import os
+import re
+import unicodedata
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 from fastapi.responses import StreamingResponse
@@ -19,6 +21,23 @@ from app.imports.agent_service import (
 
 logger = logging.getLogger(__name__)
 DEFAULT_AGENT_PASSWORD = os.getenv("DEFAULT_AGENT_PASSWORD", "12345")
+
+
+def placeholder_email(full_name: str, phone_number: str, used_emails: set[str]) -> str:
+    ascii_name = unicodedata.normalize("NFKD", full_name).encode("ascii", "ignore").decode()
+    local_part = re.sub(r"[^a-z0-9]+", ".", ascii_name.casefold()).strip(".") or "agent"
+    local_part = local_part[:64].rstrip(".")
+    candidate = f"{local_part}@dumo-network.vercel.app"
+    if candidate not in used_emails:
+        return candidate
+    phone_suffix = re.sub(r"\D", "", phone_number)[-4:] or "agent"
+    candidate = f"{local_part[:59].rstrip('.')}.{phone_suffix}@dumo-network.vercel.app"
+    counter = 2
+    while candidate in used_emails:
+        suffix = f".{phone_suffix}.{counter}"
+        candidate = f"{local_part[:64-len(suffix)].rstrip('.')}{suffix}@dumo-network.vercel.app"
+        counter += 1
+    return candidate
 
 
 class AgentImportRoute(APIRoute):
@@ -107,16 +126,12 @@ async def confirm(file: UploadFile = File(...),
         user.phone_number: user
         for user in db.scalars(select(User).where(User.phone_number.in_(phones))).all()
     }
-    candidate_emails = {
-        row["email"] or f"{row['phone_number'][1:]}@agents.dumo.invalid"
-        for row in valid_rows
-        if row["phone_number"] not in existing_users
-    }
-    used_emails = set(db.scalars(select(User.email).where(User.email.in_(candidate_emails))).all())
+    has_new_users = any(row["phone_number"] not in existing_users for row in valid_rows)
+    used_emails = set(db.scalars(select(User.email)).all())
     # All new accounts share one administrator-configured temporary password.
     # Hash it once for the batch to avoid a proxy timeout, and force every agent
     # to replace it immediately after their first login.
-    default_password_hash = hash_password(DEFAULT_AGENT_PASSWORD) if candidate_emails else ""
+    default_password_hash = hash_password(DEFAULT_AGENT_PASSWORD) if has_new_users else ""
     planned: list[tuple[dict, User, bool]] = []
 
     for row in report["rows"]:
@@ -128,8 +143,8 @@ async def confirm(file: UploadFile = File(...),
         user = existing_users.get(row["phone_number"])
         created = False
         if user is None:
-            email = row["email"] or f"{row['phone_number'][1:]}@agents.dumo.invalid"
-            if email in used_emails:
+            email = row["email"] or placeholder_email(row["full_name"], row["phone_number"], used_emails)
+            if row["email"] and email in used_emails:
                 row["errors"] = ["Email address is already registered."]
                 history.failed_records += 1
                 db.add(AgentImportRow(import_id=history.id, row_number=row["row_number"], status="failed",

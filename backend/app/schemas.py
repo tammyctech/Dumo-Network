@@ -106,7 +106,10 @@ class UserResponse(BaseModel):
 
     full_name: str
 
-    email: EmailStr
+    # Imported agents may have a system-generated non-delivery address.
+    # Validate real email input at write boundaries, not while serializing
+    # an already stored account profile.
+    email: str
 
     phone_number: str | None = None
 
@@ -201,7 +204,7 @@ class AgentResponse(BaseModel):
 
     full_name: str
 
-    email: EmailStr
+    email: str
 
     phone_number: str
 

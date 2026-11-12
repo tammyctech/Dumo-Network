@@ -8,6 +8,7 @@ from sqlalchemy.pool import StaticPool
 
 from app.database import Base
 from app.imports.agent_service import parse_agent_file, validate_agents
+from app.imports.agent_routes import placeholder_email
 from app.models import AgentAssignment, Election, PollingUnit, User
 from openpyxl import Workbook
 
@@ -90,6 +91,15 @@ class AgentImportServiceTests(unittest.TestCase):
         report = validate_agents(self.db, records)
         self.assertFalse(report["rows"][0]["valid"])
         self.assertIn("already has a permanent agent", " ".join(report["rows"][0]["errors"]))
+
+    def test_placeholder_email_uses_agent_name_and_resolves_duplicates(self):
+        used = {"showers.eneni@dumo-network.vercel.app"}
+        value = placeholder_email("Showers Eneni", "+2347044627066", used)
+        self.assertEqual(value, "showers.eneni.7066@dumo-network.vercel.app")
+        self.assertEqual(
+            placeholder_email("Blessing Peter", "+2348072685189", used),
+            "blessing.peter@dumo-network.vercel.app",
+        )
 
 
 if __name__ == "__main__":
