@@ -2,11 +2,11 @@ import { useCallback, useEffect, useState, type DragEvent } from "react";
 import { AlertTriangle, CheckCircle2, Download, FileSpreadsheet, History, LoaderCircle, Upload } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 
-const API = (import.meta.env.VITE_API_URL || "http://127.0.0.1:8000")
-  .trim()
-  .replace(/^https\\:/, "https:")
-  .replace(/^http\\:/, "http:")
-  .replace(/\/$/, "");
+// Production uploads use Vercel's same-origin /api proxy. This avoids
+// cross-origin upload failures on browsers and networks that block Render.
+const API = import.meta.env.DEV
+  ? (import.meta.env.VITE_API_URL || "http://127.0.0.1:8000").replace(/\/$/, "")
+  : "";
 type Election = { id:number; name:string };
 type Row = { row_number:number; full_name:string; phone_number:string|null; lga:string; ward:string; polling_unit_number:string; polling_unit_code:string; existing_account:boolean; valid:boolean; errors:string[] };
 type Preview = { total_records:number; valid_records:number; invalid_records:number; can_import:boolean; rows:Row[] };
@@ -15,7 +15,8 @@ type ImportRecord = { id:number; import_date:string; administrator:string; filen
 async function detail(response: Response) { try { const data=await response.json(); return typeof data.detail === "string" ? data.detail : "Request failed."; } catch { return "Request failed."; } }
 function requestMessage(error: unknown) {
   if (error instanceof TypeError) {
-    return `Could not reach the Dumo API at ${API}. Check that the backend is online and VITE_API_URL/CORS are configured for this site.`;
+    const endpoint = API || window.location.origin;
+    return `Could not reach the Dumo API through ${endpoint}. Check that the backend deployment is online.`;
   }
   return error instanceof Error ? error.message : "Request failed.";
 }
