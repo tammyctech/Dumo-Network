@@ -8,7 +8,7 @@ import unicodedata
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 from fastapi.responses import StreamingResponse
 from fastapi.routing import APIRoute
-from sqlalchemy import select
+from sqlalchemy import delete, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -194,6 +194,19 @@ def history(_: User = Depends(require_admin), db: Session = Depends(get_db)):
              "registered_agents": item.registered_agents, "assigned_agents": item.assigned_agents,
              "skipped_records": item.skipped_records, "failed_records": item.failed_records}
             for item, admin, election in records]
+
+
+@router.delete("")
+def clear_history(_: User = Depends(require_admin), db: Session = Depends(get_db)):
+    """Delete import audit records without deleting agents or assignments."""
+    row_result = db.execute(delete(AgentImportRow))
+    import_result = db.execute(delete(AgentImport))
+    db.commit()
+    return {
+        "message": "Bulk agent import history cleared.",
+        "imports_deleted": import_result.rowcount or 0,
+        "rows_deleted": row_result.rowcount or 0,
+    }
 
 
 @router.get("/{import_id}/errors")

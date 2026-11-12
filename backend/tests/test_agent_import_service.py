@@ -8,8 +8,8 @@ from sqlalchemy.pool import StaticPool
 
 from app.database import Base
 from app.imports.agent_service import parse_agent_file, validate_agents
-from app.imports.agent_routes import placeholder_email
-from app.models import AgentAssignment, Election, PollingUnit, User
+from app.imports.agent_routes import clear_history, placeholder_email
+from app.models import AgentAssignment, AgentImport, AgentImportRow, Election, PollingUnit, User
 from openpyxl import Workbook
 
 
@@ -100,6 +100,23 @@ class AgentImportServiceTests(unittest.TestCase):
             placeholder_email("Blessing Peter", "+2348072685189", used),
             "blessing.peter@dumo-network.vercel.app",
         )
+
+    def test_clear_history_preserves_agents_and_assignments(self):
+        admin = User(full_name="Admin", email="admin@example.com", hashed_password="unused", role="admin", is_active=True)
+        agent = User(full_name="Imported Agent", email="agent@example.com", phone_number="+2348012345678", hashed_password="unused", role="agent", is_active=True)
+        self.db.add_all([admin, agent]); self.db.flush()
+        assignment = AgentAssignment(election_id=None, polling_unit_id=self.unit.id, agent_id=agent.id)
+        history = AgentImport(administrator_id=admin.id, filename="agents.xlsx", total_records=1, registered_agents=1, assigned_agents=1)
+        self.db.add_all([assignment, history]); self.db.flush()
+        self.db.add(AgentImportRow(import_id=history.id, row_number=2, status="imported", agent_id=agent.id, polling_unit_id=self.unit.id))
+        self.db.commit()
+
+        result = clear_history(admin, self.db)
+
+        self.assertEqual(result["imports_deleted"], 1)
+        self.assertEqual(result["rows_deleted"], 1)
+        self.assertIsNotNone(self.db.get(User, agent.id))
+        self.assertIsNotNone(self.db.get(AgentAssignment, assignment.id))
 
 
 if __name__ == "__main__":
