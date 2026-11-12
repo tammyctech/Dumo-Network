@@ -5,7 +5,7 @@ from datetime import datetime, timedelta, timezone
 import jwt
 
 from dotenv import load_dotenv
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import OAuth2PasswordBearer
 from jwt.exceptions import InvalidTokenError
 from pwdlib import PasswordHash
@@ -61,7 +61,7 @@ oauth2_scheme = OAuth2PasswordBearer(
 )
 
 
-def create_access_token(user_id: int) -> str:
+def create_access_token(user_id: int, session_version: int = 0) -> str:
 
     expire = datetime.now(timezone.utc) + timedelta(
         minutes=ACCESS_TOKEN_EXPIRE_MINUTES
@@ -71,6 +71,7 @@ def create_access_token(user_id: int) -> str:
         "sub": str(user_id),
         "exp": expire,
         "type": "access",
+        "ver": session_version,
     }
 
     return jwt.encode(
@@ -85,6 +86,7 @@ def create_access_token(user_id: int) -> str:
 # ============================================================
 
 def get_current_user(
+    request: Request,
     token: str = Depends(oauth2_scheme),
     db: Session = Depends(get_db),
 ) -> User:
@@ -121,6 +123,19 @@ def get_current_user(
 
     if user is None or not user.is_active:
         raise credentials_error
+
+    if payload.get("ver", 0) != user.session_version:
+        raise credentials_error
+
+    allowed_first_login_paths = {
+        "/api/auth/me",
+        "/api/auth/change-password",
+    }
+    if user.must_change_password and request.url.path not in allowed_first_login_paths:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You must change your temporary password before continuing.",
+        )
 
     return user
 

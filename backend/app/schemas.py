@@ -114,6 +114,8 @@ class UserResponse(BaseModel):
 
     is_active: bool
 
+    must_change_password: bool = False
+
     model_config = ConfigDict(
         from_attributes=True
     )

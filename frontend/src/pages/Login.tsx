@@ -7,7 +7,7 @@ import {
   Eye,
   EyeOff,
   LockKeyhole,
-  Mail,
+  UserRound,
   ShieldCheck,
   AlertCircle,
   LoaderCircle,
@@ -20,7 +20,7 @@ export default function Login() {
   const navigate = useNavigate();
   const { login } = useAuth();
 
-  const [email, setEmail] = useState("");
+  const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
 
   const [showPassword, setShowPassword] = useState(false);
@@ -37,7 +37,7 @@ export default function Login() {
     setLoading(true);
 
     try {
-      await login(email.trim(), password);
+      await login(identifier.trim(), password);
       navigate("/dashboard", { replace: true });
     } catch (err) {
       setError(
@@ -152,30 +152,29 @@ export default function Login() {
               <div>
 
                 <label
-                  htmlFor="email"
+                  htmlFor="identifier"
                   className="mb-2 block text-sm font-semibold text-slate-800"
                 >
-                  Email address
+                  Email address or phone number
                 </label>
 
                 <div className="relative">
 
-                  <Mail
+                  <UserRound
                     size={19}
                     className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
                   />
 
                   <input
-                    id="email"
-                    name="email"
-                    type="email"
-                    autoComplete="email"
-                    inputMode="email"
+                    id="identifier"
+                    name="identifier"
+                    type="text"
+                    autoComplete="username"
                     required
                     disabled={loading}
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="name@example.com"
+                    value={identifier}
+                    onChange={(e) => setIdentifier(e.target.value)}
+                    placeholder="name@example.com or 08012345678"
                     className="h-14 w-full rounded-xl border border-slate-200 bg-slate-50/60 pl-12 pr-4 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 hover:border-slate-300 focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10 disabled:opacity-60"
                   />
 

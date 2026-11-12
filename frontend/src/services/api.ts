@@ -12,6 +12,7 @@ export interface User {
   phone_number?: string | null;
   role: string;
   is_active: boolean;
+  must_change_password: boolean;
 }
 
 export interface RegisterData {
@@ -62,12 +63,12 @@ export async function registerUser(
 // ==========================================
 
 export async function loginUser(
-  email: string,
+  emailOrPhone: string,
   password: string
 ) {
   const formData = new URLSearchParams();
 
-  formData.append("username", email);
+  formData.append("username", emailOrPhone);
   formData.append("password", password);
 
   const response = await fetch(`${API_URL}/api/auth/login`, {
@@ -79,7 +80,12 @@ export async function loginUser(
   });
 
   if (!response.ok) {
-    throw new Error("Invalid email or password.");
+    let message = "Invalid email/phone number or password.";
+    try {
+      const data = await response.json();
+      if (typeof data.detail === "string") message = data.detail;
+    } catch { /* keep the safe default */ }
+    throw new Error(message);
   }
 
   return response.json() as Promise<{

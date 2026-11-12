@@ -53,6 +53,7 @@ Pygments==2.21.0
 PyJWT==2.15.1
 python-dotenv==1.2.4
 python-multipart==0.0.32
+openpyxl==3.1.5
 PyYAML==6.0.3
 requests==2.34.2
 rich==15.0.0

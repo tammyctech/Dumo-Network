@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 
 from ..database import get_db
 from ..models import User
+from ..utils.phone import normalize_nigerian_phone
 
 from ..schemas import (
     UserCreate,
@@ -107,16 +108,18 @@ def login(
     Authenticate a user and return an access token.
     """
 
-    email = form_data.username.strip().lower()
-
-    user = db.scalar(
-        select(User).where(User.email == email)
-    )
+    identifier = form_data.username.strip()
+    user = None
+    try:
+        phone = normalize_nigerian_phone(identifier)
+        user = db.scalar(select(User).where(User.phone_number == phone))
+    except ValueError:
+        user = db.scalar(select(User).where(User.email == identifier.lower()))
 
     if user is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid email or password",
+            detail="Invalid email/phone number or password",
         )
 
     if not verify_password(
@@ -125,7 +128,7 @@ def login(
     ):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid email or password",
+            detail="Invalid email/phone number or password",
         )
 
     if not user.is_active:
@@ -134,7 +137,7 @@ def login(
             detail="Account is inactive",
         )
 
-    token = create_access_token(user.id)
+    token = create_access_token(user.id, user.session_version)
 
     return {
         "access_token": token,
@@ -354,6 +357,8 @@ def change_password(
     )
 
     current_user.hashed_password = new_password_hash
+    current_user.must_change_password = False
+    current_user.session_version += 1
 
     # --------------------------------------
     # SAVE NEW PASSWORD
@@ -371,5 +376,5 @@ def change_password(
         )
 
     return {
-        "message": "Password changed successfully",
+        "message": "Password changed successfully. Please sign in again.",
     }

@@ -1,8 +1,9 @@
-import { Navigate, Outlet } from "react-router-dom";
+import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 export default function ProtectedRoute() {
   const { user, token, isLoading, authError } = useAuth();
+  const location = useLocation();
 
   if (isLoading) {
     return (
@@ -29,6 +30,14 @@ export default function ProtectedRoute() {
 
   if (!user || !token) {
     return <Navigate to="/login" replace />;
+  }
+
+  if (user.must_change_password && location.pathname !== "/change-password") {
+    return <Navigate to="/change-password" replace />;
+  }
+
+  if (!user.must_change_password && location.pathname === "/change-password") {
+    return <Navigate to="/dashboard" replace />;
   }
 
   return <Outlet />;

@@ -38,6 +38,8 @@ const PollingUnitManagement = lazy(() => import("./pages/PollingUnitManagement")
 const UserManagement = lazy(() => import("./pages/UserManagement"));
 const AgentAssignments = lazy(() => import("./pages/AgentAssignments"));
 const AdminNotifications = lazy(() => import("./pages/AdminNotifications"));
+const BulkAgentRegistration = lazy(() => import("./pages/BulkAgentRegistration"));
+const MandatoryPasswordChange = lazy(() => import("./pages/MandatoryPasswordChange"));
 
 // Bulk Import Dashboard
 const BulkImport = lazy(() => import("./pages/BulkImport"));
@@ -89,6 +91,7 @@ export default function App() {
           ============================================ */}
 
           <Route element={<ProtectedRoute />}>
+            <Route path="/change-password" element={<MandatoryPasswordChange />} />
             <Route element={<AppLayout />}>
 
               {/* Dashboard */}
@@ -164,6 +167,7 @@ export default function App() {
                   path="/admin/import"
                   element={<BulkImport />}
                 />
+                <Route path="/admin/agent-imports" element={<BulkAgentRegistration />} />
 
                 {/* User Management */}
                 <Route

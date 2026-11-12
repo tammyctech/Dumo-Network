@@ -95,6 +95,13 @@ const navigation = [
     available: true,
   },
   {
+    name: "Bulk Agent Registration",
+    path: "/admin/agent-imports",
+    section: "Administration",
+    icon: Upload,
+    available: true,
+  },
+  {
     name: "Polling Unit Management",
     path: "/admin/polling-units",
     section: "Administration",

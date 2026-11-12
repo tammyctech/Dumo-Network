@@ -62,6 +62,7 @@ from .wards import routes as ward_routes
 # =====================================================
 
 from .imports import routes as import_routes
+from .imports import agent_routes
 
 
 # =====================================================
@@ -220,6 +221,7 @@ app.include_router(ward_routes.router)
 # Access restrictions are enforced by the import router.
 
 app.include_router(import_routes.router)
+app.include_router(agent_routes.router)
 
 
 # =====================================================

@@ -113,6 +113,14 @@ class User(Base):
         nullable=False,
     )
 
+    must_change_password: Mapped[bool] = mapped_column(
+        Boolean, default=False, nullable=False
+    )
+
+    session_version: Mapped[int] = mapped_column(
+        Integer, default=0, nullable=False
+    )
+
 
 # ============================================================
 # AUDIT LOG MODEL
@@ -205,8 +213,7 @@ class AgentAssignment(Base):
         UniqueConstraint(
             "election_id",
             "polling_unit_id",
-            "agent_id",
-            name="uq_agent_election_polling_unit",
+            name="uq_assignment_election_polling_unit",
         ),
     )
 
@@ -229,6 +236,38 @@ class AgentAssignment(Base):
         ForeignKey("users.id"),
         nullable=False,
     )
+
+
+class AgentImport(Base):
+    __tablename__ = "agent_imports"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    administrator_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
+    election_id: Mapped[int] = mapped_column(ForeignKey("elections.id"), nullable=False)
+    filename: Mapped[str] = mapped_column(String(255), nullable=False)
+    total_records: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    registered_agents: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    assigned_agents: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    skipped_records: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    failed_records: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False
+    )
+
+
+class AgentImportRow(Base):
+    __tablename__ = "agent_import_rows"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    import_id: Mapped[int] = mapped_column(
+        ForeignKey("agent_imports.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    row_number: Mapped[int] = mapped_column(Integer, nullable=False)
+    status: Mapped[str] = mapped_column(String(30), nullable=False)
+    phone_number: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    agent_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True)
+    polling_unit_id: Mapped[int | None] = mapped_column(ForeignKey("polling_units.id"), nullable=True)
+    message: Mapped[str | None] = mapped_column(String(500), nullable=True)
 
 
 # ============================================================
