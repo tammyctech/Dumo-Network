@@ -1,5 +1,13 @@
-const API_URL =
-  import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
+// Production authentication goes through Vercel's same-origin /api rewrite.
+// This avoids browser and mobile-network failures when Render is contacted
+// directly. Local development still talks to the configured backend.
+const API_URL = import.meta.env.DEV
+  ? (import.meta.env.VITE_API_URL || "http://127.0.0.1:8000")
+      .trim()
+      .replace(/^https\\:/, "https:")
+      .replace(/^http\\:/, "http:")
+      .replace(/\/$/, "")
+  : "";
 
 // ==========================================
 // USER TYPES

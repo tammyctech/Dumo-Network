@@ -1,7 +1,4 @@
 import os
-import secrets
-
-from datetime import datetime, timedelta, timezone
 
 from dotenv import load_dotenv
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -10,17 +7,13 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from ..database import get_db
-from ..models import AgentInvitation, User
+from ..models import User
 from ..schemas import (
     AgentCreate,
     AgentCreatedResponse,
     AgentResponse,
 )
 from ..security import hash_password, require_admin
-from ..utils.invitations import (
-    generate_invitation_token,
-    hash_invitation_token,
-)
 
 
 load_dotenv()
@@ -30,15 +23,11 @@ router = APIRouter(
     tags=["Admin - Agents"],
 )
 
-# Configure this to match the address agents will use.
-FRONTEND_URL = os.getenv(
-    "FRONTEND_URL",
-    "http://localhost:5173",
-).rstrip("/")
+DEFAULT_AGENT_PASSWORD = os.getenv("DEFAULT_AGENT_PASSWORD", "12345")
 
 
 # ============================================================
-# CREATE AGENT AND ACTIVATION INVITATION
+# CREATE AGENT WITH TEMPORARY PASSWORD
 # ============================================================
 
 @router.post(
@@ -87,40 +76,19 @@ def create_agent(
             detail="An account with this phone number already exists.",
         )
 
-    # Generate an unknown password.
-    # The agent will replace it during activation.
-    unusable_password = secrets.token_urlsafe(48)
-
-    # Generate a secure invitation.
-    invitation_token = generate_invitation_token()
-    invitation_hash = hash_invitation_token(invitation_token)
-
-    expires_at = datetime.now(timezone.utc) + timedelta(hours=24)
-
     agent = User(
         full_name=full_name,
         email=email,
         phone_number=phone_number,
-        hashed_password=hash_password(unusable_password),
+        hashed_password=hash_password(DEFAULT_AGENT_PASSWORD),
         role="agent",
-        is_active=False,
+        is_active=True,
+        must_change_password=True,
     )
 
     try:
         db.add(agent)
 
-        # Obtain the new agent ID without committing yet.
-        db.flush()
-
-        invitation = AgentInvitation(
-            agent_id=agent.id,
-            token_hash=invitation_hash,
-            expires_at=expires_at,
-        )
-
-        db.add(invitation)
-
-        # Both records are committed together.
         db.commit()
 
         db.refresh(agent)
@@ -137,11 +105,6 @@ def create_agent(
         db.rollback()
         raise
 
-    activation_url = (
-        f"{FRONTEND_URL}/activate-agent"
-        f"#token={invitation_token}"
-    )
-
     return AgentCreatedResponse(
         id=agent.id,
         full_name=agent.full_name,
@@ -149,8 +112,7 @@ def create_agent(
         phone_number=agent.phone_number,
         role=agent.role,
         is_active=agent.is_active,
-        activation_url=activation_url,
-        invitation_expires_at=expires_at,
+        temporary_password=DEFAULT_AGENT_PASSWORD,
     )
 
 

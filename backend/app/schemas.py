@@ -227,9 +227,7 @@ class AgentCreatedResponse(AgentResponse):
     It should only be returned once.
     """
 
-    activation_url: str
-
-    invitation_expires_at: datetime
+    temporary_password: str
 
 
 # ============================================================
