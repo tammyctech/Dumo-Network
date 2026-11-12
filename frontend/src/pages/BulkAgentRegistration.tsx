@@ -12,7 +12,28 @@ type Row = { row_number:number; full_name:string; phone_number:string|null; lga:
 type Preview = { total_records:number; valid_records:number; invalid_records:number; can_import:boolean; rows:Row[] };
 type ImportRecord = { id:number; import_date:string; administrator:string; filename:string; election:string; total_records:number; registered_agents:number; assigned_agents:number; skipped_records:number; failed_records:number };
 
-async function detail(response: Response) { try { const data=await response.json(); return typeof data.detail === "string" ? data.detail : "Request failed."; } catch { return "Request failed."; } }
+async function detail(response: Response) {
+  try {
+    const data = await response.json();
+    if (typeof data.detail === "string") return data.detail;
+    if (Array.isArray(data.detail)) {
+      const messages = data.detail
+        .map((item: unknown) => {
+          if (typeof item === "string") return item;
+          if (item && typeof item === "object" && "msg" in item && typeof item.msg === "string") {
+            return item.msg;
+          }
+          return "";
+        })
+        .filter(Boolean);
+      if (messages.length) return messages.join(" ");
+    }
+    if (typeof data.message === "string") return data.message;
+  } catch {
+    // Some upstream and proxy errors return HTML or an empty response body.
+  }
+  return `Request failed (${response.status} ${response.statusText || "Unknown error"}).`;
+}
 function requestMessage(error: unknown) {
   if (error instanceof TypeError) {
     const endpoint = API || window.location.origin;
