@@ -2,7 +2,11 @@ import { useCallback, useEffect, useState, type DragEvent } from "react";
 import { AlertTriangle, CheckCircle2, Download, FileSpreadsheet, History, LoaderCircle, Upload } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 
-const API = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
+const API = (import.meta.env.VITE_API_URL || "http://127.0.0.1:8000")
+  .trim()
+  .replace(/^https\\:/, "https:")
+  .replace(/^http\\:/, "http:")
+  .replace(/\/$/, "");
 type Election = { id:number; name:string };
 type Row = { row_number:number; full_name:string; phone_number:string|null; lga:string; ward:string; polling_unit_number:string; polling_unit_code:string; existing_account:boolean; valid:boolean; errors:string[] };
 type Preview = { total_records:number; valid_records:number; invalid_records:number; can_import:boolean; rows:Row[] };
