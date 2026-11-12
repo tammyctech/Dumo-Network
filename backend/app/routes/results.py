@@ -1,3 +1,5 @@
+import logging
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -13,16 +15,76 @@ from ..models import (
     ResultFlag,
 )
 from ..security import get_current_user
+from ..services.email_service import send_bulk_system_email
 from ..monitoring.result_schemas import (
     ResultSubmissionInput,
     ResultSubmissionResponse,
 )
 
 
+logger = logging.getLogger(__name__)
+
 router = APIRouter(
     prefix="/api/results",
     tags=["Agent Election Results"],
 )
+
+
+def _notify_admins_of_result(
+    db: Session,
+    *,
+    agent: User,
+    election: Election,
+    polling_unit: PollingUnit,
+    submission: ResultSubmission,
+    party_results,
+) -> None:
+    """Best-effort email notification; result submission must never depend on SMTP."""
+    admins = db.scalars(
+        select(User).where(
+            User.role == "admin",
+            User.is_active.is_(True),
+        )
+    ).all()
+    recipients = [
+        (admin.email, admin.full_name)
+        for admin in admins
+        if not admin.email.casefold().endswith(".invalid")
+        and not admin.email.casefold().endswith("@dumo-network.vercel.app")
+    ]
+    if not recipients:
+        return
+    party_lines = "\n".join(
+        f"{item.party.strip().upper()}: {item.votes:,} votes"
+        for item in party_results
+    )
+    body = (
+        "A new polling-unit result has been submitted.\n\n"
+        f"Agent: {agent.full_name}\n"
+        f"Agent phone: {agent.phone_number or 'Not provided'}\n"
+        f"Election: {election.name}\n"
+        f"LGA: {polling_unit.lga}\n"
+        f"Ward: {polling_unit.ward}\n"
+        f"Polling unit: {polling_unit.code} - {polling_unit.name}\n"
+        f"Accredited voters: {submission.accredited_voters:,}\n"
+        f"Valid votes: {submission.valid_votes:,}\n"
+        f"Rejected votes: {submission.rejected_votes:,}\n\n"
+        f"Party results:\n{party_lines}\n\n"
+        f"Submission ID: {submission.id}"
+    )
+    try:
+        sent, failed, error = send_bulk_system_email(
+            recipients=recipients,
+            subject=f"New result: {polling_unit.code} - {election.name}",
+            body=body,
+        )
+        if error or failed:
+            logger.warning(
+                "Result %s email notification incomplete: sent=%s failed=%s error=%s",
+                submission.id, sent, failed, error,
+            )
+    except Exception:
+        logger.exception("Unexpected result notification failure for submission %s", submission.id)
 
 
 @router.post(
@@ -169,6 +231,15 @@ def submit_election_result(
     except Exception:
         db.rollback()
         raise
+
+    _notify_admins_of_result(
+        db,
+        agent=current_user,
+        election=election,
+        polling_unit=polling_unit,
+        submission=submission,
+        party_results=payload.party_results,
+    )
 
     return ResultSubmissionResponse(
         message="Unofficial agent result submitted successfully.",
