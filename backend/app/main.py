@@ -86,18 +86,16 @@ allowed_origins = [
     "http://127.0.0.1:5173",
     "http://localhost:5174",
     "http://127.0.0.1:5174",
+    "https://dumo-network.vercel.app",
 ]
 
 
 # Production frontend URL
 # Configure FRONTEND_URL in Render environment variables.
 
-frontend_url = os.getenv(
-    "FRONTEND_URL",
-    "",
-).strip().rstrip("/")
+frontend_url = os.getenv("FRONTEND_URL", "").strip().rstrip("/")
 
-if frontend_url:
+if frontend_url and frontend_url not in allowed_origins:
     allowed_origins.append(frontend_url)
 
 
@@ -105,14 +103,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=allowed_origins,
     allow_credentials=True,
-    allow_methods=[
-        "GET",
-        "POST",
-        "PATCH",
-        "PUT",
-        "DELETE",
-        "OPTIONS",
-    ],
+    allow_methods=["*"],
     allow_headers=["*"],
 )
 
