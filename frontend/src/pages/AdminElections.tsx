@@ -105,18 +105,6 @@ const data = await response.json();
 
 
 
-function uniqueSorted(values: string[]): string[] {
-
-  return [...new Set(values.map((value) => value.trim()).filter(Boolean))].sort(
-
-    (a, b) => a.localeCompare(b, undefined, { numeric: true })
-
-  );
-
-}
-
-
-
 export default function AdminElections() {
 
 const { token, user } = useAuth();
@@ -285,7 +273,13 @@ const [electionsData, unitsData, agentsData] = await Promise.all([
     return () => controller.abort();
   }, [selectedLga, token, isAdmin, refreshKey]);
 
-  const wards = useMemo(() => uniqueSorted(registeredWards.map((ward) => ward.name)), [registeredWards]);
+  const wards = useMemo(
+    () => [...registeredWards]
+      .sort((a, b) => a.ward_number - b.ward_number || a.name.localeCompare(b.name))
+      .map((ward) => ward.name)
+      .filter((name, index, values) => values.indexOf(name) === index),
+    [registeredWards]
+  );
 
   const sortedElections = useMemo(
     () =>
