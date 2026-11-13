@@ -70,8 +70,21 @@ export async function loginUser(
 
   return response.json() as Promise<{
     access_token: string;
+    refresh_token: string;
     token_type: string;
   }>;
+}
+
+export async function refreshSession(refreshToken: string) {
+  const response = await fetch(`${API_URL}/api/auth/refresh`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ refresh_token: refreshToken }),
+  });
+  if (!response.ok) {
+    throw new ApiRequestError("Your saved session has expired. Please sign in again.", response.status);
+  }
+  return response.json() as Promise<{ access_token: string; refresh_token: string; token_type: string }>;
 }
 
 // ==========================================

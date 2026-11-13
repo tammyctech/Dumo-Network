@@ -9,6 +9,7 @@ import {
 import {
   getCurrentUser,
   loginUser,
+  refreshSession,
   updateCurrentUser,
   ApiRequestError,
   type User,
@@ -47,10 +48,23 @@ const AuthContext = createContext<
 >(undefined);
 
 // ==========================================
-// SESSION STORAGE
+// PERSISTENT SESSION STORAGE
 // ==========================================
 
 const TOKEN_KEY = "dumo_auth_token";
+const REFRESH_TOKEN_KEY = "dumo_refresh_token";
+
+function saveSession(accessToken: string, refreshToken: string) {
+  localStorage.setItem(TOKEN_KEY, accessToken);
+  localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken);
+  sessionStorage.removeItem(TOKEN_KEY);
+}
+
+function clearSession() {
+  localStorage.removeItem(TOKEN_KEY);
+  localStorage.removeItem(REFRESH_TOKEN_KEY);
+  sessionStorage.removeItem(TOKEN_KEY);
+}
 
 // ==========================================
 // AUTH PROVIDER
@@ -64,7 +78,7 @@ export function AuthProvider({
   const [user, setUser] = useState<User | null>(null);
 
   const [token, setToken] = useState<string | null>(
-    () => sessionStorage.getItem(TOKEN_KEY)
+    () => localStorage.getItem(TOKEN_KEY) || sessionStorage.getItem(TOKEN_KEY)
   );
 
   const [isLoading, setIsLoading] = useState(true);
@@ -78,16 +92,27 @@ export function AuthProvider({
     let cancelled = false;
 
     async function restoreSession() {
-      const storedToken = sessionStorage.getItem(TOKEN_KEY);
+      let storedToken = localStorage.getItem(TOKEN_KEY) || sessionStorage.getItem(TOKEN_KEY);
+      const storedRefreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);
 
-      if (!storedToken) {
+      if (!storedToken && !storedRefreshToken) {
         setIsLoading(false);
         return;
       }
 
       try {
         setAuthError(null);
-        const profile = await getCurrentUser(storedToken);
+        let profile: User;
+        try {
+          if (!storedToken) throw new ApiRequestError("Access token unavailable", 401);
+          profile = await getCurrentUser(storedToken);
+        } catch (error) {
+          if (!(error instanceof ApiRequestError) || error.status !== 401 || !storedRefreshToken) throw error;
+          const renewed = await refreshSession(storedRefreshToken);
+          storedToken = renewed.access_token;
+          saveSession(renewed.access_token, renewed.refresh_token);
+          profile = await getCurrentUser(renewed.access_token);
+        }
 
         if (cancelled) return;
 
@@ -100,7 +125,7 @@ export function AuthProvider({
           error instanceof ApiRequestError &&
           (error.status === 401 || error.status === 403)
         ) {
-          sessionStorage.removeItem(TOKEN_KEY);
+          clearSession();
           setToken(null);
           setUser(null);
         } else {
@@ -122,6 +147,26 @@ export function AuthProvider({
     };
   }, []);
 
+  // Renew the access token while the application remains open. Password
+  // changes and account deactivation invalidate the refresh token by version.
+  useEffect(() => {
+    if (!user || !token) return;
+    const timer = window.setInterval(async () => {
+      const storedRefreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);
+      if (!storedRefreshToken) return;
+      try {
+        const renewed = await refreshSession(storedRefreshToken);
+        saveSession(renewed.access_token, renewed.refresh_token);
+        setToken(renewed.access_token);
+      } catch (error) {
+        if (error instanceof ApiRequestError && (error.status === 401 || error.status === 403)) {
+          clearSession(); setToken(null); setUser(null);
+        }
+      }
+    }, 20 * 60 * 1000);
+    return () => window.clearInterval(timer);
+  }, [user, token]);
+
   // ========================================
   // LOGIN
   // ========================================
@@ -139,10 +184,7 @@ export function AuthProvider({
       result.access_token
     );
 
-    sessionStorage.setItem(
-      TOKEN_KEY,
-      result.access_token
-    );
+    saveSession(result.access_token, result.refresh_token);
 
     setToken(result.access_token);
     setUser(profile);
@@ -178,7 +220,7 @@ export function AuthProvider({
   // ========================================
 
   function logout(): void {
-    sessionStorage.removeItem(TOKEN_KEY);
+    clearSession();
 
     setToken(null);
     setUser(null);

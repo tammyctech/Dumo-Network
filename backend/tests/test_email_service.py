@@ -2,10 +2,15 @@ import os
 import unittest
 from unittest.mock import MagicMock, patch
 
-from app.services.email_service import send_agent_approval_email
+from app.services.email_service import _delivery_error, send_agent_approval_email
 
 
 class ApprovalEmailTests(unittest.TestCase):
+    def test_connection_error_explains_render_free_smtp_block(self):
+        message = _delivery_error(OSError("Network is unreachable"))
+        self.assertIn("Render Free", message)
+        self.assertIn("HTTPS API", message)
+
     def test_reports_missing_configuration(self):
         with patch.dict(os.environ, {}, clear=True):
             sent, error = send_agent_approval_email(

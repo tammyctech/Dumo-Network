@@ -9,9 +9,9 @@ from sqlalchemy.pool import StaticPool
 
 from app.database import Base
 from app.models import AgentAssignment, PollingUnit, User
-from app.routes.auth import ResetPasswordRequest, _send_first_login_welcome_email, change_password, login, reset_password, router
+from app.routes.auth import RefreshTokenRequest, ResetPasswordRequest, _send_first_login_welcome_email, change_password, login, refresh_session, reset_password, router
 from app.schemas import ChangePasswordRequest
-from app.security import create_password_reset_token, hash_password, verify_password
+from app.security import create_password_reset_token, create_refresh_token, hash_password, verify_password
 
 
 class PasswordWorkflowTests(unittest.TestCase):
@@ -36,6 +36,19 @@ class PasswordWorkflowTests(unittest.TestCase):
 
     def test_public_registration_route_is_removed(self):
         self.assertNotIn("/api/auth/register", {route.path for route in router.routes})
+
+    def test_refresh_token_restores_session_and_respects_session_version(self):
+        with Session(self.engine) as db:
+            user = User(full_name="Agent", email="agent@example.com", hashed_password=hash_password("private-password"), role="agent", is_active=True)
+            db.add(user); db.commit(); db.refresh(user)
+            token = create_refresh_token(user.id, user.session_version)
+            renewed = refresh_session(RefreshTokenRequest(refresh_token=token), db)
+            self.assertIn("access_token", renewed)
+            self.assertIn("refresh_token", renewed)
+            user.session_version += 1; db.commit()
+            with self.assertRaises(HTTPException) as raised:
+                refresh_session(RefreshTokenRequest(refresh_token=token), db)
+            self.assertEqual(raised.exception.status_code, 401)
 
     def test_legacy_account_role_cannot_sign_in(self):
         with Session(self.engine) as db:

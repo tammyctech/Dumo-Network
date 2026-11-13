@@ -15,6 +15,18 @@ def _enabled(value: str | None, default: bool = False) -> bool:
     return value.strip().lower() in {"1", "true", "yes", "on"}
 
 
+def _delivery_error(exc: OSError | smtplib.SMTPException) -> str:
+    if isinstance(exc, OSError):
+        return (
+            "Could not connect to the SMTP server. Render Free blocks outbound "
+            "SMTP ports 25, 465, and 587; upgrade the backend service or use an "
+            "email provider with an HTTPS API."
+        )
+    if isinstance(exc, smtplib.SMTPAuthenticationError):
+        return "Gmail rejected the SMTP login. Check the Gmail address and 16-character App Password."
+    return f"SMTP provider error: {type(exc).__name__}. Check the backend logs for details."
+
+
 def send_agent_approval_email(
     *,
     recipient: str,
@@ -99,7 +111,7 @@ Temporary password: <strong>{escape(temporary_password)}</strong>
         return True, None
     except (OSError, smtplib.SMTPException) as exc:
         logger.exception("Approval email delivery failed for %s", recipient)
-        return False, f"Email provider error: {type(exc).__name__}."
+        return False, _delivery_error(exc)
 
 
 def send_system_email(*, recipient: str, subject: str, plain_text: str, html: str) -> tuple[bool, str | None]:
@@ -132,7 +144,7 @@ def send_system_email(*, recipient: str, subject: str, plain_text: str, html: st
         return True, None
     except (OSError, smtplib.SMTPException) as exc:
         logger.exception("Email delivery failed for %s", recipient)
-        return False, f"Email provider error: {type(exc).__name__}."
+        return False, _delivery_error(exc)
 
 
 def send_bulk_system_email(*, recipients: list[tuple[str, str]], subject: str, body: str) -> tuple[int, int, str | None]:
@@ -174,4 +186,4 @@ def send_bulk_system_email(*, recipients: list[tuple[str, str]], subject: str, b
         return sent, failed, None
     except (OSError, smtplib.SMTPException) as exc:
         logger.exception("Bulk email provider connection failed")
-        return sent, len(recipients) - sent, f"Email provider error: {type(exc).__name__}."
+        return sent, len(recipients) - sent, _delivery_error(exc)

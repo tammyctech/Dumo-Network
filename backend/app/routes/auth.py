@@ -25,6 +25,8 @@ from ..security import (
     hash_password,
     verify_password,
     create_access_token,
+    create_refresh_token,
+    decode_refresh_token,
     create_password_reset_token,
     decode_password_reset_token,
     get_current_user,
@@ -107,6 +109,11 @@ class ResetPasswordRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
 
+class RefreshTokenRequest(BaseModel):
+    refresh_token: str = Field(min_length=20)
+    model_config = ConfigDict(extra="forbid")
+
+
 @router.post("/forgot-password")
 def forgot_password(payload: ForgotPasswordRequest, db: Session = Depends(get_db)):
     generic = {"message": "If an active account uses that email, a password-reset link has been sent."}
@@ -145,6 +152,27 @@ def reset_password(payload: ResetPasswordRequest, db: Session = Depends(get_db))
     user.session_version += 1
     db.commit()
     return {"message": "Password reset successfully. You can now sign in."}
+
+
+@router.post("/refresh", response_model=TokenResponse)
+def refresh_session(payload: RefreshTokenRequest, db: Session = Depends(get_db)):
+    try:
+        user_id, version = decode_refresh_token(payload.refresh_token)
+    except ValueError as exc:
+        raise HTTPException(401, "Invalid or expired session") from exc
+    user = db.get(User, user_id)
+    if (
+        user is None
+        or not user.is_active
+        or user.role not in {"admin", "agent"}
+        or user.session_version != version
+    ):
+        raise HTTPException(401, "Invalid or expired session")
+    return {
+        "access_token": create_access_token(user.id, user.session_version),
+        "refresh_token": create_refresh_token(user.id, user.session_version),
+        "token_type": "bearer",
+    }
 
 
 # ==========================================
@@ -217,10 +245,9 @@ def login(
             detail="This account type is no longer supported.",
         )
 
-    token = create_access_token(user.id, user.session_version)
-
     return {
-        "access_token": token,
+        "access_token": create_access_token(user.id, user.session_version),
+        "refresh_token": create_refresh_token(user.id, user.session_version),
         "token_type": "bearer",
     }
 
