@@ -17,6 +17,7 @@ from ..models import (
     AgentAssignment,
     PollingUnit,
     User,
+    Ward,
 )
 from ..security import hash_password, require_admin
 from ..services.email_service import send_agent_approval_email, send_bulk_system_email
@@ -194,11 +195,19 @@ def public_polling_units(token: str, lga: str = Query(min_length=2, max_length=1
             AgentAssignment.polling_unit_id.in_([unit.id for unit in units])
         )
     ).all()) if units else set()
+    ward_numbers = {
+        ward.name.casefold(): ward.ward_number
+        for ward in db.scalars(select(Ward).where(
+            Ward.state.ilike("Rivers"),
+            func.lower(Ward.lga) == lga.strip().lower(),
+        )).all()
+    }
     return [{
         "id": unit.id,
         "code": unit.code,
         "name": unit.name,
         "ward": unit.ward,
+        "ward_number": ward_numbers.get(unit.ward.casefold()),
         "taken": unit.id in assigned_unit_ids,
     } for unit in units]
 

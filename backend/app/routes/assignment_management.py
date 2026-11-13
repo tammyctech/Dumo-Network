@@ -15,6 +15,7 @@ from app.models import (
     PollingUnit,
     AgentAssignment,
     ResultSubmission,
+    Ward,
 )
 from app.security import get_current_user
 from app.services.email_service import send_system_email
@@ -122,6 +123,10 @@ def list_assignments(
     ).all()
 
     assignments = []
+    ward_numbers = {
+        (ward.lga.casefold(), ward.name.casefold()): ward.ward_number
+        for ward in db.scalars(select(Ward).where(Ward.state == "Rivers")).all()
+    }
 
     for assignment, agent, unit in rows:
         assignments.append(
@@ -141,6 +146,7 @@ def list_assignments(
                     "name": unit.name,
                     "lga": unit.lga,
                     "ward": unit.ward,
+                    "ward_number": ward_numbers.get((unit.lga.casefold(), unit.ward.casefold())),
                 },
             }
         )

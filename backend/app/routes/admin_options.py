@@ -8,6 +8,7 @@ from app.models import (
     User,
     Election,
     PollingUnit,
+    Ward,
 )
 
 from app.security import get_current_user
@@ -88,6 +89,10 @@ def get_polling_units(
             PollingUnit.name,
         )
     ).all()
+    ward_numbers = {
+        (ward.lga.casefold(), ward.name.casefold()): ward.ward_number
+        for ward in db.scalars(select(Ward).where(Ward.state == "Rivers")).all()
+    }
 
     return {
         "state": "Rivers",
@@ -99,6 +104,7 @@ def get_polling_units(
                 "name": unit.name,
                 "lga": unit.lga,
                 "ward": unit.ward,
+                "ward_number": ward_numbers.get((unit.lga.casefold(), unit.ward.casefold())),
             }
             for unit in polling_units
         ],
