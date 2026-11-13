@@ -1,5 +1,6 @@
 import os
 import secrets
+import logging
 
 from datetime import datetime, timedelta, timezone
 
@@ -18,11 +19,12 @@ from ..models import (
     User,
 )
 from ..security import hash_password, require_admin
-from ..services.email_service import send_agent_approval_email
+from ..services.email_service import send_agent_approval_email, send_bulk_system_email
 from ..utils.phone import normalize_nigerian_phone
 
 
 router = APIRouter(tags=["Agent Applications"])
+logger = logging.getLogger(__name__)
 FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173").rstrip("/")
 DEFAULT_AGENT_PASSWORD = os.getenv("DEFAULT_AGENT_PASSWORD", "12345")
 
@@ -43,6 +45,42 @@ class ApplicationCreate(BaseModel):
 class ReviewRequest(BaseModel):
     notes: str | None = Field(default=None, max_length=1000)
     model_config = ConfigDict(extra="forbid")
+
+
+def _notify_admins_of_application(db: Session, item: AgentApplication, unit: PollingUnit) -> None:
+    admins = db.scalars(select(User).where(User.role == "admin", User.is_active.is_(True))).all()
+    recipients = [
+        (admin.email, admin.full_name) for admin in admins
+        if not admin.email.casefold().endswith(".invalid")
+        and not admin.email.casefold().endswith("@dumo-network.vercel.app")
+    ]
+    if not recipients:
+        return
+    body = (
+        "A new polling-unit agent application has been submitted.\n\n"
+        f"Applicant: {item.full_name}\n"
+        f"Phone number: {item.phone_number}\n"
+        f"Email address: {item.email}\n"
+        f"LGA: {unit.lga}\n"
+        f"Ward: {unit.ward}\n"
+        f"Polling unit: {unit.code} - {unit.name}\n"
+        f"Application status: Pending administrator approval\n"
+        f"Application ID: {item.id}\n\n"
+        f"Review applications: {FRONTEND_URL}/admin/agent-applications"
+    )
+    try:
+        sent, failed, error = send_bulk_system_email(
+            recipients=recipients,
+            subject=f"New agent application: {item.full_name}",
+            body=body,
+        )
+        if error or failed:
+            logger.warning(
+                "Application %s email notification incomplete: sent=%s failed=%s error=%s",
+                item.id, sent, failed, error,
+            )
+    except Exception:
+        logger.exception("Unexpected application notification failure for application %s", item.id)
 
 
 def _active_link(db: Session, token: str, *, lock: bool = False) -> AgentApplicationLink:
@@ -151,7 +189,18 @@ def public_polling_units(token: str, lga: str = Query(min_length=2, max_length=1
         .where(PollingUnit.state.ilike("Rivers"), func.lower(PollingUnit.lga) == lga.strip().lower())
         .order_by(PollingUnit.ward, PollingUnit.code)
     ).all()
-    return [{"id": unit.id, "code": unit.code, "name": unit.name, "ward": unit.ward} for unit in units]
+    assigned_unit_ids = set(db.scalars(
+        select(AgentAssignment.polling_unit_id).where(
+            AgentAssignment.polling_unit_id.in_([unit.id for unit in units])
+        )
+    ).all()) if units else set()
+    return [{
+        "id": unit.id,
+        "code": unit.code,
+        "name": unit.name,
+        "ward": unit.ward,
+        "taken": unit.id in assigned_unit_ids,
+    } for unit in units]
 
 
 @router.post("/api/agent-applications/{token}", status_code=status.HTTP_201_CREATED)
@@ -160,6 +209,8 @@ def submit_application(token: str, payload: ApplicationCreate, db: Session = Dep
     unit = db.get(PollingUnit, payload.polling_unit_id)
     if unit is None or unit.state.casefold() != "rivers":
         raise HTTPException(422, "Select a valid Rivers State polling unit.")
+    if db.scalar(select(AgentAssignment.id).where(AgentAssignment.polling_unit_id == unit.id)):
+        raise HTTPException(409, "This polling unit has already been taken. Select another polling unit.")
     try:
         phone = normalize_nigerian_phone(payload.phone_number)
     except ValueError as exc:
@@ -186,6 +237,8 @@ def submit_application(token: str, payload: ApplicationCreate, db: Session = Dep
     except IntegrityError as exc:
         db.rollback()
         raise HTTPException(409, "This phone number has already applied through this link.") from exc
+    db.refresh(item)
+    _notify_admins_of_application(db, item, unit)
     return {"message": "Application submitted. An administrator must approve it before you become an agent."}
 
 
