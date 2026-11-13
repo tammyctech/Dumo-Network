@@ -1,5 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -17,6 +19,11 @@ router = APIRouter(
     prefix="/api/admin/assignments",
     tags=["Agent Assignment Management"],
 )
+
+
+class ReassignRequest(BaseModel):
+    polling_unit_id: int = Field(gt=0)
+    model_config = ConfigDict(extra="forbid")
 
 
 # ==========================================
@@ -98,6 +105,53 @@ def list_assignments(
         "state": "Rivers",
         "total": len(assignments),
         "assignments": assignments,
+    }
+
+
+# ==========================================
+# REASSIGN AGENT
+# ==========================================
+
+@router.patch("/{assignment_id}")
+def reassign_agent(
+    assignment_id: int,
+    payload: ReassignRequest,
+    db: Session = Depends(get_db),
+    admin: User = Depends(require_admin),
+):
+    assignment = db.get(AgentAssignment, assignment_id)
+    if assignment is None:
+        raise HTTPException(404, "Assignment not found.")
+    old_unit = db.get(PollingUnit, assignment.polling_unit_id)
+    new_unit = db.get(PollingUnit, payload.polling_unit_id)
+    if old_unit is None or new_unit is None:
+        raise HTTPException(404, "Polling unit not found.")
+    if old_unit.state.casefold() != "rivers" or new_unit.state.casefold() != "rivers":
+        raise HTTPException(403, "Only Rivers State assignments can be managed.")
+    if assignment.polling_unit_id == new_unit.id:
+        return {"message": "Agent is already assigned to this polling unit.", "assignment_id": assignment.id}
+    existing_submission = db.scalar(select(ResultSubmission.id).where(
+        ResultSubmission.polling_unit_id == assignment.polling_unit_id,
+        ResultSubmission.agent_id == assignment.agent_id,
+    ))
+    if existing_submission is not None:
+        raise HTTPException(409, "This assignment has an existing result submission and cannot be reassigned.")
+    occupied = db.scalar(select(AgentAssignment.id).where(
+        AgentAssignment.polling_unit_id == new_unit.id,
+        AgentAssignment.id != assignment.id,
+    ))
+    if occupied is not None:
+        raise HTTPException(409, "The selected polling unit already has a permanent agent.")
+    assignment.polling_unit_id = new_unit.id
+    try:
+        db.commit()
+    except IntegrityError as exc:
+        db.rollback()
+        raise HTTPException(409, "The selected polling unit already has a permanent agent.") from exc
+    return {
+        "message": "Agent reassigned successfully for all elections.",
+        "assignment_id": assignment.id,
+        "polling_unit_id": new_unit.id,
     }
 
 
