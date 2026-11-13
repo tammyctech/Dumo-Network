@@ -29,7 +29,12 @@ def send_all_users(
     db: Session = Depends(get_db),
     _: User = Depends(require_admin),
 ):
-    users = db.scalars(select(User).where(User.is_active.is_(True)).order_by(User.id)).all()
+    users = db.scalars(
+        select(User).where(
+            User.is_active.is_(True),
+            User.role.in_(("admin", "agent")),
+        ).order_by(User.id)
+    ).all()
     recipients = [(user.email, user.full_name) for user in users if _deliverable(user.email)]
     skipped = len(users) - len(recipients)
     if not recipients:

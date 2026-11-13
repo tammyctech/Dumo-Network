@@ -417,7 +417,7 @@ export default function AppLayout() {
               </p>
 
               <p className="text-xs capitalize text-slate-500">
-                {user?.role || "Observer"}
+                {user?.role || "User"}
               </p>
 
             </div>
@@ -617,7 +617,7 @@ export default function AppLayout() {
                     {user?.full_name || "Dumo User"}
                   </span>
                   <span className="block text-xs capitalize text-slate-500">
-                    {user?.role || "Observer"}
+                    {user?.role || "User"}
                   </span>
                 </span>
               </button>

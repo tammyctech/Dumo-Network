@@ -99,11 +99,11 @@ class User(Base):
     # Supported roles:
     # admin
     # agent
-    # observer
+    # Supported roles are administrator and agent only.
 
     role: Mapped[str] = mapped_column(
         String(50),
-        default="observer",
+        default="agent",
         nullable=False,
     )
 

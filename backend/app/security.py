@@ -141,7 +141,7 @@ def get_current_user(
 
     user = db.get(User, user_id)
 
-    if user is None or not user.is_active:
+    if user is None or not user.is_active or user.role not in {"admin", "agent"}:
         raise credentials_error
 
     if payload.get("ver", 0) != user.session_version:

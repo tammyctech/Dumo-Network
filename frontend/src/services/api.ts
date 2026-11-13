@@ -23,12 +23,6 @@ export interface User {
   must_change_password: boolean;
 }
 
-export interface RegisterData {
-  full_name: string;
-  email: string;
-  password: string;
-}
-
 export interface UserProfileUpdate {
   full_name?: string;
   phone_number?: string | null;
@@ -42,28 +36,6 @@ export class ApiRequestError extends Error {
     this.name = "ApiRequestError";
     this.status = status;
   }
-}
-
-// ==========================================
-// REGISTER USER
-// ==========================================
-
-export async function registerUser(
-  data: RegisterData
-): Promise<User> {
-  const response = await fetch(`${API_URL}/api/auth/register`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(data),
-  });
-
-  if (!response.ok) {
-    throw new Error("Registration failed. Check your details.");
-  }
-
-  return response.json();
 }
 
 // ==========================================

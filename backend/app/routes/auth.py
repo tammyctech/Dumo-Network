@@ -15,7 +15,6 @@ from ..models import AgentApplication, AgentAssignment, PollingUnit, User
 from ..utils.phone import normalize_nigerian_phone
 
 from ..schemas import (
-    UserCreate,
     UserResponse,
     TokenResponse,
     UserProfileUpdate,
@@ -112,7 +111,7 @@ class ResetPasswordRequest(BaseModel):
 def forgot_password(payload: ForgotPasswordRequest, db: Session = Depends(get_db)):
     generic = {"message": "If an active account uses that email, a password-reset link has been sent."}
     user = db.scalar(select(User).where(User.email == str(payload.email).strip().lower()))
-    if user is None or not user.is_active:
+    if user is None or not user.is_active or user.role not in {"admin", "agent"}:
         return generic
     token = create_password_reset_token(user.id, user.session_version)
     reset_url = f"{os.getenv('FRONTEND_URL', 'http://localhost:5173').rstrip('/')}/reset-password?token={token}"
@@ -146,75 +145,6 @@ def reset_password(payload: ResetPasswordRequest, db: Session = Depends(get_db))
     user.session_version += 1
     db.commit()
     return {"message": "Password reset successfully. You can now sign in."}
-
-
-# ==========================================
-# REGISTER USER
-# ==========================================
-
-@router.post(
-    "/register",
-    response_model=UserResponse,
-    status_code=status.HTTP_201_CREATED,
-)
-def register(
-    user_data: UserCreate,
-    db: Session = Depends(get_db),
-):
-    """
-    Register a new observer account.
-    """
-
-    email = str(user_data.email).strip().lower()
-
-    pending_application = db.scalar(
-        select(AgentApplication.id).where(
-            AgentApplication.email == email,
-            AgentApplication.status == "pending",
-        )
-    )
-    if pending_application is not None:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="This email has a pending agent application. Wait for administrator approval before signing in.",
-        )
-
-    existing_user = db.scalar(
-        select(User).where(User.email == email)
-    )
-
-    if existing_user:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="Email already registered",
-        )
-
-    new_user = User(
-        full_name=user_data.full_name,
-        email=email,
-        hashed_password=hash_password(
-            user_data.password
-        ),
-        role="observer",
-        is_active=True,
-    )
-
-    db.add(new_user)
-
-    try:
-        db.commit()
-
-    except IntegrityError:
-        db.rollback()
-
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="Email already registered",
-        )
-
-    db.refresh(new_user)
-
-    return new_user
 
 
 # ==========================================
@@ -279,6 +209,12 @@ def login(
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Account is inactive",
+        )
+
+    if user.role not in {"admin", "agent"}:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="This account type is no longer supported.",
         )
 
     token = create_access_token(user.id, user.session_version)

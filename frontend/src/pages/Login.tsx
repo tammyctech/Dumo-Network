@@ -268,30 +268,6 @@ export default function Login() {
 
             </form>
 
-            {/* DIVIDER */}
-
-            <div className="my-9 flex items-center gap-4">
-
-              <div className="h-px flex-1 bg-slate-200" />
-
-              <span className="text-xs font-medium text-slate-400">
-                NEW TO DUMO YOUTH NETWORK ELECTION MONITORING SYSTEM?
-              </span>
-
-              <div className="h-px flex-1 bg-slate-200" />
-
-            </div>
-
-            {/* REGISTER LINK */}
-
-            <Link
-              to="/register"
-              className="flex h-14 w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white text-sm font-bold text-slate-800 transition hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600"
-            >
-              Create an account
-              <ArrowRight size={17} />
-            </Link>
-
             {/* SECURITY NOTE */}
 
             <div className="mt-9 flex items-start gap-3 rounded-xl border border-slate-100 bg-slate-50 p-4">

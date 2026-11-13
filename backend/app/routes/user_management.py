@@ -118,7 +118,7 @@ def list_users(
     admin: User = Depends(require_admin),
 ):
     users = db.scalars(
-        select(User).order_by(User.id.desc())
+        select(User).where(User.role.in_(("admin", "agent"))).order_by(User.id.desc())
     ).all()
 
     return {
@@ -141,14 +141,14 @@ def update_user_role(
     db: Session = Depends(get_db),
     admin: User = Depends(require_admin),
 ):
-    allowed_roles = {"agent", "observer"}
+    allowed_roles = {"agent"}
 
     new_role = payload.role.strip().lower()
 
     if new_role not in allowed_roles:
         raise HTTPException(
             status_code=400,
-            detail="Role must be agent or observer.",
+            detail="Role must be agent.",
         )
 
     user = db.get(User, user_id)
@@ -219,8 +219,8 @@ def update_user(
     if user.role == "admin" or user.id == admin.id:
         raise HTTPException(403, "Administrator accounts cannot be edited here.")
     role = payload.role.strip().lower()
-    if role not in {"agent", "observer"}:
-        raise HTTPException(422, "Role must be agent or observer.")
+    if role != "agent":
+        raise HTTPException(422, "Role must be agent.")
     phone = None
     if payload.phone_number and payload.phone_number.strip():
         try:

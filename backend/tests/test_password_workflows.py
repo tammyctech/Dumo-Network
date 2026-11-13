@@ -1,4 +1,5 @@
 import unittest
+from types import SimpleNamespace
 from unittest.mock import patch
 
 from fastapi import HTTPException
@@ -8,7 +9,7 @@ from sqlalchemy.pool import StaticPool
 
 from app.database import Base
 from app.models import AgentAssignment, PollingUnit, User
-from app.routes.auth import ResetPasswordRequest, _send_first_login_welcome_email, change_password, reset_password
+from app.routes.auth import ResetPasswordRequest, _send_first_login_welcome_email, change_password, login, reset_password, router
 from app.schemas import ChangePasswordRequest
 from app.security import create_password_reset_token, hash_password, verify_password
 
@@ -32,6 +33,17 @@ class PasswordWorkflowTests(unittest.TestCase):
             with self.assertRaises(HTTPException) as raised:
                 reset_password(payload, db)
             self.assertEqual(raised.exception.status_code, 400)
+
+    def test_public_registration_route_is_removed(self):
+        self.assertNotIn("/api/auth/register", {route.path for route in router.routes})
+
+    def test_legacy_account_role_cannot_sign_in(self):
+        with Session(self.engine) as db:
+            user = User(full_name="Legacy User", email="legacy@example.com", hashed_password=hash_password("private-password"), role="legacy", is_active=True)
+            db.add(user); db.commit()
+            with self.assertRaises(HTTPException) as raised:
+                login(SimpleNamespace(username="legacy@example.com", password="private-password"), db)
+            self.assertEqual(raised.exception.status_code, 403)
 
     def test_first_login_requires_and_saves_real_email(self):
         with Session(self.engine) as db:

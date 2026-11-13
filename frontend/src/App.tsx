@@ -18,7 +18,6 @@ const AppLayout = lazy(() => import("./layouts/AppLayout"));
 
 // Public pages
 const Login = lazy(() => import("./pages/Login"));
-const Register = lazy(() => import("./pages/Register"));
 const ActivateAgent = lazy(() => import("./pages/ActivateAgent"));
 const LandingPage = lazy(() => import("./pages/LandingPage"));
 const AgentApplicationForm = lazy(() => import("./pages/AgentApplicationForm"));
@@ -78,11 +77,6 @@ export default function App() {
           <Route
             path="/login"
             element={<Login />}
-          />
-
-          <Route
-            path="/register"
-            element={<Register />}
           />
 
           <Route

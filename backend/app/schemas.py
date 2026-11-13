@@ -12,37 +12,7 @@ from .utils.phone import normalize_nigerian_phone
 
 
 # ============================================================
-# 1. PUBLIC USER REGISTRATION
-# ============================================================
-
-class UserCreate(BaseModel):
-    """
-    Public registration schema.
-
-    Public registration is restricted to observers.
-    The registration endpoint must explicitly assign
-    role="observer".
-    """
-
-    full_name: str = Field(
-        min_length=2,
-        max_length=150,
-    )
-
-    email: EmailStr
-
-    password: str = Field(
-        min_length=12,
-        max_length=128,
-    )
-
-    model_config = ConfigDict(
-        extra="forbid"
-    )
-
-
-# ============================================================
-# 2. USER LOGIN
+# USER LOGIN
 # ============================================================
 
 class UserLogin(BaseModel):
