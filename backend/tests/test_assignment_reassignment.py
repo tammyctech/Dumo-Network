@@ -1,4 +1,5 @@
 import unittest
+from unittest.mock import patch
 
 from fastapi import HTTPException
 from sqlalchemy import create_engine
@@ -7,7 +8,7 @@ from sqlalchemy.pool import StaticPool
 
 from app.database import Base
 from app.models import AgentAssignment, PollingUnit, User
-from app.routes.assignment_management import ReassignRequest, reassign_agent
+from app.routes.assignment_management import ReassignRequest, _send_reassignment_email, reassign_agent
 
 
 class AssignmentReassignmentTests(unittest.TestCase):
@@ -18,7 +19,8 @@ class AssignmentReassignmentTests(unittest.TestCase):
     def tearDown(self):
         self.engine.dispose()
 
-    def test_admin_can_reassign_agent_to_available_unit(self):
+    @patch("app.routes.assignment_management._send_reassignment_email", return_value=(True, None))
+    def test_admin_can_reassign_agent_to_available_unit(self, send_email):
         with Session(self.engine) as db:
             admin = User(full_name="Admin", email="admin@example.com", hashed_password="unused", role="admin", is_active=True)
             agent = User(full_name="Agent", email="agent@example.com", hashed_password="unused", role="agent", is_active=True)
@@ -30,7 +32,25 @@ class AssignmentReassignmentTests(unittest.TestCase):
 
             result = reassign_agent(assignment_id, ReassignRequest(polling_unit_id=new_id), db, admin)
             self.assertEqual(result["polling_unit_id"], new_id)
+            self.assertTrue(result["email_sent"])
             self.assertEqual(db.get(AgentAssignment, assignment_id).polling_unit_id, new_id)
+            self.assertEqual(send_email.call_args.args[1].name, "Old Unit")
+            self.assertEqual(send_email.call_args.args[2].name, "New Unit")
+
+    @patch("app.routes.assignment_management.send_system_email", return_value=(True, None))
+    def test_reassignment_email_shows_old_and_new_units(self, send_email):
+        agent = User(id=8, full_name="Ada Agent", email="ada@example.com", hashed_password="unused", role="agent", is_active=True)
+        old = PollingUnit(code="32/01/01/001", name="Old Unit", state="Rivers", lga="Abua/Odual", ward="Ward 1")
+        new = PollingUnit(code="32/02/03/004", name="New Unit", state="Rivers", lga="Ahoada East", ward="Ward 3")
+        sent, error = _send_reassignment_email(agent, old, new)
+        self.assertTrue(sent)
+        self.assertIsNone(error)
+        content = send_email.call_args.kwargs["plain_text"]
+        self.assertIn("Previous assignment", content)
+        self.assertIn("32/01/01/001 - Old Unit", content)
+        self.assertIn("New assignment", content)
+        self.assertIn("32/02/03/004 - New Unit", content)
+        self.assertIn("Ahoada East", content)
 
     def test_reassignment_rejects_occupied_unit(self):
         with Session(self.engine) as db:
