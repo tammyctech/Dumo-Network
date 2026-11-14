@@ -100,6 +100,8 @@ type DashboardStatistics = {
 
   total_polling_units: number;
   assigned_polling_units: number;
+  unassigned_polling_units: number;
+  assignment_coverage_percent: number | null;
   submitted_polling_units: number;
   missing_assigned_polling_units: number;
 
@@ -909,6 +911,71 @@ const workflowUnavailableMessage = statistics?.election
 
           )}
 
+          {/* AGENT COVERAGE — ADMIN ONLY */}
+
+          {user?.role === "admin" && (
+            <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_1px_2px_rgba(15,23,42,0.03)] sm:p-6">
+              <div className="flex flex-wrap items-start justify-between gap-4">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <Users size={20} className="text-emerald-700" />
+                    <h2 className="text-lg font-semibold tracking-tight text-slate-900">
+                      Polling-Unit Agent Coverage
+                    </h2>
+                  </div>
+                  <p className="mt-2 text-sm text-slate-500">
+                    Permanent agent assignments across all Rivers State polling units.
+                  </p>
+                </div>
+                <Link
+                  to="/admin/users"
+                  className="inline-flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2.5 text-sm font-semibold text-emerald-800 transition hover:bg-emerald-100"
+                >
+                  Manage agents <ArrowRight size={16} />
+                </Link>
+              </div>
+
+              <div className="mt-6 grid gap-4 sm:grid-cols-3">
+                <div className="rounded-xl bg-slate-50 p-4 ring-1 ring-slate-200">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Total units</p>
+                  <p className="mt-2 text-2xl font-bold text-slate-950">{formatNumber(statistics.total_polling_units)}</p>
+                </div>
+                <div className="rounded-xl bg-emerald-50 p-4 ring-1 ring-emerald-200">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-emerald-700">Filled with agents</p>
+                  <p className="mt-2 text-2xl font-bold text-emerald-950">{formatNumber(statistics.assigned_polling_units)}</p>
+                </div>
+                <div className="rounded-xl bg-amber-50 p-4 ring-1 ring-amber-200">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-amber-700">Yet to be filled</p>
+                  <p className="mt-2 text-2xl font-bold text-amber-950">{formatNumber(statistics.unassigned_polling_units)}</p>
+                </div>
+              </div>
+
+              <div className="mt-6">
+                <div
+                  className="h-4 overflow-hidden rounded-full bg-amber-100"
+                  role="progressbar"
+                  aria-label="Polling-unit agent coverage"
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                  aria-valuenow={statistics.assignment_coverage_percent ?? 0}
+                >
+                  <div
+                    className="h-full rounded-full bg-emerald-700 transition-all duration-500"
+                    style={{ width: `${Math.min(100, Math.max(0, statistics.assignment_coverage_percent ?? 0))}%` }}
+                  />
+                </div>
+                <div className="mt-3 flex flex-wrap justify-between gap-2 text-sm">
+                  <span className="text-slate-500">
+                    {formatNumber(statistics.assigned_polling_units)} of {formatNumber(statistics.total_polling_units)} units filled
+                  </span>
+                  <span className="font-semibold text-emerald-800">
+                    {formatPercent(statistics.assignment_coverage_percent)} covered
+                  </span>
+                </div>
+              </div>
+            </section>
+          )}
+
           {/* OPERATIONS AND QUICK ACTIONS */}
 
           <section className="grid min-w-0 gap-5 xl:grid-cols-2">
@@ -1155,19 +1222,7 @@ const workflowUnavailableMessage = statistics?.election
 
               title="Assigned Polling Units"
 
-              value={
-
-                statistics.election
-
-                  ? formatNumber(
-
-                      statistics.assigned_polling_units
-
-                    )
-
-                  : "—"
-
-              }
+              value={formatNumber(statistics.assigned_polling_units)}
 
               description="Distinct polling units assigned to agents."
 

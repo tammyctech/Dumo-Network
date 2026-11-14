@@ -59,6 +59,18 @@ def dashboard_statistics(
         )
     ) or 0
 
+    assigned_polling_units = db.scalar(
+        select(func.count(func.distinct(AgentAssignment.polling_unit_id)))
+        .join(PollingUnit, PollingUnit.id == AgentAssignment.polling_unit_id)
+        .where(PollingUnit.state == "Rivers")
+    ) or 0
+    unassigned_polling_units = max(0, total_polling_units - assigned_polling_units)
+    assignment_coverage_percent = (
+        round(assigned_polling_units / total_polling_units * 100, 2)
+        if total_polling_units > 0
+        else None
+    )
+
     # --------------------------------------
     # ELECTION SELECTION
     # --------------------------------------
@@ -97,7 +109,9 @@ def dashboard_statistics(
             "data_type": "unofficial_agent_submitted",
             "election": None,
             "total_polling_units": total_polling_units,
-            "assigned_polling_units": 0,
+            "assigned_polling_units": assigned_polling_units,
+            "unassigned_polling_units": unassigned_polling_units,
+            "assignment_coverage_percent": assignment_coverage_percent,
             "submitted_polling_units": 0,
             "missing_assigned_polling_units": 0,
             "submission_coverage_percent": None,
@@ -112,27 +126,6 @@ def dashboard_statistics(
             "recent_submissions": [],
             "message": "No election has been created yet.",
         }
-
-    # --------------------------------------
-    # ASSIGNED POLLING UNITS
-    # --------------------------------------
-
-    assigned_polling_units = db.scalar(
-        select(
-            func.count(
-                func.distinct(
-                    AgentAssignment.polling_unit_id
-                )
-            )
-        )
-        .join(
-            PollingUnit,
-            PollingUnit.id == AgentAssignment.polling_unit_id,
-        )
-        .where(
-            PollingUnit.state == "Rivers",
-        )
-    ) or 0
 
     # --------------------------------------
     # SUBMITTED POLLING UNITS
@@ -406,6 +399,8 @@ def dashboard_statistics(
         },
         "total_polling_units": total_polling_units,
         "assigned_polling_units": assigned_polling_units,
+        "unassigned_polling_units": unassigned_polling_units,
+        "assignment_coverage_percent": assignment_coverage_percent,
         "submitted_polling_units": submitted_polling_units,
         "missing_assigned_polling_units": missing_assigned_polling_units,
         "submission_coverage_percent": coverage,

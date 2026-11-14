@@ -21,6 +21,7 @@ from ..models import (
 )
 from ..security import hash_password, require_admin
 from ..services.email_service import send_agent_approval_email, send_bulk_system_email
+from ..services.sms_service import send_agent_approval_sms
 from ..utils.phone import normalize_nigerian_phone
 
 
@@ -318,11 +319,21 @@ def approve_application(
         polling_unit_code=unit.code,
         polling_unit_name=unit.name,
     )
+    sms_sent, sms_error = send_agent_approval_sms(
+        recipient=item.phone_number,
+        full_name=item.full_name,
+        temporary_password=DEFAULT_AGENT_PASSWORD,
+        lga=unit.lga,
+        ward=unit.ward,
+        polling_unit_code=unit.code,
+    )
     return {
         "message": "Application approved. The agent can log in with their phone number and the temporary password.",
         "temporary_password": DEFAULT_AGENT_PASSWORD,
         "email_sent": email_sent,
         "email_error": email_error,
+        "sms_sent": sms_sent,
+        "sms_error": sms_error,
     }
 
 
