@@ -25,6 +25,11 @@ class BulkEmailRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
 
+class WelcomeCampaignRequest(BaseModel):
+    user_ids: list[int] = Field(min_length=1, max_length=5000)
+    model_config = ConfigDict(extra="forbid")
+
+
 def _deliverable(email: str) -> bool:
     lowered = email.casefold()
     return not lowered.endswith(".invalid") and not lowered.endswith("@dumo-network.vercel.app")
@@ -97,7 +102,9 @@ def welcome_status(db: Session = Depends(get_db), _: User = Depends(require_admi
 
 @router.post("/welcome-agents")
 def send_welcome_campaign(
+    payload: WelcomeCampaignRequest,
     background_tasks: BackgroundTasks,
+    resend_sent: bool = False,
     db: Session = Depends(get_db),
     _: User = Depends(require_admin),
 ):
@@ -105,7 +112,7 @@ def send_welcome_campaign(
         select(User, AgentAssignment, PollingUnit)
         .join(AgentAssignment, AgentAssignment.agent_id == User.id)
         .join(PollingUnit, PollingUnit.id == AgentAssignment.polling_unit_id)
-        .where(User.is_active.is_(True), User.role == "agent", PollingUnit.state == "Rivers")
+        .where(User.is_active.is_(True), User.role == "agent", User.id.in_(set(payload.user_ids)), PollingUnit.state == "Rivers")
         .order_by(User.id)
     ).all()
     existing = {item.agent_id: item for item in db.scalars(select(AgentWelcomeDelivery)).all()}
@@ -113,7 +120,7 @@ def send_welcome_campaign(
     notifications = []; already_sent = already_queued = missing_email = 0
     for agent, _, unit in rows:
         delivery = existing.get(agent.id)
-        if delivery and delivery.status == "sent":
+        if delivery and delivery.status == "sent" and not resend_sent:
             already_sent += 1; continue
         if delivery and delivery.status == "queued":
             already_queued += 1; continue
@@ -133,5 +140,7 @@ def send_welcome_campaign(
     if notifications:
         background_tasks.add_task(_send_welcome_emails, notifications, email_sender_name(db))
     eligible_unscheduled = max(0, len(rows) - already_sent - already_queued - missing_email - len(notifications))
+    selected_agents = db.scalar(select(func.count(User.id)).where(
+        User.is_active.is_(True), User.role == "agent", User.id.in_(set(payload.user_ids)))) or 0
     return {"queued": len(notifications), "already_sent": already_sent, "already_queued": already_queued, "missing_email": missing_email,
-        "remaining": eligible_unscheduled, "missing_assignment": max(0, db.scalar(select(func.count(User.id)).where(User.is_active.is_(True), User.role == "agent")) - len(rows))}
+        "remaining": eligible_unscheduled, "missing_assignment": max(0, selected_agents - len(rows))}
