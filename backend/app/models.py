@@ -323,6 +323,19 @@ class AgentEmailDelivery(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
 
 
+class AgentWelcomeDelivery(Base):
+    __tablename__ = "agent_welcome_deliveries"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    agent_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), unique=True, nullable=False, index=True)
+    recipient: Mapped[str] = mapped_column(String(255), nullable=False)
+    status: Mapped[str] = mapped_column(String(20), default="queued", nullable=False, index=True)
+    attempts: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    last_error: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    sent_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
+
+
 # ============================================================
 # RESULT SUBMISSION MODEL
 # ============================================================

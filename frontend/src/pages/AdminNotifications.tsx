@@ -28,6 +28,7 @@ type Campaign = {
   expired_removed: number; created_at: string; created_by: string;
 };
 type Readiness = { ready: boolean; detail?: string };
+type WelcomeStatus = { sent:number; queued:number; failed:number };
 type AudienceType = "selected_agents" | "election" | "lga" | "all_agents";
 
 const audiences: { value: AudienceType; label: string; description: string; icon: typeof Users }[] = [
@@ -62,6 +63,8 @@ export default function AdminNotifications() {
   const [success, setSuccess] = useState("");
   const [emailSending,setEmailSending]=useState(false);
   const [emailForm,setEmailForm]=useState({subject:"",body:""});
+  const [welcomeStatus,setWelcomeStatus]=useState<WelcomeStatus>({sent:0,queued:0,failed:0});
+  const [welcomeUrl,setWelcomeUrl]=useState(""),[welcomeSending,setWelcomeSending]=useState(false);
   const [form, setForm] = useState({
     title: "", body: "", url: "/dashboard", audience_type: "selected_agents" as AudienceType,
     election_id: "", lga: "", user_ids: [] as number[],
@@ -78,12 +81,14 @@ export default function AdminNotifications() {
         fetch(`${API_URL}/api/wards/lgas`, { headers: headers() }),
         fetch(`${API_URL}/api/push/campaigns`, { headers: headers() }),
         fetch(`${API_URL}/api/push/readiness`, { headers: headers() }),
+        fetch(`${API_URL}/api/admin/email/welcome-agents/status`, { headers: headers() }),
       ]);
       for (const response of responses) if (!response.ok) throw new Error(await apiError(response));
-      const [agentData, electionData, lgaData, campaignData, readinessData] = await Promise.all(responses.map(response => response.json()));
+      const [agentData, electionData, lgaData, campaignData, readinessData, welcomeData] = await Promise.all(responses.map(response => response.json()));
       setAgents(agentData.agents || []); setElections(electionData.elections || []);
       setLgas(lgaData.lgas || []); setCampaigns(campaignData.campaigns || []);
       setReadiness(readinessData);
+      setWelcomeStatus(welcomeData);
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Unable to load Notification Centre.");
     } finally { setLoading(false); }
@@ -133,6 +138,7 @@ export default function AdminNotifications() {
     event.preventDefault();setEmailSending(true);setError("");setSuccess("");
     try{const response=await fetch(`${API_URL}/api/admin/email/send-all`,{method:"POST",headers:{...headers(),"Content-Type":"application/json"},body:JSON.stringify(emailForm)});if(!response.ok)throw new Error(await apiError(response));const result=await response.json();const summary=`Email campaign processed: ${result.sent} sent, ${result.failed} failed, and ${result.skipped} placeholder addresses skipped.`;if(result.failed>0){setError(`${summary}${result.error?` Provider error: ${result.error}`:" Check the backend email-provider logs."}`)}else{setSuccess(summary);setEmailForm({subject:"",body:""})}}catch(caught){setError(caught instanceof Error?caught.message:"Unable to send email campaign.")}finally{setEmailSending(false)}
   }
+  async function sendWelcome(event:FormEvent){event.preventDefault();setWelcomeSending(true);setError("");setSuccess("");try{const response=await fetch(`${API_URL}/api/admin/email/welcome-agents`,{method:"POST",headers:{...headers(),"Content-Type":"application/json"},body:JSON.stringify({application_url:welcomeUrl})});if(!response.ok)throw new Error(await apiError(response));const result=await response.json();setSuccess(`${result.queued} personalized welcome email${result.queued===1?" was":"s were"} queued. ${result.already_sent} already sent, ${result.already_queued} currently processing, ${result.missing_email} missing real email, ${result.missing_assignment} missing assignment, and ${result.remaining} remain for the next batch.`);await load()}catch(caught){setError(caught instanceof Error?caught.message:"Unable to queue welcome emails.")}finally{setWelcomeSending(false)}}
 
   return (
     <div className="space-y-7">
@@ -166,6 +172,12 @@ export default function AdminNotifications() {
       <form onSubmit={sendEmail} className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7">
         <SectionHeading step="Email" title="Email all users" description="Send an individual email to every active user with a real email address. Placeholder addresses are skipped." icon={Mail}/>
         <div className="mt-6 grid gap-5"><Field label="Email subject" hint={`${emailForm.subject.length}/150`}><input required minLength={2} maxLength={150} className="input" value={emailForm.subject} onChange={event=>setEmailForm({...emailForm,subject:event.target.value})} placeholder="Message from Dumo Youth Network"/></Field><Field label="Email message" hint={`${emailForm.body.length}/5000`}><textarea required minLength={2} maxLength={5000} rows={7} className="input resize-y" value={emailForm.body} onChange={event=>setEmailForm({...emailForm,body:event.target.value})} placeholder="Write the message that every active user should receive."/></Field><button disabled={emailSending||loading} className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-emerald-700 px-5 py-3 font-black text-white disabled:opacity-50">{emailSending?<Loader2 className="animate-spin" size={18}/>:<Mail size={18}/>} {emailSending?"Sending emails…":"Send email to all users"}</button></div>
+      </form>
+      <form onSubmit={sendWelcome} className="rounded-3xl border border-emerald-200 bg-white p-5 shadow-sm sm:p-7">
+        <SectionHeading step="Welcome" title="Welcome polling-unit agents" description="Send each assigned agent one personalized welcome email. Successfully delivered emails are never repeated." icon={Mail}/>
+        <div className="mt-5 grid gap-4 sm:grid-cols-3">{[["Sent",welcomeStatus.sent],["Queued",welcomeStatus.queued],["Failed",welcomeStatus.failed]].map(([label,value])=><div key={String(label)} className="rounded-xl bg-slate-50 p-4"><p className="text-xs font-bold uppercase text-slate-500">{label}</p><p className="mt-1 text-2xl font-black">{value}</p></div>)}</div>
+        <Field label="Public agent application link" hint="Generate this under Agent applications"><input required type="url" className="input" value={welcomeUrl} onChange={event=>setWelcomeUrl(event.target.value)} placeholder="https://…/apply/agent/…"/></Field>
+        <button disabled={welcomeSending||loading} className="mt-5 inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-emerald-700 px-5 py-3 font-black text-white disabled:opacity-50">{welcomeSending?<Loader2 className="animate-spin" size={18}/>:<Send size={18}/>} {welcomeSending?"Queuing welcome emails…":"Send welcome emails"}</button>
       </form>
 
       <form onSubmit={send} className="grid gap-6 2xl:grid-cols-[minmax(0,1.2fr)_minmax(340px,.8fr)]">
