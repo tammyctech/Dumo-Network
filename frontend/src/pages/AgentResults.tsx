@@ -2,10 +2,10 @@ import { useEffect, useMemo, useState, type FormEvent } from "react";
 import {
   AlertCircle,
   CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
   FileImage,
-  Plus,
   Send,
-  Trash2,
 } from "lucide-react";
 
 import { useAuth } from "../context/AuthContext";
@@ -16,8 +16,11 @@ const API_URL = (
 
 type PartyResult = {
   party: string;
+  name: string;
   votes: string;
 };
+
+type RegisteredParty = { acronym: string; name: string };
 
 type AgentAssignment = {
   assignment_id: string;
@@ -93,9 +96,8 @@ export default function AgentResults() {
   const [validVotes, setValidVotes] = useState("");
   const [rejectedVotes, setRejectedVotes] = useState("");
 
-  const [partyResults, setPartyResults] = useState<PartyResult[]>([
-    { party: "", votes: "" },
-  ]);
+  const [partyResults, setPartyResults] = useState<PartyResult[]>([]);
+  const [currentPartyIndex, setCurrentPartyIndex] = useState(0);
 
   const [resultSheet, setResultSheet] = useState<File | null>(null);
 
@@ -170,6 +172,20 @@ export default function AgentResults() {
 
       try {
         const headers = { Authorization: `Bearer ${token}` };
+        const partiesResponse = await fetch(`${API_URL}/api/results/political-parties`, {
+          headers,
+          signal: controller.signal,
+        });
+        if (!partiesResponse.ok) throw new Error(await getApiError(partiesResponse));
+        const partiesData: { parties: RegisteredParty[] } = await partiesResponse.json();
+        setPartyResults(
+          partiesData.parties.map((party) => ({
+            party: party.acronym,
+            name: party.name,
+            votes: "",
+          }))
+        );
+        setCurrentPartyIndex(0);
         if (role === "admin") {
           const [electionsResponse, unitsResponse] = await Promise.all([
             fetch(`${API_URL}/api/admin/elections`, { headers, signal: controller.signal }),
@@ -220,31 +236,24 @@ export default function AgentResults() {
   // PARTY RESULT MANAGEMENT
   // ==========================================
 
-  function updateParty(
-    index: number,
-    field: keyof PartyResult,
-    value: string
-  ) {
+  function updatePartyVotes(index: number, value: string) {
     setPartyResults((previous) =>
       previous.map((result, currentIndex) =>
         currentIndex === index
-          ? { ...result, [field]: value }
+          ? { ...result, votes: value }
           : result
       )
     );
   }
 
-  function addParty() {
-    setPartyResults((previous) => [
-      ...previous,
-      { party: "", votes: "" },
-    ]);
-  }
-
-  function removeParty(index: number) {
-    setPartyResults((previous) =>
-      previous.filter((_, currentIndex) => currentIndex !== index)
-    );
+  function showNextParty() {
+    const current = partyResults[currentPartyIndex];
+    if (!current || current.votes === "") {
+      setError(`Enter the votes for ${current?.party || "this party"} before continuing.`);
+      return;
+    }
+    setError("");
+    setCurrentPartyIndex((index) => Math.min(partyResults.length - 1, index + 1));
   }
 
   // ==========================================
@@ -440,7 +449,8 @@ export default function AgentResults() {
     setAccreditedVoters("");
     setValidVotes("");
     setRejectedVotes("");
-    setPartyResults([{ party: "", votes: "" }]);
+    setPartyResults((previous) => previous.map((party) => ({ ...party, votes: "" })));
+    setCurrentPartyIndex(0);
     setSuccess("");
     setError("");
     if (user?.role === "admin") setSelectedPollingUnitId("");
@@ -717,71 +727,88 @@ export default function AgentResults() {
         {/* PARTY RESULTS */}
 
         <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-          <div className="mb-5 flex items-center justify-between gap-3">
+          <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
             <h2 className="text-lg font-semibold text-slate-900">
-              Party Results
+              Political Party Votes
             </h2>
-
-            <button
-              type="button"
-              onClick={addParty}
-              disabled={savedSubmissionId !== null}
-              className="flex items-center gap-2 rounded-xl bg-emerald-50 px-4 py-2 text-sm font-medium text-emerald-700 disabled:opacity-50"
-            >
-              <Plus size={16} />
-              Add Party
-            </button>
+            <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
+              {partyResults.filter((party) => party.votes !== "").length} of {partyResults.length} completed
+            </span>
           </div>
 
-          <div className="space-y-4">
-            {partyResults.map((result, index) => (
-              <div
-                key={index}
-                className="grid gap-3 md:grid-cols-[1fr_1fr_auto]"
-              >
-                <input
-                  type="text"
-                  required
-                  disabled={savedSubmissionId !== null}
-                  aria-label={`Party ${index + 1} name`}
-                  placeholder="Party name, e.g. NDC"
-                  value={result.party}
-                  onChange={(event) =>
-                    updateParty(index, "party", event.target.value)
-                  }
-                  className="rounded-xl border border-slate-300 px-4 py-3"
+          {partyResults.length === 0 ? (
+            <p className="rounded-xl bg-amber-50 p-4 text-sm text-amber-800">
+              Loading the INEC registered-party list…
+            </p>
+          ) : (
+            <div className="rounded-2xl border border-emerald-200 bg-emerald-50/60 p-5 sm:p-6">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-[0.16em] text-emerald-700">
+                    Party {currentPartyIndex + 1} of {partyResults.length}
+                  </p>
+                  <h3 className="mt-2 text-3xl font-black text-emerald-950">
+                    {partyResults[currentPartyIndex]?.party}
+                  </h3>
+                  <p className="mt-1 text-sm text-emerald-800">
+                    {partyResults[currentPartyIndex]?.name}
+                  </p>
+                </div>
+                <CheckCircle2
+                  size={25}
+                  className={partyResults[currentPartyIndex]?.votes !== "" ? "text-emerald-700" : "text-emerald-200"}
                 />
+              </div>
 
+              <label className="mt-6 block text-sm font-semibold text-slate-800">
+                Number of votes
                 <input
+                  key={currentPartyIndex}
+                  autoFocus
                   type="number"
                   min="0"
                   step="1"
                   required
                   disabled={savedSubmissionId !== null}
-                  aria-label={`Party ${index + 1} votes`}
-                  placeholder="Votes"
-                  value={result.votes}
-                  onChange={(event) =>
-                    updateParty(index, "votes", event.target.value)
-                  }
-                  className="rounded-xl border border-slate-300 px-4 py-3"
+                  aria-label={`${partyResults[currentPartyIndex]?.party} votes`}
+                  placeholder="Enter 0 if the party received no votes"
+                  value={partyResults[currentPartyIndex]?.votes ?? ""}
+                  onChange={(event) => updatePartyVotes(currentPartyIndex, event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter") {
+                      event.preventDefault();
+                      showNextParty();
+                    }
+                  }}
+                  className="mt-2 w-full rounded-xl border border-emerald-300 bg-white px-4 py-4 text-xl font-bold outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-200"
                 />
+              </label>
 
+              <div className="mt-5 flex justify-between gap-3">
                 <button
                   type="button"
-                  disabled={
-                    partyResults.length === 1 ||
-                    savedSubmissionId !== null
-                  }
-                  onClick={() => removeParty(index)}
-                  aria-label={`Remove party ${index + 1}`}
-                  className="rounded-xl p-3 text-red-500 hover:bg-red-50 disabled:opacity-30"
+                  disabled={currentPartyIndex === 0 || savedSubmissionId !== null}
+                  onClick={() => setCurrentPartyIndex((index) => Math.max(0, index - 1))}
+                  className="inline-flex items-center gap-2 rounded-xl border bg-white px-4 py-3 text-sm font-semibold disabled:opacity-40"
                 >
-                  <Trash2 size={20} />
+                  <ChevronLeft size={17} /> Back
+                </button>
+                <button
+                  type="button"
+                  disabled={savedSubmissionId !== null || partyResults[currentPartyIndex]?.votes === ""}
+                  onClick={showNextParty}
+                  className="inline-flex items-center gap-2 rounded-xl bg-emerald-700 px-5 py-3 text-sm font-semibold text-white disabled:opacity-40"
+                >
+                  {currentPartyIndex === partyResults.length - 1 ? "All parties completed" : "Save & next party"}
+                  {currentPartyIndex < partyResults.length - 1 && <ChevronRight size={17} />}
                 </button>
               </div>
-            ))}
-          </div>
+            </div>
+          )}
+
+          <p className="mt-3 text-xs text-slate-500">
+            Official INEC register for the 2027 General Election. Enter zero for any party with no votes.
+          </p>
 
           <div className="mt-6 rounded-xl bg-slate-50 p-4">
             <div className="flex justify-between text-sm">

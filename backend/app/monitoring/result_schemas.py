@@ -1,5 +1,7 @@
 from pydantic import BaseModel, Field, model_validator
 
+from app.political_parties import REGISTERED_PARTY_ACRONYMS
+
 
 class PartyVoteInput(BaseModel):
     party: str = Field(min_length=1, max_length=100)
@@ -26,6 +28,11 @@ class ResultSubmissionInput(BaseModel):
         if len(party_names) != len(set(party_names)):
             raise ValueError(
                 "Each political party must appear only once."
+            )
+
+        if set(party_names) != REGISTERED_PARTY_ACRONYMS:
+            raise ValueError(
+                "Results must include every political party on the current INEC register."
             )
 
         total_party_votes = sum(

@@ -1,0 +1,26 @@
+REGISTERED_POLITICAL_PARTIES = (
+    ("A", "Accord"),
+    ("AA", "Action Alliance"),
+    ("AAC", "African Action Congress"),
+    ("ADC", "African Democratic Congress"),
+    ("ADP", "Action Democratic Party"),
+    ("APC", "All Progressives Congress"),
+    ("APGA", "All Progressives Grand Alliance"),
+    ("APM", "Allied Peoples Movement"),
+    ("APP", "Action Peoples Party"),
+    ("BP", "Boot Party"),
+    ("DLA", "Democratic Leadership Alliance"),
+    ("LP", "Labour Party"),
+    ("NDP", "National Democratic Party"),
+    ("NDC", "Nigeria Democratic Congress"),
+    ("NNPP", "New Nigeria Peoples Party"),
+    ("NRM", "National Rescue Movement"),
+    ("PDP", "Peoples Democratic Party"),
+    ("PRP", "Peoples Redemption Party"),
+    ("SDP", "Social Democratic Party"),
+    ("YP", "Youth Party"),
+    ("YPP", "Young Progressives Party"),
+    ("ZLP", "Zenith Labour Party"),
+)
+
+REGISTERED_PARTY_ACRONYMS = frozenset(acronym for acronym, _ in REGISTERED_POLITICAL_PARTIES)

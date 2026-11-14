@@ -10,6 +10,7 @@ from app.database import Base
 from app.models import Election, PollingUnit, ResultSubmission, User
 from app.monitoring.result_schemas import PartyVoteInput, ResultSubmissionInput
 from app.routes.results import submit_election_result
+from app.political_parties import REGISTERED_POLITICAL_PARTIES
 
 
 class AdminResultSubmissionTests(unittest.TestCase):
@@ -41,7 +42,10 @@ class AdminResultSubmissionTests(unittest.TestCase):
                     accredited_voters=110,
                     valid_votes=100,
                     rejected_votes=10,
-                    party_results=[PartyVoteInput(party="ABC", votes=100)],
+                    party_results=[
+                        PartyVoteInput(party=acronym, votes=100 if index == 0 else 0)
+                        for index, (acronym, _) in enumerate(REGISTERED_POLITICAL_PARTIES)
+                    ],
                 ),
                 db,
                 admin,

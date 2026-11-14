@@ -16,6 +16,7 @@ from ..models import (
 )
 from ..security import get_current_user
 from ..services.email_service import send_bulk_system_email
+from ..political_parties import REGISTERED_POLITICAL_PARTIES
 from ..monitoring.result_schemas import (
     ResultSubmissionInput,
     ResultSubmissionResponse,
@@ -28,6 +29,21 @@ router = APIRouter(
     prefix="/api/results",
     tags=["Agent Election Results"],
 )
+
+
+@router.get("/political-parties")
+def political_parties(current_user: User = Depends(get_current_user)):
+    if not current_user.is_active or current_user.role not in {"agent", "admin"}:
+        raise HTTPException(status_code=403, detail="Active agent or administrator access required.")
+    return {
+        "source": "INEC statutory register",
+        "cycle": "2027 General Election",
+        "total": len(REGISTERED_POLITICAL_PARTIES),
+        "parties": [
+            {"acronym": acronym, "name": name}
+            for acronym, name in REGISTERED_POLITICAL_PARTIES
+        ],
+    }
 
 
 def _notify_admins_of_result(
