@@ -133,6 +133,7 @@ def list_assignments(
         )
         .where(
             PollingUnit.state == "Rivers",
+            User.role == "agent",
         )
         .order_by(AgentAssignment.id.desc())
     ).all()
