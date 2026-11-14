@@ -131,7 +131,7 @@ export default function AdminNotifications() {
 
   async function sendEmail(event:FormEvent){
     event.preventDefault();setEmailSending(true);setError("");setSuccess("");
-    try{const response=await fetch(`${API_URL}/api/admin/email/send-all`,{method:"POST",headers:{...headers(),"Content-Type":"application/json"},body:JSON.stringify(emailForm)});if(!response.ok)throw new Error(await apiError(response));const result=await response.json();setSuccess(`Email campaign processed: ${result.sent} sent, ${result.failed} failed, and ${result.skipped} placeholder addresses skipped.`);setEmailForm({subject:"",body:""})}catch(caught){setError(caught instanceof Error?caught.message:"Unable to send email campaign.")}finally{setEmailSending(false)}
+    try{const response=await fetch(`${API_URL}/api/admin/email/send-all`,{method:"POST",headers:{...headers(),"Content-Type":"application/json"},body:JSON.stringify(emailForm)});if(!response.ok)throw new Error(await apiError(response));const result=await response.json();const summary=`Email campaign processed: ${result.sent} sent, ${result.failed} failed, and ${result.skipped} placeholder addresses skipped.`;if(result.failed>0){setError(`${summary}${result.error?` Provider error: ${result.error}`:" Check the backend email-provider logs."}`)}else{setSuccess(summary);setEmailForm({subject:"",body:""})}}catch(caught){setError(caught instanceof Error?caught.message:"Unable to send email campaign.")}finally{setEmailSending(false)}
   }
 
   return (
