@@ -65,6 +65,12 @@ class DashboardAgentCoverageTests(unittest.TestCase):
             self.assertEqual(result["assigned_polling_units"], 1)
             self.assertEqual(result["unassigned_polling_units"], 2)
             self.assertEqual(result["assignment_coverage_percent"], 33.33)
+            self.assertEqual(result["lga_agent_coverage"], [{
+                "lga": "Abua/Odual",
+                "total_polling_units": 3,
+                "assigned_polling_units": 1,
+                "unassigned_polling_units": 2,
+            }])
         engine.dispose()
 
 

@@ -81,6 +81,13 @@ type LgaProgress = {
   coverage_percent: number | null;
 };
 
+type LgaAgentCoverage = {
+  lga: string;
+  total_polling_units: number;
+  assigned_polling_units: number;
+  unassigned_polling_units: number;
+};
+
 type RecentSubmission = {
   id: number;
   submitted_at: string;
@@ -119,6 +126,7 @@ type DashboardStatistics = {
 
   party_totals: PartyTotal[];
   lga_progress: LgaProgress[];
+  lga_agent_coverage: LgaAgentCoverage[];
   recent_submissions: RecentSubmission[];
   message?: string;
 };
@@ -575,6 +583,7 @@ const controller = new AbortController();
 const partyData = statistics?.party_totals ?? [];
 
 const lgaData = statistics?.lga_progress ?? [];
+const lgaAgentCoverage = statistics?.lga_agent_coverage ?? [];
 
 const sortedLgaData = [...lgaData].sort(
 
@@ -1449,6 +1458,34 @@ const workflowUnavailableMessage = statistics?.election
 
             </div>
 
+          </section>
+
+          {/* LGA AGENT COVERAGE */}
+
+          <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_1px_2px_rgba(15,23,42,0.03)] sm:p-6">
+            <div className="flex flex-wrap items-start justify-between gap-4">
+              <div>
+                <div className="flex items-center gap-3"><span className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-50 text-emerald-800"><Users size={21}/></span><h2 className="text-lg font-bold text-slate-900">Polling-Unit Agent Coverage by LGA</h2></div>
+                <p className="mt-2 text-sm text-slate-500">Assigned and unassigned polling units across every Local Government Area.</p>
+              </div>
+              <div className="flex flex-wrap gap-4 text-xs font-semibold"><span className="flex items-center gap-2"><span className="h-3 w-3 rounded-sm bg-emerald-600"/>Assigned</span><span className="flex items-center gap-2"><span className="h-3 w-3 rounded-sm bg-amber-400"/>Unassigned</span></div>
+            </div>
+            {lgaAgentCoverage.length === 0 ? <div className="py-12 text-center text-sm text-slate-500">No LGA agent coverage data is available.</div> : (
+              <div className="mt-6 w-full overflow-x-auto pb-2">
+                <div className="h-[390px] min-w-[1150px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={lgaAgentCoverage} margin={{top:10,right:20,left:0,bottom:90}}>
+                      <CartesianGrid stroke="#e2e8f0" strokeDasharray="3 3" vertical={false}/>
+                      <XAxis dataKey="lga" interval={0} angle={-45} textAnchor="end" height={100} tick={{fill:"#64748b",fontSize:11}} axisLine={{stroke:"#cbd5e1"}} tickLine={false}/>
+                      <YAxis allowDecimals={false} tick={{fill:"#64748b",fontSize:12}} axisLine={false} tickLine={false}/>
+                      <Tooltip formatter={(value,name)=>[Number(value).toLocaleString("en-NG"),name]} labelFormatter={(label)=>`${label} LGA`}/>
+                      <Bar dataKey="assigned_polling_units" name="Assigned polling units" stackId="coverage" fill="#059669" radius={[0,0,0,0]}/>
+                      <Bar dataKey="unassigned_polling_units" name="Unassigned polling units" stackId="coverage" fill="#fbbf24" radius={[5,5,0,0]}/>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            )}
           </section>
 
           {/* PARTY RESULTS */}

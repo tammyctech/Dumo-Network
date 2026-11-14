@@ -75,6 +75,34 @@ def dashboard_statistics(
         else None
     )
 
+    lga_unit_rows = db.execute(
+        select(PollingUnit.lga, func.count(PollingUnit.id))
+        .where(PollingUnit.state == "Rivers")
+        .group_by(PollingUnit.lga)
+        .order_by(PollingUnit.lga)
+    ).all()
+    lga_assignment_rows = db.execute(
+        select(
+            PollingUnit.lga,
+            func.count(func.distinct(AgentAssignment.polling_unit_id)),
+        )
+        .select_from(AgentAssignment)
+        .join(PollingUnit, PollingUnit.id == AgentAssignment.polling_unit_id)
+        .join(User, User.id == AgentAssignment.agent_id)
+        .where(PollingUnit.state == "Rivers", User.role == "agent")
+        .group_by(PollingUnit.lga)
+    ).all()
+    assigned_by_lga = dict(lga_assignment_rows)
+    lga_agent_coverage = [
+        {
+            "lga": lga,
+            "total_polling_units": total,
+            "assigned_polling_units": assigned_by_lga.get(lga, 0),
+            "unassigned_polling_units": max(0, total - assigned_by_lga.get(lga, 0)),
+        }
+        for lga, total in lga_unit_rows
+    ]
+
     # --------------------------------------
     # ELECTION SELECTION
     # --------------------------------------
@@ -116,6 +144,7 @@ def dashboard_statistics(
             "assigned_polling_units": assigned_polling_units,
             "unassigned_polling_units": unassigned_polling_units,
             "assignment_coverage_percent": assignment_coverage_percent,
+            "lga_agent_coverage": lga_agent_coverage,
             "submitted_polling_units": 0,
             "missing_assigned_polling_units": 0,
             "submission_coverage_percent": None,
@@ -410,6 +439,7 @@ def dashboard_statistics(
         "assigned_polling_units": assigned_polling_units,
         "unassigned_polling_units": unassigned_polling_units,
         "assignment_coverage_percent": assignment_coverage_percent,
+        "lga_agent_coverage": lga_agent_coverage,
         "submitted_polling_units": submitted_polling_units,
         "missing_assigned_polling_units": missing_assigned_polling_units,
         "submission_coverage_percent": coverage,
