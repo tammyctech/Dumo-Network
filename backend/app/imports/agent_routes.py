@@ -5,8 +5,9 @@ import logging
 import os
 import re
 import unicodedata
+from html import escape
 
-from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
+from fastapi import APIRouter, BackgroundTasks, Depends, File, Form, HTTPException, UploadFile
 from fastapi.responses import StreamingResponse
 from fastapi.routing import APIRoute
 from sqlalchemy import delete, select
@@ -16,12 +17,49 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models import AgentAssignment, AgentImport, AgentImportRow, Election, PollingUnit, User
 from app.security import hash_password, require_admin
+from app.services.email_service import send_system_email
 from app.imports.agent_service import (
     HEADERS, MAX_AGENT_FILE_SIZE, parse_agent_file, validate_agents,
 )
 
 logger = logging.getLogger(__name__)
 DEFAULT_AGENT_PASSWORD = os.getenv("DEFAULT_AGENT_PASSWORD", "12345")
+
+
+def _send_assignment_emails(notifications: list[dict[str, str]]) -> None:
+    """Deliver personalized bulk-import emails after the HTTP response is sent."""
+    login_url = f"{os.getenv('FRONTEND_URL', 'http://localhost:5173').rstrip('/')}/login"
+    for item in notifications:
+        temporary_password = item.get("temporary_password")
+        password_line = f"Temporary password: {temporary_password}\n" if temporary_password else "Password: Use your existing account password.\n"
+        password_html = f"<strong>Temporary password:</strong> {escape(temporary_password)}<br>" if temporary_password else "<strong>Password:</strong> Use your existing account password.<br>"
+        plain = f"""Hello {item['full_name']},
+
+You have been registered as a Dumo Youth Network polling-unit agent and assigned to a permanent polling unit.
+
+Your details:
+Name: {item['full_name']}
+Phone / login ID: {item['phone_number']}
+{password_line}
+Polling-unit assignment:
+LGA: {item['lga']}
+Ward: {item['ward']}
+Polling unit: {item['polling_unit_code']} - {item['polling_unit_name']}
+
+This assignment applies to all current and future elections.
+Login: {login_url}
+"""
+        html = f"""<h2 style="color:#047857">Polling-unit assignment</h2>
+<p>Hello {escape(item['full_name'])},</p><p>You have been registered as a Dumo Youth Network polling-unit agent and assigned to a permanent polling unit.</p>
+<div style="background:#f8fafc;border:1px solid #cbd5e1;border-radius:12px;padding:18px;margin:16px 0"><strong>Your details</strong><br>Name: {escape(item['full_name'])}<br><strong>Phone / login ID:</strong> {escape(item['phone_number'])}<br>{password_html}</div>
+<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;padding:18px;margin:16px 0"><strong>Polling-unit assignment</strong><br>LGA: {escape(item['lga'])}<br>Ward: {escape(item['ward'])}<br>Polling unit: {escape(item['polling_unit_code'])} &middot; {escape(item['polling_unit_name'])}</div>
+<p>This assignment applies to <strong>all current and future elections</strong>.</p><p><a href="{escape(login_url)}">Log in to your account</a></p>"""
+        try:
+            sent, error = send_system_email(recipient=item["email"], subject="Your Dumo polling-unit assignment and login details", plain_text=plain, html=html)
+            if not sent:
+                logger.warning("Bulk assignment email was not sent to agent %s: %s", item["agent_id"], error)
+        except Exception:
+            logger.exception("Unexpected bulk assignment email failure for agent %s", item["agent_id"])
 
 
 def placeholder_email(full_name: str, phone_number: str, used_emails: set[str]) -> str:
@@ -146,7 +184,7 @@ async def preview(file: UploadFile = File(...), overrides: str = Form("{}"),
 
 
 @router.post("/confirm")
-async def confirm(file: UploadFile = File(...), overrides: str = Form("{}"),
+async def confirm(background_tasks: BackgroundTasks, file: UploadFile = File(...), overrides: str = Form("{}"),
                   admin: User = Depends(require_admin), db: Session = Depends(get_db)):
     try:
         records = parse_agent_file(await _read(file), file.filename or "")
@@ -162,6 +200,8 @@ async def confirm(file: UploadFile = File(...), overrides: str = Form("{}"),
     db.add(history)
     db.flush()
     credentials = []
+    email_notifications: list[dict[str, str]] = []
+    email_notifications_skipped = 0
     registered = assigned = 0
     valid_rows = [row for row in report["rows"] if row["valid"]]
     phones = {row["phone_number"] for row in valid_rows}
@@ -211,6 +251,17 @@ async def confirm(file: UploadFile = File(...), overrides: str = Form("{}"),
                 "temporary_password": DEFAULT_AGENT_PASSWORD,
             })
         db.add(AgentAssignment(election_id=None, polling_unit_id=row["polling_unit_id"], agent_id=user.id))
+        unit = db.get(PollingUnit, row["polling_unit_id"])
+        if unit and not user.email.casefold().endswith((".invalid", "@dumo-network.vercel.app")):
+            email_notifications.append({
+                "agent_id": str(user.id), "email": user.email, "full_name": user.full_name,
+                "phone_number": user.phone_number or "Not provided",
+                "temporary_password": DEFAULT_AGENT_PASSWORD if created else "",
+                "lga": unit.lga, "ward": unit.ward, "polling_unit_code": unit.code,
+                "polling_unit_name": unit.name,
+            })
+        else:
+            email_notifications_skipped += 1
         assigned += 1
         db.add(AgentImportRow(import_id=history.id, row_number=row["row_number"], status="imported",
             phone_number=row["phone_number"], agent_id=user.id, polling_unit_id=row["polling_unit_id"],
@@ -223,8 +274,12 @@ async def confirm(file: UploadFile = File(...), overrides: str = Form("{}"),
     except IntegrityError as exc:
         db.rollback()
         raise HTTPException(409, "The data changed after preview. Preview the file again.") from exc
+    if email_notifications:
+        background_tasks.add_task(_send_assignment_emails, email_notifications)
     return {"import_id": history.id, "registered_agents": registered, "assigned_agents": assigned,
             "failed_records": history.failed_records, "credentials": credentials,
+            "email_notifications_queued": len(email_notifications),
+            "email_notifications_skipped": email_notifications_skipped,
             "credential_notice": "All new agents must change the shared temporary password after first login."}
 
 
