@@ -25,11 +25,6 @@ class BulkEmailRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
 
-class WelcomeCampaignRequest(BaseModel):
-    application_url: str = Field(min_length=10, max_length=1000)
-    model_config = ConfigDict(extra="forbid")
-
-
 def _deliverable(email: str) -> bool:
     lowered = email.casefold()
     return not lowered.endswith(".invalid") and not lowered.endswith("@dumo-network.vercel.app")
@@ -49,13 +44,13 @@ Polling unit: {item['polling_unit_code']} - {item['polling_unit_name']}
 
 Sign in to your account: {login_url}
 
-Please tell responsible people around your LGA about the opportunity to become Dumo Youth Network polling-unit agents. They can apply here: {item['application_url']}
+Please tell responsible people around your LGA about the opportunity to become Dumo Youth Network polling-unit agents. Interested people can contact the Dumo Youth Network team for details.
 
 Thank you for supporting credible grassroots election monitoring.
 """
-        html = f"""<h2 style="color:#047857">Welcome to Dumo Youth Network</h2><p>Hello {escape(item['full_name'])},</p><p>We are pleased to have you serving as a polling-unit agent.</p><div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;padding:18px;margin:16px 0"><strong>Your polling-unit assignment</strong><br>LGA: {escape(item['lga'])}<br>Ward: {escape(item['ward'])}<br>Polling unit: {escape(item['polling_unit_code'])} &middot; {escape(item['polling_unit_name'])}</div><p><a href="{escape(login_url)}">Sign in to your account</a></p><p>Please tell responsible people around your LGA about the opportunity to become Dumo Youth Network polling-unit agents.</p><p><a href="{escape(item['application_url'])}">Apply to become a polling-unit agent</a></p><p>Thank you for supporting credible grassroots election monitoring.</p>"""
+        html = f"""<h2>Welcome to Dumo Youth Network</h2><p>Hello {escape(item['full_name'])},</p><p>We are pleased to have you serving as a polling-unit agent.</p><p><strong>Your polling-unit assignment</strong><br>LGA: {escape(item['lga'])}<br>Ward: {escape(item['ward'])}<br>Polling unit: {escape(item['polling_unit_code'])} &middot; {escape(item['polling_unit_name'])}</p><p>Account login: <a href="{escape(login_url)}">{escape(login_url)}</a></p><p>Please tell responsible people around your LGA about the opportunity to become Dumo Youth Network polling-unit agents. Interested people can contact the Dumo Youth Network team for details.</p><p>Thank you for supporting credible grassroots election monitoring.</p>"""
         try:
-            sent, error = send_system_email(recipient=item["email"], subject="Welcome to Dumo Youth Network — your polling-unit assignment", plain_text=plain, html=html, sender_name=sender_name)
+            sent, error = send_system_email(recipient=item["email"], subject="Your Dumo Youth Network polling-unit assignment", plain_text=plain, html=html, sender_name=sender_name)
         except Exception as exc:
             logger.exception("Welcome email failed for agent %s", item["agent_id"])
             sent, error = False, f"Email delivery error: {type(exc).__name__}."
@@ -102,13 +97,10 @@ def welcome_status(db: Session = Depends(get_db), _: User = Depends(require_admi
 
 @router.post("/welcome-agents")
 def send_welcome_campaign(
-    payload: WelcomeCampaignRequest,
     background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
     _: User = Depends(require_admin),
 ):
-    if not payload.application_url.startswith(("https://", "http://")):
-        raise HTTPException(422, "Enter a complete HTTP or HTTPS application link.")
     rows = db.execute(
         select(User, AgentAssignment, PollingUnit)
         .join(AgentAssignment, AgentAssignment.agent_id == User.id)
@@ -136,8 +128,7 @@ def send_welcome_campaign(
             delivery.status = "queued"; delivery.recipient = agent.email
         notifications.append({"delivery_id": str(delivery.id), "agent_id": str(agent.id), "email": agent.email,
             "full_name": agent.full_name, "lga": unit.lga, "ward": unit.ward,
-            "polling_unit_code": unit.code, "polling_unit_name": unit.name,
-            "application_url": payload.application_url})
+            "polling_unit_code": unit.code, "polling_unit_name": unit.name})
     db.commit()
     if notifications:
         background_tasks.add_task(_send_welcome_emails, notifications, email_sender_name(db))

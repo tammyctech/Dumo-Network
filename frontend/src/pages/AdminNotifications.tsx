@@ -64,7 +64,7 @@ export default function AdminNotifications() {
   const [emailSending,setEmailSending]=useState(false);
   const [emailForm,setEmailForm]=useState({subject:"",body:""});
   const [welcomeStatus,setWelcomeStatus]=useState<WelcomeStatus>({sent:0,queued:0,failed:0});
-  const [welcomeUrl,setWelcomeUrl]=useState(""),[welcomeSending,setWelcomeSending]=useState(false);
+  const [welcomeSending,setWelcomeSending]=useState(false);
   const [form, setForm] = useState({
     title: "", body: "", url: "/dashboard", audience_type: "selected_agents" as AudienceType,
     election_id: "", lga: "", user_ids: [] as number[],
@@ -138,7 +138,7 @@ export default function AdminNotifications() {
     event.preventDefault();setEmailSending(true);setError("");setSuccess("");
     try{const response=await fetch(`${API_URL}/api/admin/email/send-all`,{method:"POST",headers:{...headers(),"Content-Type":"application/json"},body:JSON.stringify(emailForm)});if(!response.ok)throw new Error(await apiError(response));const result=await response.json();const summary=`Email campaign processed: ${result.sent} sent, ${result.failed} failed, and ${result.skipped} placeholder addresses skipped.`;if(result.failed>0){setError(`${summary}${result.error?` Provider error: ${result.error}`:" Check the backend email-provider logs."}`)}else{setSuccess(summary);setEmailForm({subject:"",body:""})}}catch(caught){setError(caught instanceof Error?caught.message:"Unable to send email campaign.")}finally{setEmailSending(false)}
   }
-  async function sendWelcome(event:FormEvent){event.preventDefault();setWelcomeSending(true);setError("");setSuccess("");try{const response=await fetch(`${API_URL}/api/admin/email/welcome-agents`,{method:"POST",headers:{...headers(),"Content-Type":"application/json"},body:JSON.stringify({application_url:welcomeUrl})});if(!response.ok)throw new Error(await apiError(response));const result=await response.json();setSuccess(`${result.queued} personalized welcome email${result.queued===1?" was":"s were"} queued. ${result.already_sent} already sent, ${result.already_queued} currently processing, ${result.missing_email} missing real email, ${result.missing_assignment} missing assignment, and ${result.remaining} remain for the next batch.`);await load()}catch(caught){setError(caught instanceof Error?caught.message:"Unable to queue welcome emails.")}finally{setWelcomeSending(false)}}
+  async function sendWelcome(event:FormEvent){event.preventDefault();setWelcomeSending(true);setError("");setSuccess("");try{const response=await fetch(`${API_URL}/api/admin/email/welcome-agents`,{method:"POST",headers:headers()});if(!response.ok)throw new Error(await apiError(response));const result=await response.json();setSuccess(`${result.queued} personalized welcome email${result.queued===1?" was":"s were"} queued. ${result.already_sent} already sent, ${result.already_queued} currently processing, ${result.missing_email} missing real email, ${result.missing_assignment} missing assignment, and ${result.remaining} remain for the next batch.`);await load()}catch(caught){setError(caught instanceof Error?caught.message:"Unable to queue welcome emails.")}finally{setWelcomeSending(false)}}
 
   return (
     <div className="space-y-7">
@@ -176,7 +176,6 @@ export default function AdminNotifications() {
       <form onSubmit={sendWelcome} className="rounded-3xl border border-emerald-200 bg-white p-5 shadow-sm sm:p-7">
         <SectionHeading step="Welcome" title="Welcome polling-unit agents" description="Send each assigned agent one personalized welcome email. Successfully delivered emails are never repeated." icon={Mail}/>
         <div className="mt-5 grid gap-4 sm:grid-cols-3">{[["Sent",welcomeStatus.sent],["Queued",welcomeStatus.queued],["Failed",welcomeStatus.failed]].map(([label,value])=><div key={String(label)} className="rounded-xl bg-slate-50 p-4"><p className="text-xs font-bold uppercase text-slate-500">{label}</p><p className="mt-1 text-2xl font-black">{value}</p></div>)}</div>
-        <Field label="Public agent application link" hint="Generate this under Agent applications"><input required type="url" className="input" value={welcomeUrl} onChange={event=>setWelcomeUrl(event.target.value)} placeholder="https://…/apply/agent/…"/></Field>
         <button disabled={welcomeSending||loading} className="mt-5 inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-emerald-700 px-5 py-3 font-black text-white disabled:opacity-50">{welcomeSending?<Loader2 className="animate-spin" size={18}/>:<Send size={18}/>} {welcomeSending?"Queuing welcome emails…":"Send welcome emails"}</button>
       </form>
 
