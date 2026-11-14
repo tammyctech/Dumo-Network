@@ -30,6 +30,26 @@ SMTP_USE_SSL=false
 FRONTEND_URL=https://dumo-network.vercel.app
 ```
 
+### Personal Gmail HTTPS API
+
+To send over HTTPS instead of SMTP, enable the Gmail API in a Google Cloud
+project, create an OAuth desktop/web client, authorize the personal Gmail
+account once with the `https://www.googleapis.com/auth/gmail.send` scope, and
+store the resulting refresh token as backend environment variables:
+
+```env
+EMAIL_PROVIDER=gmail_api
+GMAIL_CLIENT_ID=your-google-oauth-client-id
+GMAIL_CLIENT_SECRET=your-google-oauth-client-secret
+GMAIL_REFRESH_TOKEN=your-revocable-refresh-token
+GMAIL_SENDER_EMAIL=your-account@gmail.com
+SMTP_FROM_NAME=Dumo Youth Network
+```
+
+Do not commit OAuth credentials or refresh tokens. Personal Gmail accounts are
+limited to roughly 500 outgoing messages per day; use the delivery history to
+avoid resending messages that were already delivered.
+
 Use `SMTP_USE_SSL=true`, `SMTP_USE_TLS=false`, and usually port `465` when the
 provider requires implicit SSL. Approval still succeeds if email delivery is
 unavailable; the admin page reports that the message was not sent.

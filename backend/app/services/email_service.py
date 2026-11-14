@@ -1,12 +1,72 @@
 import logging
 import os
 import smtplib
+import base64
 from email.message import EmailMessage
 from email.utils import formataddr
 from html import escape
+import requests
 
 
 logger = logging.getLogger(__name__)
+
+
+def _gmail_configuration() -> tuple[str, str, str, str] | None:
+    values = tuple(os.getenv(name, "").strip() for name in (
+        "GMAIL_CLIENT_ID", "GMAIL_CLIENT_SECRET", "GMAIL_REFRESH_TOKEN", "GMAIL_SENDER_EMAIL"
+    ))
+    return values if all(values) else None
+
+
+def _gmail_access_token() -> tuple[str | None, str | None]:
+    config = _gmail_configuration()
+    if not config:
+        return None, "Gmail API is not configured. Set GMAIL_CLIENT_ID, GMAIL_CLIENT_SECRET, GMAIL_REFRESH_TOKEN, and GMAIL_SENDER_EMAIL."
+    client_id, client_secret, refresh_token, _ = config
+    try:
+        response = requests.post("https://oauth2.googleapis.com/token", data={
+            "client_id": client_id, "client_secret": client_secret,
+            "refresh_token": refresh_token, "grant_type": "refresh_token",
+        }, timeout=15)
+        response.raise_for_status()
+        return response.json()["access_token"], None
+    except (requests.RequestException, KeyError, ValueError) as exc:
+        logger.exception("Gmail OAuth token refresh failed")
+        return None, f"Gmail API authentication failed: {type(exc).__name__}."
+
+
+def _send_gmail_message(message: EmailMessage, access_token: str | None = None) -> tuple[bool, str | None]:
+    token, error = (access_token, None) if access_token else _gmail_access_token()
+    if not token:
+        return False, error
+    raw = base64.urlsafe_b64encode(message.as_bytes()).decode().rstrip("=")
+    try:
+        response = requests.post("https://gmail.googleapis.com/gmail/v1/users/me/messages/send",
+            headers={"Authorization": f"Bearer {token}"}, json={"raw": raw}, timeout=20)
+        response.raise_for_status()
+        return True, None
+    except requests.RequestException as exc:
+        logger.exception("Gmail API message delivery failed for %s", message.get("To"))
+        status = exc.response.status_code if exc.response is not None else "network"
+        return False, f"Gmail API delivery failed ({status})."
+
+
+def _provider() -> str:
+    return os.getenv("EMAIL_PROVIDER", "smtp").strip().casefold()
+
+
+def _from_email() -> str:
+    return os.getenv("GMAIL_SENDER_EMAIL" if _provider() == "gmail_api" else "SMTP_FROM_EMAIL", "").strip()
+
+
+def _message(recipient: str, subject: str, plain_text: str, html: str, sender_name: str | None) -> EmailMessage:
+    message = EmailMessage()
+    message["Subject"] = subject
+    message["From"] = formataddr((sender_name or os.getenv("SMTP_FROM_NAME", "Dumo Youth Network"), _from_email()))
+    message["To"] = recipient
+    message.set_content(plain_text)
+    message.add_alternative(html, subtype="html")
+    return message
 
 
 def _enabled(value: str | None, default: bool = False) -> bool:
@@ -41,8 +101,8 @@ def send_agent_approval_email(
 ) -> tuple[bool, str | None]:
     """Send an approval email without exposing provider errors to the recipient."""
     host = os.getenv("SMTP_HOST", "").strip()
-    from_email = os.getenv("SMTP_FROM_EMAIL", "").strip()
-    if not host or not from_email:
+    from_email = _from_email()
+    if _provider() != "gmail_api" and (not host or not from_email):
         return False, "Email service is not configured. Set SMTP_HOST and SMTP_FROM_EMAIL."
 
     try:
@@ -94,6 +154,9 @@ Temporary password: <strong>{escape(temporary_password)}</strong>
 <p>You will be required to change the temporary password after your first login.</p>
 </div></body></html>"""
 
+    if _provider() == "gmail_api":
+        return send_system_email(recipient=recipient, subject=subject, plain_text=plain_text, html=html, sender_name=from_name)
+
     message = EmailMessage()
     message["Subject"] = subject
     message["From"] = formataddr((from_name, from_email))
@@ -116,6 +179,10 @@ Temporary password: <strong>{escape(temporary_password)}</strong>
 
 
 def send_system_email(*, recipient: str, subject: str, plain_text: str, html: str, sender_name: str | None = None) -> tuple[bool, str | None]:
+    if _provider() == "gmail_api":
+        if not _from_email():
+            return False, "Gmail API is not configured."
+        return _send_gmail_message(_message(recipient, subject, plain_text, html, sender_name))
     host = os.getenv("SMTP_HOST", "").strip()
     from_email = os.getenv("SMTP_FROM_EMAIL", "").strip()
     if not host or not from_email:
@@ -150,6 +217,18 @@ def send_system_email(*, recipient: str, subject: str, plain_text: str, html: st
 
 def send_bulk_system_email(*, recipients: list[tuple[str, str]], subject: str, body: str, sender_name: str | None = None) -> tuple[int, int, str | None]:
     """Send individual messages over one SMTP connection; never expose recipients to each other."""
+    if _provider() == "gmail_api":
+        token, error = _gmail_access_token()
+        if not token:
+            return 0, len(recipients), error
+        sent = failed = 0
+        for recipient, full_name in recipients:
+            plain = f"Hello {full_name},\n\n{body}\n\nDumo Youth Network"
+            safe_body = escape(body).replace("\n", "<br>")
+            message = _message(recipient, subject, plain, f"<p>Hello {escape(full_name)},</p><p>{safe_body}</p><p>Dumo Youth Network</p>", sender_name)
+            delivered, _ = _send_gmail_message(message, token)
+            sent += int(delivered); failed += int(not delivered)
+        return sent, failed, None if not failed else f"{failed} Gmail API message(s) failed."
     host = os.getenv("SMTP_HOST", "").strip()
     from_email = os.getenv("SMTP_FROM_EMAIL", "").strip()
     if not host or not from_email:

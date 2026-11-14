@@ -307,6 +307,22 @@ class AgentImportRow(Base):
     message: Mapped[str | None] = mapped_column(String(500), nullable=True)
 
 
+class AgentEmailDelivery(Base):
+    __tablename__ = "agent_email_deliveries"
+    __table_args__ = (UniqueConstraint("import_id", "agent_id", "email_type", name="uq_agent_import_email"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    import_id: Mapped[int] = mapped_column(ForeignKey("agent_imports.id", ondelete="CASCADE"), nullable=False, index=True)
+    agent_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    email_type: Mapped[str] = mapped_column(String(40), default="bulk_assignment", nullable=False)
+    recipient: Mapped[str] = mapped_column(String(255), nullable=False)
+    status: Mapped[str] = mapped_column(String(20), default="queued", nullable=False, index=True)
+    attempts: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    last_error: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    sent_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
+
+
 # ============================================================
 # RESULT SUBMISSION MODEL
 # ============================================================

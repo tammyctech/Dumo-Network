@@ -6,16 +6,17 @@ import os
 import re
 import unicodedata
 from html import escape
+from datetime import datetime, timezone
 
 from fastapi import APIRouter, BackgroundTasks, Depends, File, Form, HTTPException, UploadFile
 from fastapi.responses import StreamingResponse
 from fastapi.routing import APIRoute
-from sqlalchemy import delete, select
+from sqlalchemy import delete, func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from app.database import get_db
-from app.models import AgentAssignment, AgentImport, AgentImportRow, Election, PollingUnit, User
+from app.database import SessionLocal, get_db
+from app.models import AgentAssignment, AgentEmailDelivery, AgentImport, AgentImportRow, Election, PollingUnit, User
 from app.security import hash_password, require_admin
 from app.services.email_service import send_system_email
 from app.imports.agent_service import (
@@ -56,6 +57,16 @@ Login: {login_url}
 <p>This assignment applies to <strong>all current and future elections</strong>.</p><p><a href="{escape(login_url)}">Log in to your account</a></p>"""
         try:
             sent, error = send_system_email(recipient=item["email"], subject="Your Dumo polling-unit assignment and login details", plain_text=plain, html=html)
+            delivery_id = int(item.get("delivery_id", "0"))
+            if delivery_id:
+                with SessionLocal() as delivery_db:
+                    delivery = delivery_db.get(AgentEmailDelivery, delivery_id)
+                    if delivery and delivery.status != "sent":
+                        delivery.attempts += 1
+                        delivery.status = "sent" if sent else "failed"
+                        delivery.last_error = None if sent else (error or "Delivery failed.")[:500]
+                        delivery.sent_at = datetime.now(timezone.utc) if sent else None
+                        delivery_db.commit()
             if not sent:
                 logger.warning("Bulk assignment email was not sent to agent %s: %s", item["agent_id"], error)
         except Exception:
@@ -253,8 +264,11 @@ async def confirm(background_tasks: BackgroundTasks, file: UploadFile = File(...
         db.add(AgentAssignment(election_id=None, polling_unit_id=row["polling_unit_id"], agent_id=user.id))
         unit = db.get(PollingUnit, row["polling_unit_id"])
         if unit and not user.email.casefold().endswith((".invalid", "@dumo-network.vercel.app")):
+            delivery = AgentEmailDelivery(import_id=history.id, agent_id=user.id, recipient=user.email)
+            db.add(delivery)
+            db.flush()
             email_notifications.append({
-                "agent_id": str(user.id), "email": user.email, "full_name": user.full_name,
+                "agent_id": str(user.id), "delivery_id": str(delivery.id), "email": user.email, "full_name": user.full_name,
                 "phone_number": user.phone_number or "Not provided",
                 "temporary_password": DEFAULT_AGENT_PASSWORD if created else "",
                 "lga": unit.lga, "ward": unit.ward, "polling_unit_code": unit.code,
@@ -274,11 +288,14 @@ async def confirm(background_tasks: BackgroundTasks, file: UploadFile = File(...
     except IntegrityError as exc:
         db.rollback()
         raise HTTPException(409, "The data changed after preview. Preview the file again.") from exc
-    if email_notifications:
-        background_tasks.add_task(_send_assignment_emails, email_notifications)
+    daily_batch_limit = max(1, min(int(os.getenv("GMAIL_DAILY_BATCH_SIZE", "450")), 500))
+    scheduled_notifications = email_notifications[:daily_batch_limit]
+    if scheduled_notifications:
+        background_tasks.add_task(_send_assignment_emails, scheduled_notifications)
     return {"import_id": history.id, "registered_agents": registered, "assigned_agents": assigned,
             "failed_records": history.failed_records, "credentials": credentials,
-            "email_notifications_queued": len(email_notifications),
+            "email_notifications_queued": len(scheduled_notifications),
+            "email_notifications_pending": len(email_notifications) - len(scheduled_notifications),
             "email_notifications_skipped": email_notifications_skipped,
             "credential_notice": "All new agents must change the shared temporary password after first login."}
 
@@ -290,7 +307,11 @@ def history(_: User = Depends(require_admin), db: Session = Depends(get_db)):
     return [{"id": item.id, "import_date": item.created_at, "administrator": admin.full_name,
              "filename": item.filename, "election": election.name if election else "All elections", "total_records": item.total_records,
              "registered_agents": item.registered_agents, "assigned_agents": item.assigned_agents,
-             "skipped_records": item.skipped_records, "failed_records": item.failed_records}
+             "skipped_records": item.skipped_records, "failed_records": item.failed_records,
+             "email_delivery": {status: count for status, count in db.execute(
+                 select(AgentEmailDelivery.status, func.count(AgentEmailDelivery.id)).where(
+                     AgentEmailDelivery.import_id == item.id).group_by(AgentEmailDelivery.status)
+             ).all()}}
             for item, admin, election in records]
 
 
@@ -305,6 +326,38 @@ def clear_history(_: User = Depends(require_admin), db: Session = Depends(get_db
         "imports_deleted": import_result.rowcount or 0,
         "rows_deleted": row_result.rowcount or 0,
     }
+
+
+@router.post("/emails/retry")
+def retry_assignment_emails(
+    background_tasks: BackgroundTasks,
+    _: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    limit = max(1, min(int(os.getenv("GMAIL_DAILY_BATCH_SIZE", "450")), 500))
+    rows = db.execute(
+        select(AgentEmailDelivery, AgentImportRow, User, PollingUnit)
+        .join(AgentImportRow, (AgentImportRow.import_id == AgentEmailDelivery.import_id) & (AgentImportRow.agent_id == AgentEmailDelivery.agent_id))
+        .join(User, User.id == AgentEmailDelivery.agent_id)
+        .join(PollingUnit, PollingUnit.id == AgentImportRow.polling_unit_id)
+        .where(AgentEmailDelivery.status.in_(("queued", "failed")))
+        .order_by(AgentEmailDelivery.id)
+        .limit(limit)
+    ).all()
+    notifications = []
+    for delivery, import_row, user, unit in rows:
+        delivery.status = "queued"
+        notifications.append({
+            "agent_id": str(user.id), "delivery_id": str(delivery.id), "email": delivery.recipient,
+            "full_name": user.full_name, "phone_number": user.phone_number or "Not provided",
+            "temporary_password": DEFAULT_AGENT_PASSWORD if import_row.message == "New account created" else "",
+            "lga": unit.lga, "ward": unit.ward, "polling_unit_code": unit.code, "polling_unit_name": unit.name,
+        })
+    db.commit()
+    if notifications:
+        background_tasks.add_task(_send_assignment_emails, notifications)
+    remaining = db.scalar(select(func.count(AgentEmailDelivery.id)).where(AgentEmailDelivery.status.in_(("queued", "failed")))) or 0
+    return {"scheduled": len(notifications), "remaining": max(0, remaining - len(notifications))}
 
 
 @router.get("/{import_id}/errors")

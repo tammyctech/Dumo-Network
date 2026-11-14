@@ -2,7 +2,7 @@ import os
 import unittest
 from unittest.mock import MagicMock, patch
 
-from app.services.email_service import _delivery_error, send_agent_approval_email
+from app.services.email_service import _delivery_error, send_agent_approval_email, send_system_email
 
 
 class ApprovalEmailTests(unittest.TestCase):
@@ -60,6 +60,23 @@ class ApprovalEmailTests(unittest.TestCase):
         self.assertIn("32/21/09/003", body)
         self.assertIn("12345", body)
         self.assertIn("https://dumo-network.vercel.app/login", body)
+
+    @patch("app.services.email_service.requests.post")
+    def test_gmail_api_refreshes_token_and_sends_raw_mime_message(self, post):
+        token_response = MagicMock(); token_response.json.return_value = {"access_token": "access-token"}
+        send_response = MagicMock()
+        post.side_effect = [token_response, send_response]
+        with patch.dict(os.environ, {
+            "EMAIL_PROVIDER": "gmail_api", "GMAIL_CLIENT_ID": "client-id",
+            "GMAIL_CLIENT_SECRET": "client-secret", "GMAIL_REFRESH_TOKEN": "refresh-token",
+            "GMAIL_SENDER_EMAIL": "dumo.network@gmail.com",
+        }, clear=True):
+            sent, error = send_system_email(recipient="agent@example.com", subject="Assignment",
+                plain_text="Assigned", html="<p>Assigned</p>")
+        self.assertTrue(sent); self.assertIsNone(error)
+        self.assertEqual(post.call_args_list[0].args[0], "https://oauth2.googleapis.com/token")
+        self.assertEqual(post.call_args_list[1].args[0], "https://gmail.googleapis.com/gmail/v1/users/me/messages/send")
+        self.assertIn("raw", post.call_args_list[1].kwargs["json"])
 
 
 if __name__ == "__main__":
