@@ -41,21 +41,30 @@ class DashboardAgentCoverageTests(unittest.TestCase):
                 code="32/01/01/002", name="Unit 2", state="Rivers",
                 lga="Abua/Odual", ward="Ward 1",
             )
-            db.add_all([admin, agent, filled, vacant])
+            legacy_unit = PollingUnit(
+                code="32/01/01/003", name="Unit 3", state="Rivers",
+                lga="Abua/Odual", ward="Ward 1",
+            )
+            db.add_all([admin, agent, filled, vacant, legacy_unit])
             db.flush()
             db.add(AgentAssignment(
                 election_id=None,
                 polling_unit_id=filled.id,
                 agent_id=agent.id,
             ))
+            db.add(AgentAssignment(
+                election_id=None,
+                polling_unit_id=legacy_unit.id,
+                agent_id=admin.id,
+            ))
             db.commit()
 
             result = dashboard_statistics(None, db, admin)
 
-            self.assertEqual(result["total_polling_units"], 2)
+            self.assertEqual(result["total_polling_units"], 3)
             self.assertEqual(result["assigned_polling_units"], 1)
-            self.assertEqual(result["unassigned_polling_units"], 1)
-            self.assertEqual(result["assignment_coverage_percent"], 50.0)
+            self.assertEqual(result["unassigned_polling_units"], 2)
+            self.assertEqual(result["assignment_coverage_percent"], 33.33)
         engine.dispose()
 
 

@@ -62,7 +62,11 @@ def dashboard_statistics(
     assigned_polling_units = db.scalar(
         select(func.count(func.distinct(AgentAssignment.polling_unit_id)))
         .join(PollingUnit, PollingUnit.id == AgentAssignment.polling_unit_id)
-        .where(PollingUnit.state == "Rivers")
+        .join(User, User.id == AgentAssignment.agent_id)
+        .where(
+            PollingUnit.state == "Rivers",
+            User.role == "agent",
+        )
     ) or 0
     unassigned_polling_units = max(0, total_polling_units - assigned_polling_units)
     assignment_coverage_percent = (
@@ -160,6 +164,10 @@ def dashboard_statistics(
             PollingUnit,
             PollingUnit.id == AgentAssignment.polling_unit_id,
         )
+        .join(
+            User,
+            User.id == AgentAssignment.agent_id,
+        )
         .outerjoin(
             ResultSubmission,
             (ResultSubmission.polling_unit_id == AgentAssignment.polling_unit_id)
@@ -167,6 +175,7 @@ def dashboard_statistics(
         )
         .where(
             PollingUnit.state == "Rivers",
+            User.role == "agent",
             ResultSubmission.id.is_(None),
         )
     ) or 0
