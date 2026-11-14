@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 
 import { useAuth } from "../context/AuthContext";
+import { PARTY_COLORS } from "../constants/partyColors";
 
 const API_URL = (
   import.meta.env.VITE_API_URL || "http://127.0.0.1:8000"
@@ -21,33 +22,6 @@ type PartyResult = {
 };
 
 type RegisteredParty = { acronym: string; name: string };
-
-// Deliberately distinct interface colors for rapid recognition during entry.
-// They are not presented as the parties' official brand colors.
-const PARTY_COLORS: Record<string, string> = {
-  A: "#92400E",
-  AA: "#A21CAF",
-  AAC: "#0E7490",
-  ADC: "#2563EB",
-  ADP: "#C2410C",
-  APC: "#15803D",
-  APGA: "#0F766E",
-  APM: "#B45309",
-  APP: "#4338CA",
-  BP: "#BE123C",
-  DLA: "#0369A1",
-  LP: "#4D7C0F",
-  NDP: "#7E22CE",
-  NDC: "#7C3AED",
-  NNPP: "#B91C1C",
-  NRM: "#047857",
-  PDP: "#DC2626",
-  PRP: "#9F1239",
-  SDP: "#1D4ED8",
-  YP: "#A16207",
-  YPP: "#C026D3",
-  ZLP: "#334155",
-};
 
 type AgentAssignment = {
   assignment_id: string;
@@ -275,11 +249,6 @@ export default function AgentResults() {
   }
 
   function showNextParty() {
-    const current = partyResults[currentPartyIndex];
-    if (!current || current.votes === "") {
-      setError(`Enter the votes for ${current?.party || "this party"} before continuing.`);
-      return;
-    }
     setError("");
     setCurrentPartyIndex((index) => Math.min(partyResults.length - 1, index + 1));
   }
@@ -340,7 +309,7 @@ export default function AgentResults() {
       validVotes === "" ||
       rejectedVotes === "" ||
       partyResults.some(
-        (result) => !result.party.trim() || result.votes === ""
+        (result) => !result.party.trim()
       )
     ) {
       setError("Complete all required result fields.");
@@ -760,7 +729,7 @@ export default function AgentResults() {
               Political Party Votes
             </h2>
             <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
-              {partyResults.filter((party) => party.votes !== "").length} of {partyResults.length} completed
+              {partyResults.filter((party) => Number(party.votes) > 0).length} parties with votes
             </span>
           </div>
 
@@ -805,10 +774,9 @@ export default function AgentResults() {
                   type="number"
                   min="0"
                   step="1"
-                  required
                   disabled={savedSubmissionId !== null}
                   aria-label={`${partyResults[currentPartyIndex]?.party} votes`}
-                  placeholder="Enter 0 if the party received no votes"
+                  placeholder="Enter votes only if this party received votes"
                   value={partyResults[currentPartyIndex]?.votes ?? ""}
                   onChange={(event) => updatePartyVotes(currentPartyIndex, event.target.value)}
                   onKeyDown={(event) => {
@@ -833,12 +801,12 @@ export default function AgentResults() {
                 </button>
                 <button
                   type="button"
-                  disabled={savedSubmissionId !== null || partyResults[currentPartyIndex]?.votes === ""}
+                  disabled={savedSubmissionId !== null}
                   onClick={showNextParty}
                   className="inline-flex items-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold text-white disabled:opacity-40"
                   style={{ backgroundColor: currentPartyColor }}
                 >
-                  {currentPartyIndex === partyResults.length - 1 ? "All parties completed" : "Save & next party"}
+                  {currentPartyIndex === partyResults.length - 1 ? "Last party" : "Next party"}
                   {currentPartyIndex < partyResults.length - 1 && <ChevronRight size={17} />}
                 </button>
               </div>
@@ -857,11 +825,11 @@ export default function AgentResults() {
                     onClick={() => setCurrentPartyIndex(index)}
                     disabled={savedSubmissionId !== null}
                     title={`${party.party} — ${party.name}`}
-                    aria-label={`${party.party}${party.votes !== "" ? `, ${party.votes} votes entered` : ", not completed"}`}
+                    aria-label={`${party.party}${Number(party.votes) > 0 ? `, ${party.votes} votes entered` : ", zero votes"}`}
                     className="rounded-lg border px-2 py-2 text-xs font-black transition hover:-translate-y-0.5 disabled:opacity-50"
                     style={{
                       borderColor: color,
-                      backgroundColor: active ? color : party.votes !== "" ? `${color}20` : "#ffffff",
+                      backgroundColor: active ? color : Number(party.votes) > 0 ? `${color}20` : "#ffffff",
                       color: active ? "#ffffff" : color,
                       boxShadow: active ? `0 0 0 2px ${color}30` : "none",
                     }}
@@ -874,7 +842,7 @@ export default function AgentResults() {
           )}
 
           <p className="mt-3 text-xs text-slate-500">
-            Official INEC register for the 2027 General Election. Enter zero for any party with no votes.
+            Tap a party button and enter its votes. Any party left blank will be recorded automatically as zero.
           </p>
 
           <div className="mt-6 rounded-xl bg-slate-50 p-4">

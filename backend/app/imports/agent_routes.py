@@ -1,5 +1,6 @@
 import csv
 import io
+import json
 import logging
 import os
 import re
@@ -13,7 +14,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.models import AgentAssignment, AgentImport, AgentImportRow, Election, User
+from app.models import AgentAssignment, AgentImport, AgentImportRow, Election, PollingUnit, User
 from app.security import hash_password, require_admin
 from app.imports.agent_service import (
     HEADERS, MAX_AGENT_FILE_SIZE, parse_agent_file, validate_agents,
@@ -84,6 +85,46 @@ async def _read(file: UploadFile) -> bytes:
     return content
 
 
+def _apply_polling_unit_overrides(
+    db: Session,
+    records: list[dict[str, str]],
+    raw_overrides: str,
+) -> list[dict[str, str]]:
+    try:
+        decoded = json.loads(raw_overrides or "{}")
+        overrides = {int(row): int(unit) for row, unit in decoded.items()}
+    except (TypeError, ValueError, json.JSONDecodeError) as exc:
+        raise ValueError("Polling-unit changes are invalid. Revalidate the file and try again.") from exc
+    if not overrides:
+        return records
+    units = {
+        unit.id: unit
+        for unit in db.scalars(
+            select(PollingUnit).where(
+                PollingUnit.id.in_(overrides.values()),
+                PollingUnit.state.ilike("Rivers"),
+            )
+        ).all()
+    }
+    if len(units) != len(set(overrides.values())):
+        raise ValueError("One or more replacement polling units were not found in Rivers State.")
+    updated = [dict(record) for record in records]
+    for row_number, unit_id in overrides.items():
+        record_index = row_number - 2
+        if record_index < 0 or record_index >= len(updated):
+            raise ValueError(f"Spreadsheet row {row_number} was not found.")
+        unit = units[unit_id]
+        number_parts = re.findall(r"\d+", unit.code)
+        updated[record_index].update({
+            "lga": unit.lga,
+            "ward": unit.ward,
+            "polling unit number": number_parts[-1] if number_parts else unit.code,
+            "polling unit code": unit.code,
+            "polling unit name": unit.name,
+        })
+    return updated
+
+
 @router.get("/template")
 def template(_: User = Depends(require_admin)):
     stream = io.StringIO()
@@ -95,19 +136,21 @@ def template(_: User = Depends(require_admin)):
 
 
 @router.post("/preview")
-async def preview(file: UploadFile = File(...),
+async def preview(file: UploadFile = File(...), overrides: str = Form("{}"),
                   _: User = Depends(require_admin), db: Session = Depends(get_db)):
     try:
-        return validate_agents(db, parse_agent_file(await _read(file), file.filename or ""))
+        records = parse_agent_file(await _read(file), file.filename or "")
+        return validate_agents(db, _apply_polling_unit_overrides(db, records, overrides))
     except ValueError as exc:
         raise HTTPException(422, str(exc)) from exc
 
 
 @router.post("/confirm")
-async def confirm(file: UploadFile = File(...),
+async def confirm(file: UploadFile = File(...), overrides: str = Form("{}"),
                   admin: User = Depends(require_admin), db: Session = Depends(get_db)):
     try:
-        report = validate_agents(db, parse_agent_file(await _read(file), file.filename or ""))
+        records = parse_agent_file(await _read(file), file.filename or "")
+        report = validate_agents(db, _apply_polling_unit_overrides(db, records, overrides))
     except ValueError as exc:
         raise HTTPException(422, str(exc)) from exc
     if not report["valid_records"]:

@@ -1,6 +1,6 @@
 from pydantic import BaseModel, Field, model_validator
 
-from app.political_parties import REGISTERED_PARTY_ACRONYMS
+from app.political_parties import REGISTERED_PARTY_ACRONYMS, REGISTERED_POLITICAL_PARTIES
 
 
 class PartyVoteInput(BaseModel):
@@ -30,9 +30,10 @@ class ResultSubmissionInput(BaseModel):
                 "Each political party must appear only once."
             )
 
-        if set(party_names) != REGISTERED_PARTY_ACRONYMS:
+        unknown_parties = set(party_names) - REGISTERED_PARTY_ACRONYMS
+        if unknown_parties:
             raise ValueError(
-                "Results must include every political party on the current INEC register."
+                f"Unknown political party: {', '.join(sorted(unknown_parties))}."
             )
 
         total_party_votes = sum(
@@ -49,6 +50,15 @@ class ResultSubmissionInput(BaseModel):
             raise ValueError(
                 "Total votes cannot exceed accredited voters."
             )
+
+        submitted_votes = {
+            result.party.strip().upper(): result.votes
+            for result in self.party_results
+        }
+        self.party_results = [
+            PartyVoteInput(party=acronym, votes=submitted_votes.get(acronym, 0))
+            for acronym, _ in REGISTERED_POLITICAL_PARTIES
+        ]
 
         return self
 

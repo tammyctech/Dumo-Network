@@ -17,6 +17,7 @@ import {
   ShieldCheck,
   X,
 } from "lucide-react";
+import { partyColor } from "../constants/partyColors";
 
 const API_URL = (
   import.meta.env.VITE_API_URL || "http://127.0.0.1:8000"
@@ -27,27 +28,6 @@ const RIVERS_GEOJSON_URL =
   "LGAs_Boundaries/FeatureServer/2/query?" +
   "where=ADM1_EN%3D%27Rivers%27&outFields=ADM2_EN%2CADM1_EN&" +
   "returnGeometry=true&f=geojson&outSR=4326";
-
-const PARTY_COLORS = [
-  "#059669",
-  "#2563eb",
-  "#dc2626",
-  "#d97706",
-  "#7c3aed",
-  "#0891b2",
-  "#db2777",
-  "#4f46e5",
-];
-
-const PARTY_COLOR_BY_NAME: Record<string, string> = {
-  PDP: "#16a34a",
-  APC: "#2563eb",
-  SDP: "#dc2626",
-  LP: "#7c3aed",
-  APGA: "#d97706",
-  NNPP: "#0891b2",
-  OTHERS: "#64748b",
-};
 
 type PartyTotal = { party: string; votes: number };
 type Election = { id: number; name: string; election_date: string };
@@ -112,19 +92,6 @@ function normalizeLga(value: string): string {
     omumma: "omuma",
   };
   return aliases[normalized] || normalized;
-}
-
-function partyColor(party: string | undefined): string {
-  if (!party) return "#cbd5e1";
-  const normalizedParty = party.trim().toUpperCase();
-  if (PARTY_COLOR_BY_NAME[normalizedParty]) {
-    return PARTY_COLOR_BY_NAME[normalizedParty];
-  }
-  let hash = 0;
-  for (const character of normalizedParty) {
-    hash = (hash * 31 + character.charCodeAt(0)) >>> 0;
-  }
-  return PARTY_COLORS[hash % PARTY_COLORS.length];
 }
 
 function leaderVoteShare(result: LgaResult | undefined): number {
