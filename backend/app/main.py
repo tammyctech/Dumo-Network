@@ -39,6 +39,7 @@ from .routes import (
     operations,
     agent_applications,
     admin_email,
+    organization_settings,
 )
 
 
@@ -188,6 +189,7 @@ app.include_router(public_results.router)
 app.include_router(operations.router)
 app.include_router(agent_applications.router)
 app.include_router(admin_email.router)
+app.include_router(organization_settings.router)
 
 
 # =====================================================

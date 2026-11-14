@@ -37,6 +37,7 @@ def send_agent_approval_email(
     ward: str,
     polling_unit_code: str,
     polling_unit_name: str,
+    sender_name: str | None = None,
 ) -> tuple[bool, str | None]:
     """Send an approval email without exposing provider errors to the recipient."""
     host = os.getenv("SMTP_HOST", "").strip()
@@ -50,7 +51,7 @@ def send_agent_approval_email(
         return False, "Email service configuration has an invalid SMTP_PORT."
     username = os.getenv("SMTP_USERNAME", "").strip()
     password = os.getenv("SMTP_PASSWORD", "")
-    from_name = os.getenv("SMTP_FROM_NAME", "Dumo Youth Network").strip()
+    from_name = sender_name or os.getenv("SMTP_FROM_NAME", "Dumo Youth Network").strip()
     use_ssl = _enabled(os.getenv("SMTP_USE_SSL"))
     use_tls = _enabled(os.getenv("SMTP_USE_TLS"), default=not use_ssl)
     login_url = f"{os.getenv('FRONTEND_URL', 'http://localhost:5173').rstrip('/')}/login"
@@ -114,7 +115,7 @@ Temporary password: <strong>{escape(temporary_password)}</strong>
         return False, _delivery_error(exc)
 
 
-def send_system_email(*, recipient: str, subject: str, plain_text: str, html: str) -> tuple[bool, str | None]:
+def send_system_email(*, recipient: str, subject: str, plain_text: str, html: str, sender_name: str | None = None) -> tuple[bool, str | None]:
     host = os.getenv("SMTP_HOST", "").strip()
     from_email = os.getenv("SMTP_FROM_EMAIL", "").strip()
     if not host or not from_email:
@@ -129,7 +130,7 @@ def send_system_email(*, recipient: str, subject: str, plain_text: str, html: st
     use_tls = _enabled(os.getenv("SMTP_USE_TLS"), default=not use_ssl)
     message = EmailMessage()
     message["Subject"] = subject
-    message["From"] = formataddr((os.getenv("SMTP_FROM_NAME", "Dumo Youth Network"), from_email))
+    message["From"] = formataddr((sender_name or os.getenv("SMTP_FROM_NAME", "Dumo Youth Network"), from_email))
     message["To"] = recipient
     message.set_content(plain_text)
     message.add_alternative(html, subtype="html")
@@ -147,7 +148,7 @@ def send_system_email(*, recipient: str, subject: str, plain_text: str, html: st
         return False, _delivery_error(exc)
 
 
-def send_bulk_system_email(*, recipients: list[tuple[str, str]], subject: str, body: str) -> tuple[int, int, str | None]:
+def send_bulk_system_email(*, recipients: list[tuple[str, str]], subject: str, body: str, sender_name: str | None = None) -> tuple[int, int, str | None]:
     """Send individual messages over one SMTP connection; never expose recipients to each other."""
     host = os.getenv("SMTP_HOST", "").strip()
     from_email = os.getenv("SMTP_FROM_EMAIL", "").strip()
@@ -172,7 +173,7 @@ def send_bulk_system_email(*, recipients: list[tuple[str, str]], subject: str, b
             for recipient, full_name in recipients:
                 message = EmailMessage()
                 message["Subject"] = subject
-                message["From"] = formataddr((os.getenv("SMTP_FROM_NAME", "Dumo Youth Network"), from_email))
+                message["From"] = formataddr((sender_name or os.getenv("SMTP_FROM_NAME", "Dumo Youth Network"), from_email))
                 message["To"] = recipient
                 message.set_content(f"Hello {full_name},\n\n{body}\n\nDumo Youth Network")
                 safe_body = escape(body).replace("\n", "<br>")

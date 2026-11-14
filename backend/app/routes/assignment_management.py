@@ -20,6 +20,7 @@ from app.models import (
 from app.security import get_current_user
 from app.services.email_service import send_system_email
 from app.services.sms_service import send_sms
+from app.services.organization_service import sms_sender_name
 
 
 router = APIRouter(
@@ -72,7 +73,7 @@ Your new assignment applies to all current and future elections. Sign in to view
         return False, f"Email delivery error: {type(exc).__name__}."
 
 
-def _send_reassignment_sms(agent: User, old_unit: PollingUnit, new_unit: PollingUnit) -> tuple[bool, str | None]:
+def _send_reassignment_sms(db: Session, agent: User, old_unit: PollingUnit, new_unit: PollingUnit) -> tuple[bool, str | None]:
     if not agent.phone_number:
         return False, "The agent does not have a phone number."
     return send_sms(
@@ -81,7 +82,7 @@ def _send_reassignment_sms(agent: User, old_unit: PollingUnit, new_unit: Polling
             f"Hello {agent.full_name}, your Dumo polling-unit assignment changed from "
             f"{old_unit.lga}, {old_unit.ward}, {old_unit.code} to "
             f"{new_unit.lga}, {new_unit.ward}, {new_unit.code}. This applies to all elections."
-        ),
+        ), sender_name=sms_sender_name(db),
     )
 
 
@@ -214,7 +215,7 @@ def reassign_agent(
         db.rollback()
         raise HTTPException(409, "The selected polling unit already has a permanent agent.") from exc
     email_sent, email_error = _send_reassignment_email(agent, old_unit, new_unit)
-    sms_sent, sms_error = _send_reassignment_sms(agent, old_unit, new_unit)
+    sms_sent, sms_error = _send_reassignment_sms(db, agent, old_unit, new_unit)
     return {
         "message": "Agent reassigned successfully for all elections.",
         "assignment_id": assignment.id,

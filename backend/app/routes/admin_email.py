@@ -7,6 +7,7 @@ from ..database import get_db
 from ..models import User
 from ..security import require_admin
 from ..services.email_service import send_bulk_system_email
+from ..services.organization_service import email_sender_name
 
 
 router = APIRouter(prefix="/api/admin/email", tags=["Admin Email"])
@@ -43,5 +44,6 @@ def send_all_users(
         recipients=recipients,
         subject=payload.subject.strip(),
         body=payload.body.strip(),
+        sender_name=email_sender_name(db),
     )
     return {"message": "Email campaign processed.", "target_users": len(users), "sent": sent, "failed": failed, "skipped": skipped, "error": error}

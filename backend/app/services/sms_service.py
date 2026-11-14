@@ -10,10 +10,10 @@ logger = logging.getLogger(__name__)
 ALLOWED_CHANNELS = {"dnd", "generic"}
 
 
-def _configuration() -> tuple[dict[str, str] | None, str | None]:
+def _configuration(sender_name: str | None = None) -> tuple[dict[str, str] | None, str | None]:
     base_url = os.getenv("TERMII_BASE_URL", "").strip().rstrip("/")
     api_key = os.getenv("TERMII_API_KEY", "").strip()
-    sender_id = os.getenv("TERMII_SENDER_ID", "").strip()
+    sender_id = (sender_name or os.getenv("TERMII_SENDER_ID", "")).strip()
     channel = os.getenv("TERMII_CHANNEL", "dnd").strip().lower()
     if not base_url or not api_key or not sender_id:
         return None, "SMS service is not configured. Set TERMII_BASE_URL, TERMII_API_KEY, and TERMII_SENDER_ID."
@@ -26,9 +26,9 @@ def _configuration() -> tuple[dict[str, str] | None, str | None]:
     return {"base_url": base_url, "api_key": api_key, "sender_id": sender_id, "channel": channel}, None
 
 
-def send_sms(*, recipient: str, message: str) -> tuple[bool, str | None]:
+def send_sms(*, recipient: str, message: str, sender_name: str | None = None) -> tuple[bool, str | None]:
     """Send one SMS through Termii without exposing credentials in errors or logs."""
-    config, error = _configuration()
+    config, error = _configuration(sender_name)
     if config is None:
         return False, error
     try:
@@ -67,7 +67,7 @@ def send_sms(*, recipient: str, message: str) -> tuple[bool, str | None]:
 
 def send_agent_approval_sms(
     *, recipient: str, full_name: str, temporary_password: str,
-    lga: str, ward: str, polling_unit_code: str,
+    lga: str, ward: str, polling_unit_code: str, sender_name: str | None = None,
 ) -> tuple[bool, str | None]:
     login_url = f"{os.getenv('FRONTEND_URL', 'http://localhost:5173').rstrip('/')}/login"
     return send_sms(
@@ -76,5 +76,5 @@ def send_agent_approval_sms(
             f"Hello {full_name}, your Dumo agent account is approved. Assignment: "
             f"{lga}, {ward}, {polling_unit_code}. Login with this phone number and "
             f"temporary password {temporary_password}: {login_url}"
-        ),
+        ), sender_name=sender_name,
     )

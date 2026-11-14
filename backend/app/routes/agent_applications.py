@@ -22,6 +22,7 @@ from ..models import (
 from ..security import hash_password, require_admin
 from ..services.email_service import send_agent_approval_email, send_bulk_system_email
 from ..services.sms_service import send_agent_approval_sms
+from ..services.organization_service import admin_notification_recipients, email_sender_name, sms_sender_name
 from ..utils.phone import normalize_nigerian_phone
 
 
@@ -50,12 +51,7 @@ class ReviewRequest(BaseModel):
 
 
 def _notify_admins_of_application(db: Session, item: AgentApplication, unit: PollingUnit) -> None:
-    admins = db.scalars(select(User).where(User.role == "admin", User.is_active.is_(True))).all()
-    recipients = [
-        (admin.email, admin.full_name) for admin in admins
-        if not admin.email.casefold().endswith(".invalid")
-        and not admin.email.casefold().endswith("@dumo-network.vercel.app")
-    ]
+    recipients = admin_notification_recipients(db)
     if not recipients:
         return
     body = (
@@ -75,6 +71,7 @@ def _notify_admins_of_application(db: Session, item: AgentApplication, unit: Pol
             recipients=recipients,
             subject=f"New agent application: {item.full_name}",
             body=body,
+            sender_name=email_sender_name(db),
         )
         if error or failed:
             logger.warning(
@@ -318,6 +315,7 @@ def approve_application(
         ward=unit.ward,
         polling_unit_code=unit.code,
         polling_unit_name=unit.name,
+        sender_name=email_sender_name(db),
     )
     sms_sent, sms_error = send_agent_approval_sms(
         recipient=item.phone_number,
@@ -326,6 +324,7 @@ def approve_application(
         lga=unit.lga,
         ward=unit.ward,
         polling_unit_code=unit.code,
+        sender_name=sms_sender_name(db),
     )
     return {
         "message": "Application approved. The agent can log in with their phone number and the temporary password.",

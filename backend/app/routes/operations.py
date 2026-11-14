@@ -14,6 +14,7 @@ from ..models import (
 )
 from ..security import get_current_user
 from ..services.email_service import send_bulk_system_email
+from ..services.organization_service import admin_notification_recipients, email_sender_name
 
 router = APIRouter(prefix="/api/operations", tags=["Election Operations"])
 logger = logging.getLogger(__name__)
@@ -50,12 +51,7 @@ def _notify_admins_of_incident(
     unit: PollingUnit | None,
     incident: Incident,
 ) -> None:
-    admins = db.scalars(select(User).where(User.role == "admin", User.is_active.is_(True))).all()
-    recipients = [
-        (admin.email, admin.full_name) for admin in admins
-        if not admin.email.casefold().endswith(".invalid")
-        and not admin.email.casefold().endswith("@dumo-network.vercel.app")
-    ]
+    recipients = admin_notification_recipients(db)
     if not recipients:
         return
     location = (
@@ -79,6 +75,7 @@ def _notify_admins_of_incident(
             recipients=recipients,
             subject=f"{incident.severity.upper()} incident: {incident.category}",
             body=body,
+            sender_name=email_sender_name(db),
         )
         if error or failed:
             logger.warning(

@@ -22,6 +22,28 @@ import { changePassword } from "../services/api";
 import EnableNotifications from "../components/EnableNotifications";
 import { useSearchParams } from "react-router-dom";
 
+const API_URL = import.meta.env.DEV
+  ? (import.meta.env.VITE_API_URL || "http://127.0.0.1:8000").replace(/\/$/, "")
+  : "";
+
+type OrganizationForm = {
+  organization_name: string;
+  official_email: string;
+  official_phone: string;
+  office_address: string;
+  website: string;
+  logo_data_url: string | null;
+  notification_emails: string;
+  email_sender_name: string;
+  sms_sender_name: string;
+};
+
+const emptyOrganization: OrganizationForm = {
+  organization_name: "Dumo Youth Network", official_email: "", official_phone: "",
+  office_address: "", website: "", logo_data_url: null, notification_emails: "",
+  email_sender_name: "Dumo Youth Network", sms_sender_name: "",
+};
+
 type SettingsTab =
   | "profile"
   | "security"
@@ -76,6 +98,11 @@ export default function Settings() {
 
   const [passwordSuccess, setPasswordSuccess] = useState("");
   const [passwordError, setPasswordError] = useState("");
+  const [organization, setOrganization] = useState<OrganizationForm>(emptyOrganization);
+  const [organizationLoading, setOrganizationLoading] = useState(false);
+  const [organizationSaving, setOrganizationSaving] = useState(false);
+  const [organizationError, setOrganizationError] = useState("");
+  const [organizationSuccess, setOrganizationSuccess] = useState("");
 
   // ==========================================
   // LOAD USER PROFILE
@@ -87,6 +114,86 @@ export default function Settings() {
       setPhoneNumber(user.phone_number || "");
     }
   }, [user]);
+
+  useEffect(() => {
+    if (!token || !isAdmin || activeTab !== "organization") return;
+    const controller = new AbortController();
+    async function loadOrganization() {
+      setOrganizationLoading(true);
+      setOrganizationError("");
+      try {
+        const response = await fetch(`${API_URL}/api/admin/organization`, {
+          headers: { Authorization: `Bearer ${token}` }, signal: controller.signal,
+        });
+        if (!response.ok) throw new Error("Unable to load organization settings.");
+        const data = await response.json();
+        if (!controller.signal.aborted) setOrganization({
+          organization_name: data.organization_name || "Dumo Youth Network",
+          official_email: data.official_email || "", official_phone: data.official_phone || "",
+          office_address: data.office_address || "", website: data.website || "",
+          logo_data_url: data.logo_data_url || null,
+          notification_emails: Array.isArray(data.notification_emails) ? data.notification_emails.join("\n") : "",
+          email_sender_name: data.email_sender_name || "Dumo Youth Network",
+          sms_sender_name: data.sms_sender_name || "",
+        });
+      } catch (error) {
+        if (!controller.signal.aborted) setOrganizationError(error instanceof Error ? error.message : "Unable to load organization settings.");
+      } finally {
+        if (!controller.signal.aborted) setOrganizationLoading(false);
+      }
+    }
+    void loadOrganization();
+    return () => controller.abort();
+  }, [token, isAdmin, activeTab]);
+
+  function updateOrganization(key: keyof OrganizationForm, value: string | null) {
+    setOrganization((current) => ({ ...current, [key]: value }));
+  }
+
+  function selectLogo(file: File | undefined) {
+    setOrganizationError("");
+    if (!file) return;
+    if (!["image/png", "image/jpeg", "image/webp", "image/svg+xml"].includes(file.type)) {
+      return setOrganizationError("Choose a PNG, JPEG, WebP, or SVG logo.");
+    }
+    if (file.size > 1_000_000) return setOrganizationError("Logo must not exceed 1 MB.");
+    const reader = new FileReader();
+    reader.onload = () => updateOrganization("logo_data_url", String(reader.result));
+    reader.onerror = () => setOrganizationError("Unable to read the selected logo.");
+    reader.readAsDataURL(file);
+  }
+
+  async function saveOrganization(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!token) return;
+    setOrganizationSaving(true); setOrganizationError(""); setOrganizationSuccess("");
+    const emails = organization.notification_emails.split(/[\n,;]+/).map((item) => item.trim()).filter(Boolean);
+    try {
+      const response = await fetch(`${API_URL}/api/admin/organization`, {
+        method: "PUT",
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...organization,
+          official_email: organization.official_email || null,
+          official_phone: organization.official_phone || null,
+          office_address: organization.office_address || null,
+          website: organization.website || null,
+          sms_sender_name: organization.sms_sender_name || null,
+          notification_emails: emails,
+        }),
+      });
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        const message = typeof data.detail === "string" ? data.detail : Array.isArray(data.detail) ? data.detail.map((item: { msg?: string }) => item.msg).filter(Boolean).join("; ") : "Unable to save organization settings.";
+        throw new Error(message);
+      }
+      setOrganizationSuccess("Organization settings saved successfully.");
+    } catch (error) {
+      setOrganizationError(error instanceof Error ? error.message : "Unable to save organization settings.");
+    } finally {
+      setOrganizationSaving(false);
+    }
+  }
 
   // ==========================================
   // CHECK PROFILE CHANGES
@@ -867,20 +974,35 @@ export default function Settings() {
             ====================================== */}
 
             {activeTab === "organization" && isAdmin && (
-              <div className="space-y-4">
-                <h2 className="text-xl font-bold text-slate-900">
-                  Organization Settings
-                </h2>
-
-                <p className="text-sm text-slate-500">
-                  Configure Dumo Youth Network Election Monitoring System administration settings.
-                </p>
-
-                <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-5 text-sm text-emerald-800">
-                  This section is reserved for administrators.
-                  Organization configuration will be added later.
-                </div>
-              </div>
+              <form onSubmit={saveOrganization} className="space-y-6">
+                <div><h2 className="text-xl font-bold text-slate-900">Organization Settings</h2><p className="mt-1 text-sm text-slate-500">Manage public contact details, branding, notifications, and sender identities.</p></div>
+                {organizationError && <div role="alert" className="flex gap-2 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800"><AlertCircle size={19}/>{organizationError}</div>}
+                {organizationSuccess && <div role="status" className="flex gap-2 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800"><CheckCircle2 size={19}/>{organizationSuccess}</div>}
+                {organizationLoading ? <div className="flex items-center gap-2 py-12 text-sm text-slate-500"><Loader2 className="animate-spin"/>Loading organization settings…</div> : <>
+                  <section className="space-y-4 rounded-xl border border-slate-200 p-5">
+                    <h3 className="font-bold text-slate-900">Identity and branding</h3>
+                    <label className="block text-sm font-medium text-slate-700">Organization name<input required minLength={2} maxLength={200} value={organization.organization_name} onChange={(e)=>updateOrganization("organization_name",e.target.value)} className="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3"/></label>
+                    <div className="flex flex-wrap items-center gap-4">
+                      {organization.logo_data_url ? <img src={organization.logo_data_url} alt="Organization logo preview" className="h-20 w-20 rounded-xl border object-contain p-2"/> : <div className="grid h-20 w-20 place-items-center rounded-xl bg-slate-100"><Building2 className="text-slate-400"/></div>}
+                      <div><label className="inline-flex cursor-pointer rounded-xl border border-slate-300 px-4 py-2 text-sm font-semibold hover:bg-slate-50">Choose logo<input type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" className="sr-only" onChange={(e)=>selectLogo(e.target.files?.[0])}/></label><p className="mt-2 text-xs text-slate-500">PNG, JPEG, WebP, or SVG; maximum 1 MB.</p>{organization.logo_data_url&&<button type="button" onClick={()=>updateOrganization("logo_data_url",null)} className="mt-2 text-xs font-semibold text-red-700">Remove logo</button>}</div>
+                    </div>
+                  </section>
+                  <section className="grid gap-4 rounded-xl border border-slate-200 p-5 sm:grid-cols-2">
+                    <h3 className="font-bold text-slate-900 sm:col-span-2">Official contact details</h3>
+                    <label className="text-sm font-medium text-slate-700">Official email<input type="email" value={organization.official_email} onChange={(e)=>updateOrganization("official_email",e.target.value)} className="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3"/></label>
+                    <label className="text-sm font-medium text-slate-700">Official phone<input inputMode="tel" value={organization.official_phone} onChange={(e)=>updateOrganization("official_phone",e.target.value)} className="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3" placeholder="+234…"/></label>
+                    <label className="text-sm font-medium text-slate-700 sm:col-span-2">Office address<textarea rows={3} maxLength={500} value={organization.office_address} onChange={(e)=>updateOrganization("office_address",e.target.value)} className="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3"/></label>
+                    <label className="text-sm font-medium text-slate-700 sm:col-span-2">Website<input type="url" value={organization.website} onChange={(e)=>updateOrganization("website",e.target.value)} className="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3" placeholder="https://example.org"/></label>
+                  </section>
+                  <section className="space-y-4 rounded-xl border border-slate-200 p-5">
+                    <h3 className="font-bold text-slate-900">Notifications and sender names</h3>
+                    <label className="block text-sm font-medium text-slate-700">Admin notification email addresses<textarea rows={4} value={organization.notification_emails} onChange={(e)=>updateOrganization("notification_emails",e.target.value)} className="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3" placeholder={"admin@example.com\nresults@example.com"}/><span className="mt-1 block text-xs font-normal text-slate-500">Enter one address per line. Up to 20 addresses.</span></label>
+                    <div className="grid gap-4 sm:grid-cols-2"><label className="text-sm font-medium text-slate-700">Email sender name<input required minLength={2} maxLength={100} value={organization.email_sender_name} onChange={(e)=>updateOrganization("email_sender_name",e.target.value)} className="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3"/></label><label className="text-sm font-medium text-slate-700">SMS sender name<input minLength={3} maxLength={11} value={organization.sms_sender_name} onChange={(e)=>updateOrganization("sms_sender_name",e.target.value)} className="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3" placeholder="DumoNetwork"/><span className="mt-1 block text-xs font-normal text-slate-500">Must also be approved in Termii.</span></label></div>
+                    <p className="rounded-lg bg-amber-50 p-3 text-xs text-amber-800">Provider credentials remain securely configured in Render environment variables. This page never displays SMTP passwords or the Termii API key.</p>
+                  </section>
+                  <button type="submit" disabled={organizationSaving} className="flex min-h-11 items-center gap-2 rounded-xl bg-emerald-700 px-5 py-3 text-sm font-bold text-white hover:bg-emerald-800 disabled:opacity-50">{organizationSaving?<Loader2 size={18} className="animate-spin"/>:<Save size={18}/>} {organizationSaving?"Saving…":"Save organization settings"}</button>
+                </>}
+              </form>
             )}
           </div>
         </div>

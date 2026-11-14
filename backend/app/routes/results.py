@@ -16,6 +16,7 @@ from ..models import (
 )
 from ..security import get_current_user
 from ..services.email_service import send_bulk_system_email
+from ..services.organization_service import admin_notification_recipients, email_sender_name
 from ..political_parties import REGISTERED_POLITICAL_PARTIES
 from ..monitoring.result_schemas import (
     ResultSubmissionInput,
@@ -56,18 +57,7 @@ def _notify_admins_of_result(
     party_results,
 ) -> None:
     """Best-effort email notification; result submission must never depend on SMTP."""
-    admins = db.scalars(
-        select(User).where(
-            User.role == "admin",
-            User.is_active.is_(True),
-        )
-    ).all()
-    recipients = [
-        (admin.email, admin.full_name)
-        for admin in admins
-        if not admin.email.casefold().endswith(".invalid")
-        and not admin.email.casefold().endswith("@dumo-network.vercel.app")
-    ]
+    recipients = admin_notification_recipients(db)
     if not recipients:
         return
     party_lines = "\n".join(
@@ -93,6 +83,7 @@ def _notify_admins_of_result(
             recipients=recipients,
             subject=f"New result: {polling_unit.code} - {election.name}",
             body=body,
+            sender_name=email_sender_name(db),
         )
         if error or failed:
             logger.warning(
