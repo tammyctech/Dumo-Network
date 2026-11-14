@@ -76,16 +76,22 @@ async def upload_result_sheet(
             detail="You cannot upload evidence for this submission.",
         )
 
-    # 4. Confirm the agent is still assigned.
-    assignment = db.query(AgentAssignment).filter(
-        AgentAssignment.agent_id == current_user.id,
-        AgentAssignment.polling_unit_id == submission.polling_unit_id,
-    ).first()
-
-    if assignment is None:
+    # 4. Agent-owned submissions still require the permanent assignment.
+    # Administrators can upload evidence for results they submitted themselves.
+    if current_user.role == "agent":
+        assignment = db.query(AgentAssignment).filter(
+            AgentAssignment.agent_id == current_user.id,
+            AgentAssignment.polling_unit_id == submission.polling_unit_id,
+        ).first()
+        if assignment is None:
+            raise HTTPException(
+                status_code=403,
+                detail="You are not assigned to this polling unit.",
+            )
+    elif current_user.role != "admin":
         raise HTTPException(
             status_code=403,
-            detail="You are not assigned to this polling unit.",
+            detail="Only agents and administrators can upload result evidence.",
         )
 
     # 5. Restrict uploads to Rivers State elections.

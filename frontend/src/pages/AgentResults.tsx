@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
 import {
   AlertCircle,
   CheckCircle2,
@@ -42,6 +42,9 @@ type AssignmentsResponse = {
   assignments: AgentAssignment[];
 };
 
+type AdminElection = AgentAssignment["election"];
+type AdminPollingUnit = AgentAssignment["polling_unit"] & { ward_number?: number | null };
+
 type SubmissionResponse = {
   message: string;
   submission_id: number;
@@ -76,6 +79,12 @@ export default function AgentResults() {
 
   const [assignments, setAssignments] = useState<AgentAssignment[]>([]);
   const [selectedAssignmentId, setSelectedAssignmentId] = useState("");
+  const [adminElections, setAdminElections] = useState<AdminElection[]>([]);
+  const [adminPollingUnits, setAdminPollingUnits] = useState<AdminPollingUnit[]>([]);
+  const [selectedElectionId, setSelectedElectionId] = useState("");
+  const [selectedPollingUnitId, setSelectedPollingUnitId] = useState("");
+  const [selectedLga, setSelectedLga] = useState("");
+  const [selectedWard, setSelectedWard] = useState("");
 
   const [loadingAssignments, setLoadingAssignments] = useState(true);
   const [assignmentError, setAssignmentError] = useState("");
@@ -99,8 +108,40 @@ export default function AgentResults() {
   );
   const [imageUploaded, setImageUploaded] = useState(false);
 
-  const selectedAssignment = assignments.find(
-    (assignment) => String(assignment.assignment_id) === selectedAssignmentId
+  const selectedAssignment = user?.role === "admin"
+    ? (() => {
+        const election = adminElections.find((item) => String(item.id) === selectedElectionId);
+        const pollingUnit = adminPollingUnits.find((item) => String(item.id) === selectedPollingUnitId);
+        return election && pollingUnit
+          ? { assignment_id: `admin:${election.id}:${pollingUnit.id}`, election, polling_unit: pollingUnit }
+          : undefined;
+      })()
+    : assignments.find(
+        (assignment) => String(assignment.assignment_id) === selectedAssignmentId
+      );
+
+  const adminLgas = useMemo(
+    () => [...new Set(adminPollingUnits.map((unit) => unit.lga))].sort(),
+    [adminPollingUnits]
+  );
+  const adminWards = useMemo(() => {
+    const values = new Map<string, number | null | undefined>();
+    for (const unit of adminPollingUnits.filter((item) => item.lga === selectedLga)) {
+      values.set(unit.ward, unit.ward_number);
+    }
+    return [...values]
+      .map(([name, number]) => ({ name, number }))
+      .sort((a, b) =>
+        (a.number ?? Number.MAX_SAFE_INTEGER) - (b.number ?? Number.MAX_SAFE_INTEGER) ||
+        a.name.localeCompare(b.name, undefined, { numeric: true })
+      );
+  }, [adminPollingUnits, selectedLga]);
+  const filteredAdminUnits = useMemo(
+    () => adminPollingUnits.filter(
+      (unit) => (!selectedLga || unit.lga === selectedLga) &&
+        (!selectedWard || unit.ward === selectedWard)
+    ),
+    [adminPollingUnits, selectedLga, selectedWard]
   );
 
   const totalPartyVotes = partyResults.reduce(
@@ -113,13 +154,14 @@ export default function AgentResults() {
   // ==========================================
 
   useEffect(() => {
-    if (!token || user?.role !== "agent") {
+    if (!token || !user || !["agent", "admin"].includes(user.role)) {
       setAssignments([]);
       setSelectedAssignmentId("");
       setLoadingAssignments(false);
       return;
     }
 
+    const role = user.role;
     const controller = new AbortController();
 
     async function loadAssignments() {
@@ -127,30 +169,31 @@ export default function AgentResults() {
       setAssignmentError("");
 
       try {
-        const response = await fetch(`${API_URL}/api/agent/assignments`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          signal: controller.signal,
-        });
-
-        if (!response.ok) {
-          throw new Error(await getApiError(response));
+        const headers = { Authorization: `Bearer ${token}` };
+        if (role === "admin") {
+          const [electionsResponse, unitsResponse] = await Promise.all([
+            fetch(`${API_URL}/api/admin/elections`, { headers, signal: controller.signal }),
+            fetch(`${API_URL}/api/admin/polling-units`, { headers, signal: controller.signal }),
+          ]);
+          if (!electionsResponse.ok) throw new Error(await getApiError(electionsResponse));
+          if (!unitsResponse.ok) throw new Error(await getApiError(unitsResponse));
+          const electionsData = await electionsResponse.json();
+          const unitsData = await unitsResponse.json();
+          setAdminElections(electionsData.elections ?? []);
+          setAdminPollingUnits(unitsData.polling_units ?? []);
+        } else {
+          const response = await fetch(`${API_URL}/api/agent/assignments`, {
+            headers,
+            signal: controller.signal,
+          });
+          if (!response.ok) throw new Error(await getApiError(response));
+          const data: AssignmentsResponse = await response.json();
+          if (data.state !== "Rivers") throw new Error("Only Rivers State assignments are supported.");
+          setAssignments(data.assignments);
+          setSelectedAssignmentId(
+            data.assignments.length === 1 ? String(data.assignments[0].assignment_id) : ""
+          );
         }
-
-        const data: AssignmentsResponse = await response.json();
-
-        if (data.state !== "Rivers") {
-          throw new Error("Only Rivers State assignments are supported.");
-        }
-
-        setAssignments(data.assignments);
-
-        setSelectedAssignmentId(
-          data.assignments.length === 1
-            ? String(data.assignments[0].assignment_id)
-            : ""
-        );
       } catch (err) {
         if (controller.signal.aborted) {
           return;
@@ -245,13 +288,13 @@ export default function AgentResults() {
     setError("");
     setSuccess("");
 
-    if (!token || user?.role !== "agent") {
-      setError("Only authenticated agents can submit results.");
+    if (!token || !user || !["agent", "admin"].includes(user.role)) {
+      setError("Only authenticated agents and administrators can submit results.");
       return;
     }
 
     if (!selectedAssignment) {
-      setError("Please select your assigned election and polling unit.");
+      setError(user.role === "admin" ? "Please select an election and polling unit." : "Please select your assigned election and polling unit.");
       return;
     }
 
@@ -390,6 +433,19 @@ export default function AgentResults() {
     }
   }
 
+  function startAnotherSubmission() {
+    setSavedSubmissionId(null);
+    setImageUploaded(false);
+    setResultSheet(null);
+    setAccreditedVoters("");
+    setValidVotes("");
+    setRejectedVotes("");
+    setPartyResults([{ party: "", votes: "" }]);
+    setSuccess("");
+    setError("");
+    if (user?.role === "admin") setSelectedPollingUnitId("");
+  }
+
   return (
     <div className="space-y-6">
       <div>
@@ -398,7 +454,7 @@ export default function AgentResults() {
         </h1>
 
         <p className="mt-2 text-sm text-slate-500">
-          Rivers State · Unofficial — Agent-Submitted Data
+          Rivers State · Unofficial Monitoring Data
         </p>
       </div>
 
@@ -412,7 +468,7 @@ export default function AgentResults() {
           <p className="text-sm text-amber-900">
             Results displayed and submitted through the Dumo Youth Network
             Election Monitoring System are
-            unofficial agent-submitted figures, not officially declared
+            unofficial monitoring figures, not officially declared
             election results.
           </p>
         </div>
@@ -452,10 +508,87 @@ export default function AgentResults() {
 
         <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
           <h2 className="mb-5 text-lg font-semibold text-slate-900">
-            Assigned Election and Polling Unit
+            {user?.role === "admin" ? "Election and Polling Unit" : "Assigned Election and Polling Unit"}
           </h2>
 
-          <label className="block text-sm font-medium text-slate-700">
+          {user?.role === "admin" && (
+            <div className="grid gap-5 md:grid-cols-2">
+              <label className="block text-sm font-medium text-slate-700">
+                Election
+                <select
+                  required
+                  value={selectedElectionId}
+                  disabled={loadingAssignments || submitting || savedSubmissionId !== null}
+                  onChange={(event) => setSelectedElectionId(event.target.value)}
+                  className="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3"
+                >
+                  <option value="">{loadingAssignments ? "Loading elections..." : "Select election"}</option>
+                  {adminElections.map((election) => (
+                    <option key={election.id} value={election.id}>{election.name}</option>
+                  ))}
+                </select>
+              </label>
+
+              <label className="block text-sm font-medium text-slate-700">
+                LGA
+                <select
+                  required
+                  value={selectedLga}
+                  disabled={loadingAssignments || submitting || savedSubmissionId !== null}
+                  onChange={(event) => {
+                    setSelectedLga(event.target.value);
+                    setSelectedWard("");
+                    setSelectedPollingUnitId("");
+                  }}
+                  className="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3"
+                >
+                  <option value="">Select LGA</option>
+                  {adminLgas.map((lga) => <option key={lga} value={lga}>{lga}</option>)}
+                </select>
+              </label>
+
+              <label className="block text-sm font-medium text-slate-700">
+                Ward
+                <select
+                  required
+                  value={selectedWard}
+                  disabled={!selectedLga || submitting || savedSubmissionId !== null}
+                  onChange={(event) => {
+                    setSelectedWard(event.target.value);
+                    setSelectedPollingUnitId("");
+                  }}
+                  className="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3"
+                >
+                  <option value="">Select ward</option>
+                  {adminWards.map((ward) => (
+                    <option key={ward.name} value={ward.name}>
+                      {ward.number && !/^ward\s*\d+$/i.test(ward.name.trim())
+                        ? `${ward.name} (Ward ${ward.number})`
+                        : ward.name}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <label className="block text-sm font-medium text-slate-700">
+                Polling Unit
+                <select
+                  required
+                  value={selectedPollingUnitId}
+                  disabled={!selectedWard || submitting || savedSubmissionId !== null}
+                  onChange={(event) => setSelectedPollingUnitId(event.target.value)}
+                  className="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3"
+                >
+                  <option value="">Select polling unit</option>
+                  {filteredAdminUnits.map((unit) => (
+                    <option key={unit.id} value={unit.id}>{unit.code} · {unit.name}</option>
+                  ))}
+                </select>
+              </label>
+            </div>
+          )}
+
+          {user?.role === "agent" && <label className="block text-sm font-medium text-slate-700">
             Select Assignment
 
             <select
@@ -489,9 +622,9 @@ export default function AgentResults() {
                 </option>
               ))}
             </select>
-          </label>
+          </label>}
 
-          {!loadingAssignments &&
+          {user?.role === "agent" && !loadingAssignments &&
             !assignmentError &&
             assignments.length === 0 && (
               <p className="mt-3 text-sm text-amber-700">
@@ -701,7 +834,8 @@ export default function AgentResults() {
               loadingAssignments ||
               !selectedAssignment ||
               !token ||
-              user?.role !== "agent"
+              !user ||
+              !["agent", "admin"].includes(user.role)
             }
             className="flex w-full items-center justify-center gap-3 rounded-xl bg-emerald-600 px-6 py-4 font-semibold text-white hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-50"
           >
@@ -728,6 +862,16 @@ export default function AgentResults() {
             <p className="mt-3 text-xs text-slate-500">
               Do not submit the same result figures again.
             </p>
+
+            {(imageUploaded || !resultSheet) && (
+              <button
+                type="button"
+                onClick={startAnotherSubmission}
+                className="mt-4 rounded-xl border border-emerald-300 bg-emerald-50 px-5 py-3 text-sm font-semibold text-emerald-800 hover:bg-emerald-100"
+              >
+                Submit another polling-unit result
+              </button>
+            )}
           </div>
         )}
       </form>

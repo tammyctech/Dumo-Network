@@ -143,19 +143,22 @@ def submit_election_result(
             detail="Polling unit must belong to Rivers State.",
         )
 
-    # 6. Check the logged-in agent's assignment.
-    assignment = db.scalar(
-        select(AgentAssignment).where(
-            AgentAssignment.agent_id == current_user.id,
-            AgentAssignment.polling_unit_id == payload.polling_unit_id,
+    # 6. Agents may submit only for their permanent polling unit. An active
+    # administrator may submit for any Rivers State polling unit.
+    if current_user.role not in {"agent", "admin"}:
+        raise HTTPException(status_code=403, detail="Only agents and administrators can submit results.")
+    if current_user.role == "agent":
+        assignment = db.scalar(
+            select(AgentAssignment).where(
+                AgentAssignment.agent_id == current_user.id,
+                AgentAssignment.polling_unit_id == payload.polling_unit_id,
+            )
         )
-    )
-
-    if assignment is None:
-        raise HTTPException(
-            status_code=403,
-            detail="You are not assigned to this polling unit.",
-        )
+        if assignment is None:
+            raise HTTPException(
+                status_code=403,
+                detail="You are not assigned to this polling unit.",
+            )
 
     # 7. Prevent duplicate first submissions.
     existing_submission = db.scalar(
@@ -242,7 +245,7 @@ def submit_election_result(
     )
 
     return ResultSubmissionResponse(
-        message="Unofficial agent result submitted successfully.",
+        message="Unofficial result submitted successfully.",
         submission_id=submission.id,
         election_id=submission.election_id,
         polling_unit_id=submission.polling_unit_id,

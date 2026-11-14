@@ -225,9 +225,9 @@ export default function AppLayout() {
       return user?.role === "admin";
     }
 
-    // Agent-only result submission
+    // Agents submit assigned-unit results; administrators can submit for any unit.
     if (item.path === "/agent-results") {
-      return user?.role === "agent";
+      return user?.role === "agent" || user?.role === "admin";
     }
 
     // Administrators and agents can inspect results
