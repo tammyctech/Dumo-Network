@@ -15,6 +15,7 @@ import {
   AlertCircle,
 
   RefreshCw,
+  Trash2,
 
 
 } from "lucide-react";
@@ -153,6 +154,9 @@ const [refreshKey, setRefreshKey] = useState(0);
 const [error, setError] = useState("");
 
 const [success, setSuccess] = useState("");
+const [clearTarget, setClearTarget] = useState<Election | null>(null);
+const [clearConfirmation, setClearConfirmation] = useState("");
+const [clearingResults, setClearingResults] = useState(false);
 
 
 
@@ -435,6 +439,38 @@ const assignedUnit = pollingUnits.find((item) => item.id === assignment.polling_
 
   }
 
+  async function clearLiveResults(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setError("");
+    setSuccess("");
+    if (!token || !isAdmin || !clearTarget) return setError("Administrator access required.");
+    if (clearConfirmation !== "CLEAR ELECTION RESULTS") {
+      return setError('Type "CLEAR ELECTION RESULTS" exactly to confirm.');
+    }
+
+    setClearingResults(true);
+    try {
+      const response = await fetch(
+        `${API_URL}/api/admin/elections/${clearTarget.id}/results`,
+        {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+          body: JSON.stringify({ confirmation: clearConfirmation }),
+        }
+      );
+      if (!response.ok) throw new Error(await readApiError(response));
+      const data = await response.json();
+      setSuccess(data.message || `Live result data for "${clearTarget.name}" was cleared.`);
+      setClearTarget(null);
+      setClearConfirmation("");
+      setRefreshKey((value) => value + 1);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unable to clear live election data.");
+    } finally {
+      setClearingResults(false);
+    }
+  }
+
 
 
 const inputClass = "mt-2 w-full rounded-xl border border-slate-300 bg-white px-4 py-3";
@@ -587,26 +623,65 @@ const Icon = card.icon;
                       )}
                     </p>
                   </div>
-                  <button
-                    type="button"
-                    aria-pressed={isSelected}
-                    onClick={() =>
-                      setSelectedElection(String(election.id))
-                    }
-                    className={`min-h-11 rounded-lg border px-4 py-2 text-sm font-semibold transition ${
-                      isSelected
-                        ? "border-emerald-200 bg-emerald-50 text-emerald-800"
-                        : "border-slate-200 text-slate-700 hover:border-emerald-300 hover:bg-emerald-50"
-                    }`}
-                  >
-                    {isSelected ? "Selected for assignment" : "Use for assignments"}
-                  </button>
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      aria-pressed={isSelected}
+                      onClick={() => setSelectedElection(String(election.id))}
+                      className={`min-h-11 rounded-lg border px-4 py-2 text-sm font-semibold transition ${
+                        isSelected
+                          ? "border-emerald-200 bg-emerald-50 text-emerald-800"
+                          : "border-slate-200 text-slate-700 hover:border-emerald-300 hover:bg-emerald-50"
+                      }`}
+                    >
+                      {isSelected ? "Selected for assignment" : "Use for assignments"}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { setClearTarget(election); setClearConfirmation(""); }}
+                      className="flex min-h-11 items-center gap-2 rounded-lg border border-red-200 px-4 py-2 text-sm font-semibold text-red-700 hover:bg-red-50"
+                    >
+                      <Trash2 size={16} /> Clear live data
+                    </button>
+                  </div>
                 </li>
               );
             })}
           </ul>
         )}
       </section>
+
+      {clearTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4" role="dialog" aria-modal="true" aria-labelledby="clear-results-title">
+          <form onSubmit={clearLiveResults} className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl">
+            <div className="flex items-center gap-3 text-red-700">
+              <Trash2 size={24} />
+              <h2 id="clear-results-title" className="text-lg font-bold">Clear live election data</h2>
+            </div>
+            <p className="mt-4 text-sm text-slate-700">
+              This permanently removes all submitted results, party votes, reviews, flags, and result-sheet evidence for <strong>{clearTarget.name}</strong>. The election, agents, assignments, polling units, and incidents will remain.
+            </p>
+            <label className="mt-5 block text-sm font-medium text-slate-700">
+              Type <strong>CLEAR ELECTION RESULTS</strong> to continue
+              <input
+                autoFocus
+                value={clearConfirmation}
+                onChange={(event) => setClearConfirmation(event.target.value)}
+                className={inputClass}
+                autoComplete="off"
+              />
+            </label>
+            <div className="mt-6 flex flex-wrap justify-end gap-3">
+              <button type="button" disabled={clearingResults} onClick={() => { setClearTarget(null); setClearConfirmation(""); }} className="min-h-11 rounded-xl border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-50">
+                Cancel
+              </button>
+              <button type="submit" disabled={clearingResults || clearConfirmation !== "CLEAR ELECTION RESULTS"} className="flex min-h-11 items-center gap-2 rounded-xl bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700 disabled:opacity-50">
+                <Trash2 size={17} /> {clearingResults ? "Clearing…" : "Permanently clear data"}
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
 
 
       <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
