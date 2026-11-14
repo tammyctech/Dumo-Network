@@ -28,11 +28,20 @@ def _gmail_access_token() -> tuple[str | None, str | None]:
             "client_id": client_id, "client_secret": client_secret,
             "refresh_token": refresh_token, "grant_type": "refresh_token",
         }, timeout=15)
-        response.raise_for_status()
+        if not response.ok:
+            try:
+                payload = response.json()
+                code = str(payload.get("error") or f"HTTP {response.status_code}")
+                description = str(payload.get("error_description") or "Google rejected the OAuth token exchange.")
+            except (ValueError, AttributeError):
+                code = f"HTTP {response.status_code}"
+                description = "Google rejected the OAuth token exchange."
+            logger.error("Gmail OAuth token refresh rejected: %s: %s", code, description)
+            return None, f"Gmail OAuth error: {code} — {description}"
         return response.json()["access_token"], None
     except (requests.RequestException, KeyError, ValueError) as exc:
         logger.exception("Gmail OAuth token refresh failed")
-        return None, f"Gmail API authentication failed: {type(exc).__name__}."
+        return None, f"Gmail OAuth request failed: {type(exc).__name__}."
 
 
 def _send_gmail_message(message: EmailMessage, access_token: str | None = None) -> tuple[bool, str | None]:

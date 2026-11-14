@@ -63,8 +63,8 @@ class ApprovalEmailTests(unittest.TestCase):
 
     @patch("app.services.email_service.requests.post")
     def test_gmail_api_refreshes_token_and_sends_raw_mime_message(self, post):
-        token_response = MagicMock(); token_response.json.return_value = {"access_token": "access-token"}
-        send_response = MagicMock()
+        token_response = MagicMock(); token_response.ok = True; token_response.json.return_value = {"access_token": "access-token"}
+        send_response = MagicMock(); send_response.ok = True
         post.side_effect = [token_response, send_response]
         with patch.dict(os.environ, {
             "EMAIL_PROVIDER": "gmail_api", "GMAIL_CLIENT_ID": "client-id",
@@ -77,6 +77,22 @@ class ApprovalEmailTests(unittest.TestCase):
         self.assertEqual(post.call_args_list[0].args[0], "https://oauth2.googleapis.com/token")
         self.assertEqual(post.call_args_list[1].args[0], "https://gmail.googleapis.com/gmail/v1/users/me/messages/send")
         self.assertIn("raw", post.call_args_list[1].kwargs["json"])
+
+    @patch("app.services.email_service.requests.post")
+    def test_gmail_api_reports_google_oauth_error_description(self, post):
+        response = MagicMock(); response.ok = False; response.status_code = 400
+        response.json.return_value = {"error": "invalid_grant", "error_description": "Token has been expired or revoked."}
+        post.return_value = response
+        with patch.dict(os.environ, {
+            "EMAIL_PROVIDER": "gmail_api", "GMAIL_CLIENT_ID": "client-id",
+            "GMAIL_CLIENT_SECRET": "client-secret", "GMAIL_REFRESH_TOKEN": "refresh-token",
+            "GMAIL_SENDER_EMAIL": "dumo.network@gmail.com",
+        }, clear=True):
+            sent, error = send_system_email(recipient="agent@example.com", subject="Assignment",
+                plain_text="Assigned", html="<p>Assigned</p>")
+        self.assertFalse(sent)
+        self.assertIn("invalid_grant", error)
+        self.assertIn("expired or revoked", error)
 
 
 if __name__ == "__main__":
