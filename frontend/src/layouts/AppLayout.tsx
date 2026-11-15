@@ -30,12 +30,9 @@ import {
   SlidersHorizontal,
   MapPin,
   Link2,
-  Moon,
-  Sun,
 } from "lucide-react";
 
 import { useAuth } from "../context/AuthContext";
-import { useTheme } from "../context/theme";
 
 // =====================================================
 // NAVIGATION MENU
@@ -156,7 +153,6 @@ const CURRENT_YEAR = new Date().getFullYear();
 // =====================================================
 
 export default function AppLayout() {
-  const { theme, toggleTheme } = useTheme();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
@@ -499,17 +495,6 @@ export default function AppLayout() {
 
             <div className="flex flex-col items-end">
             </div>
-
-            <button
-              type="button"
-              onClick={toggleTheme}
-              title={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
-              aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
-              aria-pressed={theme === "dark"}
-              className="grid h-11 w-11 place-items-center rounded-xl border border-slate-200 bg-white text-slate-600 transition hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-800 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2"
-            >
-              {theme === "dark" ? <Sun size={19}/> : <Moon size={19}/>}
-            </button>
 
             {/* NOTIFICATIONS */}
 

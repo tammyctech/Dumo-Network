@@ -4,6 +4,7 @@ import {
   UserRound,
   ShieldCheck,
   Bell,
+  Palette,
   Building2,
   ChevronRight,
   Settings2,
@@ -14,8 +15,6 @@ import {
   Eye,
   EyeOff,
   LockKeyhole,
-  Moon,
-  Sun,
 } from "lucide-react";
 
 import { useAuth } from "../context/AuthContext";
@@ -23,7 +22,6 @@ import { changePassword } from "../services/api";
 import EnableNotifications from "../components/EnableNotifications";
 import PasswordChecklist from "../components/PasswordChecklist";
 import { useSearchParams } from "react-router-dom";
-import { useTheme } from "../context/theme";
 
 const API_URL = import.meta.env.DEV
   ? (import.meta.env.VITE_API_URL || "http://127.0.0.1:8000").replace(/\/$/, "")
@@ -55,7 +53,6 @@ type SettingsTab =
   | "organization";
 
 export default function Settings() {
-  const { theme, setTheme } = useTheme();
   const { user, token, updateProfile } = useAuth();
   const [searchParams] = useSearchParams();
 
@@ -957,11 +954,21 @@ export default function Settings() {
                 </h2>
 
                 <p className="text-sm text-slate-500">
-                  Choose the workspace appearance that is most comfortable for you. Your preference is saved on this device.
+                  The workspace uses a consistent dark theme with accessible green accents.
                 </p>
 
-                <div className="grid gap-4 sm:grid-cols-2">
-                  {[{value:"light" as const,label:"Light mode",description:"Bright, clean surfaces for daytime use.",icon:Sun},{value:"dark" as const,label:"Dark mode",description:"Low-glare surfaces for evening and field use.",icon:Moon}].map(option=>{const Icon=option.icon,active=theme===option.value;return <button key={option.value} type="button" onClick={()=>setTheme(option.value)} aria-pressed={active} className={`flex items-start gap-4 rounded-2xl border p-5 text-left transition ${active?"border-emerald-500 bg-emerald-50 ring-2 ring-emerald-500/20":"border-slate-200 bg-white hover:border-emerald-300 hover:bg-slate-50"}`}><span className={`grid h-11 w-11 shrink-0 place-items-center rounded-xl ${active?"bg-emerald-700 text-white":"bg-slate-100 text-slate-600"}`}><Icon size={21}/></span><span><span className="flex items-center gap-2 font-semibold text-slate-900">{option.label}{active&&<CheckCircle2 size={16} className="text-emerald-700"/>}</span><span className="mt-1 block text-sm leading-6 text-slate-600">{option.description}</span></span></button>})}
+                <div className="flex items-start gap-4 rounded-2xl border border-emerald-200 bg-emerald-50/70 p-5">
+                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white text-emerald-700 shadow-sm">
+                    <Palette size={21} />
+                  </span>
+                  <div>
+                    <p className="font-semibold text-slate-900">
+                      Light appearance is enabled
+                    </p>
+                    <p className="mt-1 text-sm leading-6 text-slate-600">
+                      Pages, navigation, and forms stay bright and readable, with green reserved for key actions and status highlights.
+                    </p>
+                  </div>
                 </div>
               </div>
             )}
