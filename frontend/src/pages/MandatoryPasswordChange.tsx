@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { KeyRound, LoaderCircle, ShieldCheck } from "lucide-react";
 import { changePassword } from "../services/api";
 import { useAuth } from "../context/AuthContext";
+import PasswordChecklist from "../components/PasswordChecklist";
 
 export default function MandatoryPasswordChange() {
   const { token, logout } = useAuth();
@@ -41,7 +42,8 @@ export default function MandatoryPasswordChange() {
           <label key={field.label} className="block text-sm font-bold text-slate-800">{field.label}
             <input type="password" required minLength={field.label === "Temporary password" ? undefined : 8} autoComplete={field.auto} value={field.value} onChange={e=>field.set(e.target.value)} className="mt-2 h-13 w-full rounded-xl border border-slate-200 px-4 outline-none focus:border-emerald-600 focus:ring-4 focus:ring-emerald-100" />
           </label>)}
-        <button disabled={loading} className="flex h-13 w-full items-center justify-center gap-2 rounded-xl bg-emerald-700 font-bold text-white disabled:opacity-60">{loading && <LoaderCircle className="animate-spin" size={18}/>}Save email and change password</button>
+        <PasswordChecklist password={next} confirm={confirm} current={current}/>
+        <button disabled={loading||next.length<8||next.length>128||next!==confirm||next===current} className="flex h-13 w-full items-center justify-center gap-2 rounded-xl bg-emerald-700 font-bold text-white disabled:opacity-60">{loading && <LoaderCircle className="animate-spin" size={18}/>}Save email and change password</button>
       </form>
       <p className="mt-6 flex gap-2 text-xs leading-5 text-slate-500"><ShieldCheck className="shrink-0 text-emerald-700" size={18}/>All existing sessions are invalidated after this change.</p>
     </section>

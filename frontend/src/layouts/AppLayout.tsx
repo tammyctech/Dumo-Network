@@ -271,7 +271,7 @@ export default function AppLayout() {
         className={`
           fixed inset-y-0 left-0 z-50
           flex w-64 flex-col
-          border-r border-slate-200 bg-white text-slate-800 shadow-xl shadow-slate-900/5
+          border-r border-emerald-950/40 bg-[#073f33] text-white shadow-xl shadow-emerald-950/20
           transition-transform duration-300
           lg:translate-x-0
           ${
@@ -284,21 +284,21 @@ export default function AppLayout() {
 
         {/* LOGO */}
 
-        <div className="flex h-[76px] shrink-0 items-center justify-between border-b border-slate-200 px-5">
+        <div className="flex h-[76px] shrink-0 items-center justify-between border-b border-white/10 px-5">
 
           <div className="flex min-w-0 items-center gap-2.5">
 
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-emerald-700 shadow-sm shadow-emerald-900/15">
-              <Activity size={15} className="text-white" />
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-emerald-300 shadow-sm shadow-emerald-950/20">
+              <Activity size={15} className="text-emerald-950" />
             </div>
 
             <div className="min-w-0">
 
-              <p className="text-[13px] font-bold tracking-[0.07em] text-slate-900">
+              <p className="text-[13px] font-bold tracking-[0.07em] text-white">
                 DUMO YOUTH NETWORK
               </p>
 
-              <p className="text-[10px] text-emerald-700">
+              <p className="text-[10px] text-emerald-200">
                 ELECTION MONITORING SYSTEM
               </p> 
 
@@ -310,7 +310,7 @@ export default function AppLayout() {
             type="button"
             aria-label="Close sidebar"
             onClick={() => setSidebarOpen(false)}
-            className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 lg:hidden"
+            className="rounded-lg p-2 text-emerald-100/70 hover:bg-white/10 hover:text-white lg:hidden"
           >
             <X size={20} />
           </button>
@@ -320,7 +320,7 @@ export default function AppLayout() {
         {/* WORKSPACE LABEL */}
 
         <div className="px-5 pb-3 pt-6">
-          <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-500">
+          <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-emerald-200/70">
             Main Workspace
           </p>
         </div>
@@ -342,7 +342,7 @@ export default function AppLayout() {
               <Fragment key={item.name}>
                 {showSection && (
                   <p
-                    className={`px-3 pb-2 text-[10px] font-bold uppercase tracking-[0.16em] text-slate-500 ${
+                    className={`px-3 pb-2 text-[10px] font-bold uppercase tracking-[0.16em] text-emerald-200/60 ${
                       index === 0 ? "pt-6" : "pt-5"
                     }`}
                   >
@@ -359,8 +359,8 @@ export default function AppLayout() {
                     transition-colors duration-200
                     ${
                       isActive
-                        ? "border-emerald-700 bg-emerald-50 text-emerald-800"
-                        : "border-transparent text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                        ? "border-emerald-300 bg-white text-emerald-900 shadow-sm"
+                        : "border-transparent text-emerald-50/75 hover:bg-white/10 hover:text-white"
                     }
                   `}
                 >
@@ -377,26 +377,26 @@ export default function AppLayout() {
             SIDEBAR FOOTER
         ================================================= */}
 
-        <div className="shrink-0 border-t border-slate-200 p-4">
+        <div className="shrink-0 border-t border-white/10 p-4">
 
           {/* DATA NOTICE */}
 
-          <div className="mb-4 rounded-xl border border-slate-200 bg-slate-50 p-3.5">
+          <div className="mb-4 rounded-xl border border-white/10 bg-white/[.07] p-3.5">
 
             <div className="flex items-center gap-2">
 
               <ShieldCheck
                 size={16}
-                className="text-emerald-700"
+                className="text-emerald-300"
               />
 
-              <p className="text-xs font-semibold text-slate-800">
+              <p className="text-xs font-semibold text-white">
                 Election data
               </p>
 
             </div>
 
-            <p className="mt-2 text-xs leading-5 text-slate-500">
+            <p className="mt-2 text-xs leading-5 text-emerald-50/60">
               Monitoring figures are unofficial and agent-submitted.
             </p>
 
@@ -404,9 +404,9 @@ export default function AppLayout() {
 
           {/* USER PROFILE */}
 
-          <div className="mb-3 flex items-center gap-3 rounded-xl border border-slate-200 bg-white p-3">
+          <div className="mb-3 flex items-center gap-3 rounded-xl border border-white/10 bg-white/[.07] p-3">
 
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-sm font-bold text-emerald-800">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-300 text-sm font-bold text-emerald-950">
               {userInitials}
             </div>
 
@@ -416,7 +416,7 @@ export default function AppLayout() {
                 {user?.full_name || "Dumo User"}
               </p>
 
-              <p className="text-xs capitalize text-slate-500">
+              <p className="text-xs capitalize text-emerald-100/65">
                 {user?.role || "User"}
               </p>
 
@@ -429,7 +429,7 @@ export default function AppLayout() {
           <button
             type="button"
             onClick={handleLogout}
-            className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-slate-600 transition hover:bg-red-50 hover:text-red-700"
+            className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-emerald-50/70 transition hover:bg-red-400/15 hover:text-red-100"
           >
             <LogOut size={18} />
             Sign Out
@@ -447,7 +447,7 @@ export default function AppLayout() {
 
         {/* TOP HEADER */}
 
-        <header className="sticky top-0 z-30 flex h-[76px] shrink-0 items-center justify-between border-b border-slate-200/80 bg-white/95 px-4 backdrop-blur-xl sm:px-6 lg:px-8">
+        <header className="sticky top-0 z-30 flex h-[76px] shrink-0 items-center justify-between border-b border-emerald-200/70 bg-gradient-to-r from-emerald-50/95 via-white/95 to-teal-50/95 px-4 shadow-sm shadow-emerald-900/5 backdrop-blur-xl sm:px-6 lg:px-8">
 
           {/* LEFT HEADER */}
 

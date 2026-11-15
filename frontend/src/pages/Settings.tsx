@@ -20,6 +20,7 @@ import {
 import { useAuth } from "../context/AuthContext";
 import { changePassword } from "../services/api";
 import EnableNotifications from "../components/EnableNotifications";
+import PasswordChecklist from "../components/PasswordChecklist";
 import { useSearchParams } from "react-router-dom";
 
 const API_URL = import.meta.env.DEV
@@ -855,6 +856,8 @@ export default function Settings() {
                     />
                   </div>
 
+                  <PasswordChecklist password={newPassword} confirm={confirmPassword} current={currentPassword}/>
+
                   {/* SHOW PASSWORDS */}
 
                   <button
@@ -897,7 +900,8 @@ export default function Settings() {
                       type="submit"
                       disabled={
                         isChangingPassword ||
-                        !token
+                        !token || newPassword.length < 8 || newPassword.length > 128 ||
+                        newPassword !== confirmPassword || newPassword === currentPassword
                       }
                       className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-700 px-5 py-3 font-semibold text-white transition hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-50"
                     >

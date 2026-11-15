@@ -1,307 +1,36 @@
 import { useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
-
-import {
-  Activity,
-  ArrowRight,
-  Eye,
-  EyeOff,
-  LockKeyhole,
-  UserRound,
-  ShieldCheck,
-  AlertCircle,
-  LoaderCircle,
-  Fingerprint,
-} from "lucide-react";
-
+import { AlertCircle, ArrowRight, CheckCircle2, Eye, EyeOff, Fingerprint, LoaderCircle, LockKeyhole, MapPin, RadioTower, ShieldCheck, UserRound, Users } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 
-export default function Login() {
-  const navigate = useNavigate();
-  const { login } = useAuth();
-
-  const [identifier, setIdentifier] = useState("");
-  const [password, setPassword] = useState("");
-
-  const [showPassword, setShowPassword] = useState(false);
-
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
-
-  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-
-    if (loading) return;
-
-    setError("");
-    setLoading(true);
-
-    try {
-      await login(identifier.trim(), password);
-      navigate("/dashboard", { replace: true });
-    } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : "Unable to sign in. Please try again."
-      );
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  return (
-    <div className="relative min-h-screen overflow-hidden bg-[#F5F7FA]">
-
-      <div className="pointer-events-none absolute left-1/2 top-0 h-96 w-96 -translate-x-1/2 rounded-full bg-emerald-400/10 blur-3xl" />
-
-      {/* ==========================================
-          RIGHT PANEL — LOGIN FORM
-      ========================================== */}
-
-      <div className="relative flex min-h-screen flex-col">
-
-        {/* MOBILE BRAND */}
-
-        <Link to="/" className="flex items-center gap-3 px-6 py-6 sm:px-10">
-
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-600 text-white">
-            <Activity size={21} />
-          </div>
-
-          <div>
-            <h1 className="text-sm font-extrabold text-slate-900">
-              DUMO YOUTH NETWORK
-            </h1>
-
-            <p className="text-[10px] font-semibold tracking-widest text-emerald-600">
-              ELECTION MONITORING SYSTEM
-            </p>
-          </div>
-
-        </Link>
-
-        {/* FORM CONTAINER */}
-
-        <div className="flex flex-1 items-center justify-center px-5 py-8 sm:px-10 sm:py-12">
-
-          <div className="w-full max-w-[480px] rounded-3xl border border-slate-200/80 bg-white p-6 shadow-2xl shadow-slate-900/10 sm:p-10">
-
-            {/* TOP ICON */}
-
-            <div className="mb-8 flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600">
-              <Fingerprint size={29} strokeWidth={1.8} />
-            </div>
-
-            {/* HEADING */}
-
-            <div className="mb-9">
-
-              <div className="mb-3 flex items-center gap-2">
-
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-
-                <span className="text-xs font-bold uppercase tracking-[0.18em] text-emerald-700">
-                  Secure Workspace Access
-                </span>
-
-              </div>
-
-              <h2 className="text-4xl font-bold tracking-tight text-slate-900">
-                Welcome back
-              </h2>
-
-              <p className="mt-3 text-sm leading-6 text-slate-500">
-                Sign in to access your election monitoring dashboard.
-              </p>
-
-            </div>
-
-            {/* ERROR MESSAGE */}
-
-            {error && (
-              <div
-                role="alert"
-                className="mb-6 flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 p-4"
-              >
-
-                <AlertCircle
-                  size={19}
-                  className="mt-0.5 shrink-0 text-red-600"
-                />
-
-                <div>
-                  <p className="text-sm font-semibold text-red-800">
-                    Sign-in unsuccessful
-                  </p>
-
-                  <p className="mt-1 text-sm text-red-700">
-                    {error}
-                  </p>
-                </div>
-
-              </div>
-            )}
-
-            {/* LOGIN FORM */}
-
-            <form onSubmit={handleSubmit} className="space-y-6">
-
-              {/* EMAIL */}
-
-              <div>
-
-                <label
-                  htmlFor="identifier"
-                  className="mb-2 block text-sm font-semibold text-slate-800"
-                >
-                  Email address or phone number
-                </label>
-
-                <div className="relative">
-
-                  <UserRound
-                    size={19}
-                    className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
-                  />
-
-                  <input
-                    id="identifier"
-                    name="identifier"
-                    type="text"
-                    autoComplete="username"
-                    required
-                    disabled={loading}
-                    value={identifier}
-                    onChange={(e) => setIdentifier(e.target.value)}
-                    placeholder="name@example.com or 08012345678"
-                    className="h-14 w-full rounded-xl border border-slate-200 bg-slate-50/60 pl-12 pr-4 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 hover:border-slate-300 focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10 disabled:opacity-60"
-                  />
-
-                </div>
-
-              </div>
-
-              {/* PASSWORD */}
-
-              <div>
-
-                <label
-                  htmlFor="password"
-                  className="mb-2 block text-sm font-semibold text-slate-800"
-                >
-                  Password
-                </label>
-
-                <div className="relative">
-
-                  <LockKeyhole
-                    size={19}
-                    className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
-                  />
-
-                  <input
-                    id="password"
-                    name="password"
-                    type={showPassword ? "text" : "password"}
-                    autoComplete="current-password"
-                    required
-                    disabled={loading}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Enter your password"
-                    className="h-14 w-full rounded-xl border border-slate-200 bg-slate-50/60 pl-12 pr-14 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 hover:border-slate-300 focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10 disabled:opacity-60"
-                  />
-
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    aria-label={
-                      showPassword
-                        ? "Hide password"
-                        : "Show password"
-                    }
-                    aria-pressed={showPassword}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 rounded-md p-1 text-slate-400 transition hover:text-slate-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-500"
-                  >
-                    {showPassword ? (
-                      <EyeOff size={19} />
-                    ) : (
-                      <Eye size={19} />
-                    )}
-                  </button>
-
-                </div>
-
-              </div>
-
-              <div className="-mt-3 text-right"><Link to="/forgot-password" className="text-sm font-semibold text-emerald-700 hover:text-emerald-800">Forgot password?</Link></div>
-
-              {/* SIGN IN BUTTON */}
-
-              <button
-                type="submit"
-                disabled={loading}
-                className="group flex h-14 w-full items-center justify-center gap-3 rounded-xl bg-emerald-600 px-5 text-sm font-bold text-white shadow-lg shadow-emerald-600/15 transition hover:bg-emerald-700 hover:shadow-emerald-600/25 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600 disabled:cursor-not-allowed disabled:opacity-60"
-              >
-
-                {loading ? (
-                  <>
-                    <LoaderCircle
-                      size={19}
-                      className="animate-spin"
-                    />
-                    Signing you in...
-                  </>
-                ) : (
-                  <>
-                    Sign in to workspace
-
-                    <ArrowRight
-                      size={19}
-                      className="transition-transform group-hover:translate-x-1"
-                    />
-                  </>
-                )}
-
-              </button>
-
-            </form>
-
-            {/* SECURITY NOTE */}
-
-            <div className="mt-9 flex items-start gap-3 rounded-xl border border-slate-100 bg-slate-50 p-4">
-
-              <ShieldCheck
-                size={19}
-                className="mt-0.5 shrink-0 text-emerald-600"
-              />
-
-              <p className="text-xs leading-5 text-slate-500">
-                Access to election monitoring tools is controlled
-                by your assigned account role. Never share your
-                login credentials with another person.
-              </p>
-
-            </div>
-
-          </div>
-
-        </div>
-
-        {/* RIGHT FOOTER */}
-
-        <footer className="border-t border-slate-100 px-6 py-5 text-center">
-
-          <p className="text-xs text-slate-400">
-            © {new Date().getFullYear()} Dumo Youth Network Election Monitoring System.
-            Unofficial — Agent-Submitted Data.
-          </p>
-
-        </footer>
-
-      </div>
-
-    </div>
-  );
+const features=[
+  {icon:MapPin,title:"Polling-unit coverage",text:"One secure workspace for every assigned field agent."},
+  {icon:RadioTower,title:"Live field reporting",text:"Submit observations and results directly from the field."},
+  {icon:ShieldCheck,title:"Protected access",text:"Role-based tools keep sensitive election data controlled."},
+];
+
+export default function Login(){
+ const navigate=useNavigate();const {login}=useAuth();
+ const [identifier,setIdentifier]=useState(""),[password,setPassword]=useState(""),[showPassword,setShowPassword]=useState(false),[error,setError]=useState(""),[loading,setLoading]=useState(false);
+ async function handleSubmit(e:FormEvent<HTMLFormElement>){e.preventDefault();if(loading)return;setError("");setLoading(true);try{await login(identifier.trim(),password);navigate("/dashboard",{replace:true})}catch(err){setError(err instanceof Error?err.message:"Unable to sign in. Please try again.")}finally{setLoading(false)}}
+ return <main className="min-h-screen bg-[#eef3ef] p-0 lg:p-5">
+  <div className="mx-auto grid min-h-screen max-w-[1500px] overflow-hidden bg-white shadow-2xl shadow-slate-900/10 lg:min-h-[calc(100vh-2.5rem)] lg:grid-cols-[1.05fr_.95fr] lg:rounded-[2rem]">
+   <section className="relative hidden overflow-hidden bg-[#063f32] px-12 py-10 text-white lg:flex lg:flex-col xl:px-16 xl:py-12">
+    <div className="absolute inset-0 opacity-[.12]" style={{backgroundImage:"radial-gradient(circle at center,white 1px,transparent 1px)",backgroundSize:"25px 25px"}}/><div className="absolute -right-32 -top-28 h-96 w-96 rounded-full border-[70px] border-emerald-300/10"/><div className="absolute -bottom-48 -left-40 h-[34rem] w-[34rem] rounded-full bg-emerald-300/10 blur-2xl"/>
+    <Link to="/" className="relative z-10 flex w-fit items-center gap-3"><img src="/dyn-favicon-192.png" alt="Dumo Youth Network" className="h-12 w-12 rounded-2xl bg-white object-contain p-1 shadow-lg"/><div><p className="text-sm font-black tracking-[.08em]">DUMO YOUTH NETWORK</p><p className="mt-0.5 text-[10px] font-bold uppercase tracking-[.2em] text-emerald-200">Election Monitoring System</p></div></Link>
+    <div className="relative z-10 my-auto max-w-2xl py-14"><div className="mb-6 inline-flex items-center gap-2 rounded-full border border-emerald-300/25 bg-white/10 px-4 py-2 text-xs font-bold text-emerald-100 backdrop-blur"><span className="h-2 w-2 rounded-full bg-emerald-300 shadow-[0_0_0_5px_rgba(110,231,183,.12)]"/>Secure field operations</div><h1 className="max-w-xl text-5xl font-black leading-[1.05] tracking-[-.04em] xl:text-6xl">Every polling unit.<br/><span className="text-emerald-300">Clearly connected.</span></h1><p className="mt-6 max-w-xl text-base leading-7 text-emerald-50/75 xl:text-lg">A trusted digital workspace for Dumo Youth Network agents monitoring elections across Rivers State.</p><div className="mt-10 grid gap-4">{features.map(({icon:Icon,title,text})=><div key={title} className="flex max-w-xl gap-4 rounded-2xl border border-white/10 bg-white/[.07] p-4 backdrop-blur-sm"><div className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-emerald-300 text-emerald-950"><Icon size={21}/></div><div><p className="font-bold">{title}</p><p className="mt-1 text-sm leading-5 text-emerald-50/65">{text}</p></div></div>)}</div></div>
+    <div className="relative z-10 flex items-center gap-3 border-t border-white/10 pt-6 text-xs text-emerald-50/60"><Users size={16}/><span>Built for authorized administrators and polling-unit agents</span></div>
+   </section>
+   <section className="relative flex min-h-screen flex-col bg-white lg:min-h-0">
+    <div className="flex items-center justify-between px-5 py-5 sm:px-9 lg:justify-end"><Link to="/" className="flex items-center gap-3 lg:hidden"><img src="/dyn-favicon-192.png" alt="Dumo Youth Network" className="h-11 w-11 rounded-xl object-contain"/><div><p className="text-xs font-black tracking-wide text-slate-900">DUMO YOUTH NETWORK</p><p className="text-[9px] font-bold uppercase tracking-[.18em] text-emerald-700">Election Monitoring</p></div></Link><Link to="/" className="hidden text-sm font-bold text-slate-500 transition hover:text-emerald-700 lg:block">Return to website</Link></div>
+    <div className="flex flex-1 items-center justify-center px-5 py-8 sm:px-10"><div className="w-full max-w-[470px]"><div className="mb-8 grid h-14 w-14 place-items-center rounded-2xl border border-emerald-100 bg-emerald-50 text-emerald-700 shadow-sm"><Fingerprint size={28}/></div><p className="text-xs font-black uppercase tracking-[.2em] text-emerald-700">Authorized access</p><h2 className="mt-3 text-4xl font-black tracking-[-.035em] text-slate-950 sm:text-5xl">Welcome back.</h2><p className="mt-4 text-sm leading-6 text-slate-500">Enter your registered email or phone number to continue to your monitoring dashboard.</p>
+     {error&&<div role="alert" className="mt-6 flex gap-3 rounded-2xl border border-red-200 bg-red-50 p-4"><AlertCircle size={20} className="mt-0.5 shrink-0 text-red-600"/><div><p className="text-sm font-bold text-red-900">Sign-in unsuccessful</p><p className="mt-1 text-sm text-red-700">{error}</p></div></div>}
+     <form onSubmit={handleSubmit} className="mt-8 space-y-5"><label className="block text-sm font-bold text-slate-800" htmlFor="identifier">Email address or phone number<div className="relative mt-2"><UserRound size={19} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"/><input id="identifier" name="identifier" autoComplete="username" required disabled={loading} value={identifier} onChange={e=>setIdentifier(e.target.value)} placeholder="name@example.com or 08012345678" className="h-14 w-full rounded-2xl border border-slate-200 bg-slate-50/70 pl-12 pr-4 font-normal text-slate-950 outline-none transition placeholder:text-slate-400 hover:border-slate-300 focus:border-emerald-600 focus:bg-white focus:ring-4 focus:ring-emerald-100"/></div></label>
+      <label className="block text-sm font-bold text-slate-800" htmlFor="password"><span className="flex items-center justify-between"><span>Password</span><Link to="/forgot-password" className="text-xs font-bold text-emerald-700 hover:text-emerald-800">Forgot password?</Link></span><div className="relative mt-2"><LockKeyhole size={19} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"/><input id="password" name="password" type={showPassword?"text":"password"} autoComplete="current-password" required disabled={loading} value={password} onChange={e=>setPassword(e.target.value)} placeholder="Enter your password" className="h-14 w-full rounded-2xl border border-slate-200 bg-slate-50/70 pl-12 pr-14 font-normal text-slate-950 outline-none transition placeholder:text-slate-400 hover:border-slate-300 focus:border-emerald-600 focus:bg-white focus:ring-4 focus:ring-emerald-100"/><button type="button" onClick={()=>setShowPassword(value=>!value)} aria-label={showPassword?"Hide password":"Show password"} className="absolute right-4 top-1/2 -translate-y-1/2 rounded-lg p-1 text-slate-400 hover:text-slate-700">{showPassword?<EyeOff size={19}/>:<Eye size={19}/>}</button></div></label>
+      <button disabled={loading} className="group flex h-14 w-full items-center justify-center gap-3 rounded-2xl bg-[#08765b] px-5 text-sm font-black text-white shadow-lg shadow-emerald-900/15 transition hover:-translate-y-0.5 hover:bg-[#065f49] hover:shadow-xl disabled:translate-y-0 disabled:opacity-60">{loading?<><LoaderCircle size={19} className="animate-spin"/>Signing you in…</>:<>Sign in securely<ArrowRight size={19} className="transition group-hover:translate-x-1"/></>}</button></form>
+     <div className="mt-8 flex items-start gap-3 rounded-2xl bg-slate-50 p-4"><CheckCircle2 size={19} className="mt-0.5 shrink-0 text-emerald-700"/><p className="text-xs leading-5 text-slate-500">Your access is protected and tied to your assigned role. Never share your credentials or verification details.</p></div>
+    </div></div><footer className="px-6 py-5 text-center text-[11px] text-slate-400">© {new Date().getFullYear()} Dumo Youth Network · Unofficial agent-submitted election data</footer>
+   </section>
+  </div>
+ </main>
 }
