@@ -146,19 +146,129 @@ video {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ==========================================
+   DARK WORKSPACE THEME
+========================================== */
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  color: #e5eee9;
+  background: #07110e;
+}
+
+:root[data-theme="dark"] body,
+:root[data-theme="dark"] #root,
+:root[data-theme="dark"] .bg-canvas,
+:root[data-theme="dark"] .dashboard-canvas {
+  background-color: #07110e !important;
+  color: #e5eee9;
+}
+
+:root[data-theme="dark"] .dashboard-canvas {
+  background-image: radial-gradient(circle at 84% 0%, rgb(16 185 129 / 0.13), transparent 25rem);
+}
+
+:root[data-theme="dark"] .bg-white {
+  background-color: #101d18 !important;
+}
+
+:root[data-theme="dark"] .bg-slate-50,
+:root[data-theme="dark"] .bg-slate-50\/70,
+:root[data-theme="dark"] .bg-slate-50\/80,
+:root[data-theme="dark"] .bg-slate-50\/95,
+:root[data-theme="dark"] .bg-white\/80,
+:root[data-theme="dark"] .bg-white\/95 {
+  background-color: #0b1713 !important;
+}
+
+:root[data-theme="dark"] .text-slate-950,
+:root[data-theme="dark"] .text-slate-900,
+:root[data-theme="dark"] .text-slate-800 {
+  color: #f1f7f4 !important;
+}
+
+:root[data-theme="dark"] .text-slate-700,
+:root[data-theme="dark"] .text-slate-600 {
+  color: #c4d1ca !important;
+}
+
+:root[data-theme="dark"] .text-slate-500 {
+  color: #93a69c !important;
+}
+
+:root[data-theme="dark"] .text-slate-400 {
+  color: #74877d !important;
+}
+
+:root[data-theme="dark"] .border-slate-100,
+:root[data-theme="dark"] .border-slate-200,
+:root[data-theme="dark"] .border-slate-200\/80,
+:root[data-theme="dark"] .border-slate-300,
+:root[data-theme="dark"] .border {
+  border-color: #263b32 !important;
+}
+
+:root[data-theme="dark"] input,
+:root[data-theme="dark"] select,
+:root[data-theme="dark"] textarea,
+:root[data-theme="dark"] .input {
+  border-color: #30483d;
+  background-color: #0b1713;
+  color: #f1f7f4;
+}
+
+:root[data-theme="dark"] input::placeholder,
+:root[data-theme="dark"] textarea::placeholder {
+  color: #6f8278;
+}
+
+:root[data-theme="dark"] table thead,
+:root[data-theme="dark"] .bg-slate-100 {
+  background-color: #14231d !important;
+}
+
+:root[data-theme="dark"] .hover\:bg-slate-50:hover,
+:root[data-theme="dark"] .hover\:bg-slate-100:hover {
+  background-color: #172821 !important;
+}
+
+:root[data-theme="dark"] .shadow-xl,
+:root[data-theme="dark"] .shadow-2xl,
+:root[data-theme="dark"] .shadow-sm {
+  --tw-shadow-color: rgb(0 0 0 / 0.35);
+}
+
+:root[data-theme="dark"] .recharts-cartesian-grid line {
+  stroke: #284038;
+}
+
+:root[data-theme="dark"] .recharts-text {
+  fill: #a9bbb1;
+}
 /* ==========================================
    DUMO YOUTH NETWORK ELECTION MONITORING SYSTEM — HEADING VISIBILITY FIX
 ========================================== */
 
 /* Keep headings legible on light backgrounds. */
-main h1,
-main h2,
-main h3,
-main h4,
-header h1,
-header h2,
-header h3 {
+:root:not([data-theme="dark"]) main h1,
+:root:not([data-theme="dark"]) main h2,
+:root:not([data-theme="dark"]) main h3,
+:root:not([data-theme="dark"]) main h4,
+:root:not([data-theme="dark"]) header h1,
+:root:not([data-theme="dark"]) header h2,
+:root:not([data-theme="dark"]) header h3 {
   color: #0f172a;
+}
+
+:root[data-theme="dark"] main h1,
+:root[data-theme="dark"] main h2,
+:root[data-theme="dark"] main h3,
+:root[data-theme="dark"] main h4,
+:root[data-theme="dark"] header h1,
+:root[data-theme="dark"] header h2,
+:root[data-theme="dark"] header h3 {
+  color: #f1f7f4;
 }
 
 .landing-page main .command-center-title {

@@ -954,7 +954,7 @@ export default function Settings() {
                 </h2>
 
                 <p className="text-sm text-slate-500">
-                  The workspace uses a consistent light theme with restrained green accents.
+                  The workspace uses a consistent dark theme with accessible green accents.
                 </p>
 
                 <div className="flex items-start gap-4 rounded-2xl border border-emerald-200 bg-emerald-50/70 p-5">

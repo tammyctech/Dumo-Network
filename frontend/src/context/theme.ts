@@ -1,7 +1,7 @@
 export function initializeTheme(): void {
   const root = document.documentElement;
 
-  root.classList.remove("dark");
-  root.dataset.theme = "light";
-  root.style.colorScheme = "light";
+  root.classList.add("dark");
+  root.dataset.theme = "dark";
+  root.style.colorScheme = "dark";
 }
