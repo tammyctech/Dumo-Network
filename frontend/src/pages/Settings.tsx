@@ -1014,7 +1014,7 @@ export default function Settings() {
                       {darkMode ? "Dark appearance is enabled" : "Light appearance is enabled"}
                     </p>
                     <p className="mt-1 text-sm leading-6 text-slate-600">
-                      {darkMode ? "Pages, navigation, forms, and data tables use deep green surfaces with comfortable contrast." : "Pages use bright neutral surfaces with green accents."}
+                      {darkMode ? "Pages, forms, and data tables use neutral charcoal surfaces, while green remains a focused brand accent." : "Pages use bright neutral surfaces with green accents."}
                     </p>
                   </div>
                   <button
