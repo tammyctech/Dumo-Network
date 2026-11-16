@@ -395,9 +395,12 @@ def change_password(
     their password securely.
 
     Requires:
-    - Current password
+    - Current password for normal password changes
     - New password
     - Confirm new password
+
+    A first-login session has already verified the temporary password at
+    sign-in, so it is not requested a second time.
     """
 
     first_login = current_user.must_change_password
@@ -414,14 +417,15 @@ def change_password(
     # VERIFY CURRENT PASSWORD
     # --------------------------------------
 
-    if not verify_password(
-        password_data.current_password,
-        current_user.hashed_password,
-    ):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Current password is incorrect",
-        )
+    if not first_login:
+        if not password_data.current_password or not verify_password(
+            password_data.current_password,
+            current_user.hashed_password,
+        ):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Current password is incorrect",
+            )
 
     # --------------------------------------
     # CONFIRM NEW PASSWORD

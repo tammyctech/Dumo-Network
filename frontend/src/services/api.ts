@@ -157,7 +157,7 @@ export async function updateCurrentUser(
 // ==========================================
 
 export interface ChangePasswordData {
-  current_password: string;
+  current_password?: string;
   new_password: string;
   confirm_password: string;
   email?: string;

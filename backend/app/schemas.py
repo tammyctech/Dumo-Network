@@ -336,8 +336,9 @@ class ChangePasswordRequest(BaseModel):
     user's password.
     """
 
-    current_password: str = Field(
-        min_length=1
+    current_password: str | None = Field(
+        default=None,
+        min_length=1,
     )
 
     new_password: str = Field(

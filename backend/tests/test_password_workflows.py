@@ -63,9 +63,9 @@ class PasswordWorkflowTests(unittest.TestCase):
             user = User(full_name="Agent", email="agent@dumo-network.vercel.app", hashed_password=hash_password("12345"), role="agent", is_active=True, must_change_password=True)
             db.add(user); db.commit(); db.refresh(user)
             with self.assertRaises(HTTPException) as raised:
-                change_password(ChangePasswordRequest(current_password="12345", new_password="private-password", confirm_password="private-password"), user, db)
+                change_password(ChangePasswordRequest(new_password="private-password", confirm_password="private-password"), user, db)
             self.assertEqual(raised.exception.status_code, 422)
-            change_password(ChangePasswordRequest(current_password="12345", new_password="private-password", confirm_password="private-password", email="agent@example.com"), user, db)
+            change_password(ChangePasswordRequest(new_password="private-password", confirm_password="private-password", email="agent@example.com"), user, db)
             self.assertEqual(user.email, "agent@example.com")
             self.assertFalse(user.must_change_password)
 

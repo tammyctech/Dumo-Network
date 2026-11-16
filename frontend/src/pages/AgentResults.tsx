@@ -727,13 +727,13 @@ export default function AgentResults() {
         {/* PARTY RESULTS */}
 
         <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-          <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+          <div className="mb-5">
             <h2 className="text-lg font-semibold text-slate-900">
               Political Party Votes
             </h2>
-            <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
-              {partyResults.filter((party) => Number(party.votes) > 0).length} parties with votes
-            </span>
+            <p className="mt-1 text-sm text-slate-500">
+              Enter votes for one party, then select Next to continue.
+            </p>
           </div>
 
           {partyResults.length === 0 ? (
@@ -743,7 +743,7 @@ export default function AgentResults() {
           ) : (
             <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-5 sm:p-6">
               <div className="mb-6 h-1.5 overflow-hidden rounded-full bg-slate-200" aria-hidden="true"><div className="h-full rounded-full bg-slate-700 transition-all" style={{width:`${((currentPartyIndex+1)/partyResults.length)*100}%`}}/></div>
-              <div className="flex items-start justify-between gap-4">
+              <div>
                 <div>
                   <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-500">
                     Party {currentPartyIndex + 1} of {partyResults.length}
@@ -755,7 +755,6 @@ export default function AgentResults() {
                     {partyResults[currentPartyIndex]?.name}
                   </p>
                 </div>
-                <CheckCircle2 size={25} className={partyResults[currentPartyIndex]?.votes!==""?"text-slate-700":"text-slate-300"}/>
               </div>
 
               <label className="mt-6 block text-sm font-semibold text-slate-800">
@@ -796,7 +795,7 @@ export default function AgentResults() {
                   onClick={showNextParty}
                   className="inline-flex items-center gap-2 rounded-xl bg-slate-800 px-5 py-3 text-sm font-semibold text-white hover:bg-slate-900 disabled:opacity-40"
                 >
-                  {currentPartyIndex === partyResults.length - 1 ? "Finish party entry" : "Next party"}
+                  {currentPartyIndex === partyResults.length - 1 ? "Finish" : "Next"}
                   {currentPartyIndex < partyResults.length - 1 && <ChevronRight size={17} />}
                 </button>
               </div>
