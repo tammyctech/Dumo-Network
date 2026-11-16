@@ -13,6 +13,7 @@ function wardLabel(name:string,number?:number|null){return number&&!/^ward\s*\d+
 async function errorOf(r:Response){try{const d=await r.json();if(typeof d.detail==="string")return d.detail;if(Array.isArray(d.detail))return d.detail.map((x:{msg?:string})=>x.msg||"Invalid input").join("; ");return `Request failed (${r.status}).`}catch{return `Request failed (${r.status}).`}}
 function collection<T>(value:unknown,key:string):T[]{if(value&&typeof value==="object"&&Array.isArray((value as Record<string,unknown>)[key]))return (value as Record<string,T[]>)[key];return Array.isArray(value)?value as T[]:[]}
 function html(value:string|null|undefined){return (value||"").replace(/[&<>"']/g,char=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[char]!))}
+function phoneSearchVariants(value:string|null|undefined){const digits=(value||"").replace(/\D/g,"");if(!digits)return[];const local=digits.startsWith("234")?`0${digits.slice(3)}`:digits;const international=local.startsWith("0")?`234${local.slice(1)}`:local;return [digits,local,international]}
 
 export default function UserManagement(){
  const {token,user:current}=useAuth();
@@ -25,7 +26,7 @@ export default function UserManagement(){
  const load=useCallback(async()=>{setLoading(true);setError("");try{const responses=await Promise.all([fetch(`${API}/api/admin/users`,{headers:headers()}),fetch(`${API}/api/admin/assignments`,{headers:headers()}),fetch(`${API}/api/admin/polling-units`,{headers:headers()})]);for(const response of responses)if(!response.ok)throw new Error(await errorOf(response));const [userData,assignmentData,unitData]=await Promise.all(responses.map(r=>r.json()));setUsers(collection<UserRecord>(userData,"users"));setAssignments(collection<Assignment>(assignmentData,"assignments"));setUnits(collection<Unit>(unitData,"polling_units"))}catch(e){setError(e instanceof Error?e.message:"Unable to load users.")}finally{setLoading(false)}},[headers]);
  useEffect(()=>{void load()},[load]);
  const assignmentFor=useCallback((userId:number)=>assignments.find(x=>x.agent.id===userId),[assignments]);
- const filtered=useMemo(()=>{const q=search.toLowerCase().trim();return users.filter(x=>{const a=assignmentFor(x.id);return !q||`${x.full_name} ${x.email} ${x.phone_number||""} ${a?.polling_unit.code||""} ${a?.polling_unit.name||""} ${a?.polling_unit.lga||""} ${a?.polling_unit.ward||""}`.toLowerCase().includes(q)})},[users,search,assignmentFor]);
+ const filtered=useMemo(()=>{const q=search.toLowerCase().trim();const phoneQuery=q.replace(/\D/g,"");return users.filter(x=>{const a=assignmentFor(x.id);const textMatch=`${x.full_name} ${x.email} ${x.phone_number||""} ${a?.polling_unit.code||""} ${a?.polling_unit.name||""} ${a?.polling_unit.lga||""} ${a?.polling_unit.ward||""}`.toLowerCase().includes(q);const phoneMatch=phoneQuery.length>0&&phoneSearchVariants(x.phone_number).some(value=>value.includes(phoneQuery)||phoneSearchVariants(q).some(query=>value.includes(query)));return !q||textMatch||phoneMatch})},[users,search,assignmentFor]);
  const totalPages=Math.max(1,Math.ceil(filtered.length/PAGE_SIZE));
  const currentPage=Math.min(page,totalPages);
  const paged=useMemo(()=>filtered.slice((currentPage-1)*PAGE_SIZE,currentPage*PAGE_SIZE),[filtered,currentPage]);
