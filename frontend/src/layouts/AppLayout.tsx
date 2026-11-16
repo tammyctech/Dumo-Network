@@ -453,7 +453,7 @@ export default function AppLayout() {
 
         {/* TOP HEADER */}
 
-        <header className="app-topbar sticky top-0 z-30 flex h-[76px] shrink-0 items-center justify-between border-b border-emerald-900 bg-gradient-to-r from-[#07503f] via-[#086348] to-[#07503f] px-4 text-white shadow-sm shadow-emerald-950/30 backdrop-blur-xl sm:px-6 lg:px-8">
+        <header className="app-topbar bg-canvas sticky top-0 z-30 flex h-[76px] shrink-0 items-center justify-between border-b border-slate-200/80 px-4 shadow-sm shadow-slate-950/10 backdrop-blur-xl sm:px-6 lg:px-8">
 
           {/* LEFT HEADER */}
 
@@ -466,7 +466,7 @@ export default function AppLayout() {
               aria-label="Open navigation"
               aria-expanded={sidebarOpen}
               onClick={() => setSidebarOpen(true)}
-              className="flex min-h-11 min-w-11 items-center justify-center rounded-lg text-emerald-50 hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-200 lg:hidden"
+              className="flex min-h-11 min-w-11 items-center justify-center rounded-lg text-slate-600 hover:bg-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600 lg:hidden"
             >
               <Menu size={22} />
             </button>
@@ -475,11 +475,11 @@ export default function AppLayout() {
 
             <div className="min-w-0">
 
-              <h1 className="truncate text-base font-semibold tracking-tight text-white">
+              <h1 className="truncate text-base font-semibold tracking-tight text-slate-900">
                 {currentPage?.name ?? "Dumo Youth Network Election Monitoring System"}
               </h1>
 
-              <p className="hidden text-[11px] font-medium text-emerald-100/80 sm:block">
+              <p className="hidden text-[11px] font-medium text-emerald-700 sm:block">
                 {currentPage?.section ?? "Rivers State"}
               </p>
 
@@ -493,8 +493,8 @@ export default function AppLayout() {
 
             {/* OPERATING AREA */}
 
-            <div className="hidden items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-[11px] font-semibold text-emerald-50 md:flex">
-              <MapPin size={13} className="text-emerald-200" />
+            <div className="hidden items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-[11px] font-semibold text-slate-600 md:flex">
+              <MapPin size={13} className="text-emerald-700" />
               Rivers State
 
             </div>
@@ -604,7 +604,7 @@ export default function AppLayout() {
 
             {/* ACCOUNT */}
 
-            <div ref={profileRef} className="relative border-l border-white/15 pl-3 sm:pl-4">
+            <div ref={profileRef} className="relative border-l border-slate-200 pl-3 sm:pl-4">
               <button
                 type="button"
                 aria-label={`Account options for ${user?.full_name || "Dumo User"}`}
@@ -613,16 +613,16 @@ export default function AppLayout() {
                   setNotificationsOpen(false);
                   setProfileOpen((open) => !open);
                 }}
-                className="flex min-h-11 items-center gap-2 rounded-xl px-1.5 text-left hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-200 sm:gap-3 sm:px-2"
+                className="flex min-h-11 items-center gap-2 rounded-xl px-1.5 text-left hover:bg-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600 sm:gap-3 sm:px-2"
               >
                 <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-xs font-bold text-emerald-800 ring-2 ring-white">
                   {userInitials}
                 </span>
                 <span className="hidden min-w-0 md:block">
-                  <span className="block max-w-36 truncate text-sm font-semibold text-white">
+                  <span className="block max-w-36 truncate text-sm font-semibold text-slate-900">
                     {user?.full_name || "Dumo User"}
                   </span>
-                  <span className="block text-xs capitalize text-emerald-100/70">
+                  <span className="block text-xs capitalize text-slate-500">
                     {user?.role || "User"}
                   </span>
                 </span>
