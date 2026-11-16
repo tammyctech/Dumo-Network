@@ -3,7 +3,7 @@ from pathlib import Path
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, ConfigDict
-from sqlalchemy import delete, select
+from sqlalchemy import delete, func, select, text
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -41,6 +41,26 @@ CLEAR_RESULTS_CONFIRMATION = "CLEAR ELECTION RESULTS"
 class ClearElectionResultsRequest(BaseModel):
     confirmation: str
     model_config = ConfigDict(extra="forbid")
+
+
+def _reset_result_submission_sequence(db: Session) -> int:
+    """Align PostgreSQL's sequence with the remaining rows and return the next ID."""
+    highest_id = db.scalar(select(func.max(ResultSubmission.id)))
+    next_id = (highest_id or 0) + 1
+    if db.bind is not None and db.bind.dialect.name == "postgresql":
+        sequence_name = db.scalar(text(
+            "SELECT pg_get_serial_sequence('result_submissions', 'id')"
+        ))
+        if sequence_name:
+            db.execute(
+                text("SELECT setval(CAST(:sequence_name AS regclass), :value, :is_called)"),
+                {
+                    "sequence_name": sequence_name,
+                    "value": highest_id or 1,
+                    "is_called": highest_id is not None,
+                },
+            )
+    return next_id
 
 
 def require_admin(
@@ -136,6 +156,11 @@ def clear_election_results(
             delete(ResultSubmission).where(ResultSubmission.id.in_(submission_ids))
         )
 
+    # DELETE does not rewind PostgreSQL sequences. Flush the removals first,
+    # then align the sequence with the highest submission that still exists.
+    db.flush()
+    next_submission_id = _reset_result_submission_sequence(db)
+
     db.add(AuditLog(
         user_id=admin.id,
         action="CLEAR_ELECTION_RESULTS",
@@ -162,6 +187,7 @@ def clear_election_results(
     return {
         "message": f'Live result data for "{election.name}" was cleared.',
         "election_id": election.id,
+        "next_submission_id": next_submission_id,
         "deleted": {**counts, "evidence_files": files_deleted},
     }
 

@@ -64,12 +64,32 @@ class ClearElectionResultsTests(unittest.TestCase):
                 )
 
             self.assertEqual(response["deleted"]["submissions"], 1)
+            self.assertEqual(response["next_submission_id"], retained_id + 1)
             self.assertFalse(evidence_file.exists())
             self.assertIsNone(db.get(ResultSubmission, target_id))
             self.assertIsNotNone(db.get(ResultSubmission, retained_id))
             self.assertEqual(db.scalar(select(func.count()).select_from(Incident)), 1)
             audit = db.scalar(select(AuditLog).where(AuditLog.action == "CLEAR_ELECTION_RESULTS"))
             self.assertEqual(audit.record_id, election.id)
+
+    def test_next_submission_returns_to_one_when_no_results_remain(self):
+        with Session(self.engine) as db:
+            admin = User(full_name="Admin", email="admin@example.com", hashed_password="x", role="admin", is_active=True)
+            agent = User(full_name="Agent", email="agent@example.com", hashed_password="x", role="agent", is_active=True)
+            election = Election(name="Election", election_date=datetime.now(timezone.utc), state="Rivers")
+            unit = PollingUnit(code="32/01/01/002", name="Unit 2", state="Rivers", lga="Abua/Odual", ward="Ward 1")
+            db.add_all([admin, agent, election, unit]); db.commit()
+            db.add(ResultSubmission(election_id=election.id, polling_unit_id=unit.id, agent_id=agent.id,
+                accredited_voters=10, valid_votes=9, rejected_votes=1)); db.commit()
+
+            response = clear_election_results(
+                election.id,
+                ClearElectionResultsRequest(confirmation="CLEAR ELECTION RESULTS"),
+                db,
+                admin,
+            )
+
+            self.assertEqual(response["next_submission_id"], 1)
 
     def test_exact_confirmation_is_required(self):
         with Session(self.engine) as db:

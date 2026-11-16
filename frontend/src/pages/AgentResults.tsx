@@ -9,7 +9,6 @@ import {
 } from "lucide-react";
 
 import { useAuth } from "../context/AuthContext";
-import { PARTY_COLORS } from "../constants/partyColors";
 
 const API_URL = (
   import.meta.env.VITE_API_URL || "http://127.0.0.1:8000"
@@ -151,7 +150,6 @@ export default function AgentResults() {
     (total, result) => total + (Number(result.votes) || 0),
     0
   );
-  const currentPartyColor = PARTY_COLORS[partyResults[currentPartyIndex]?.party] || "#047857";
 
   // ==========================================
   // LOAD ASSIGNED ELECTIONS AND POLLING UNITS
@@ -250,6 +248,11 @@ export default function AgentResults() {
 
   function showNextParty() {
     setError("");
+    setPartyResults((previous) => previous.map((result, index) =>
+      index === currentPartyIndex && result.votes === ""
+        ? { ...result, votes: "0" }
+        : result
+    ));
     setCurrentPartyIndex((index) => Math.min(partyResults.length - 1, index + 1));
   }
 
@@ -738,32 +741,21 @@ export default function AgentResults() {
               Loading the INEC registered-party list…
             </p>
           ) : (
-            <div
-              className="rounded-2xl border p-5 transition-colors duration-200 sm:p-6"
-              style={{
-                borderColor: `${currentPartyColor}66`,
-                backgroundColor: `${currentPartyColor}0F`,
-                boxShadow: `inset 5px 0 0 ${currentPartyColor}`,
-              }}
-            >
+            <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-5 sm:p-6">
+              <div className="mb-6 h-1.5 overflow-hidden rounded-full bg-slate-200" aria-hidden="true"><div className="h-full rounded-full bg-slate-700 transition-all" style={{width:`${((currentPartyIndex+1)/partyResults.length)*100}%`}}/></div>
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <p className="text-xs font-bold uppercase tracking-[0.16em]" style={{ color: currentPartyColor }}>
+                  <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-500">
                     Party {currentPartyIndex + 1} of {partyResults.length}
                   </p>
-                  <h3 className="mt-2 text-3xl font-black" style={{ color: currentPartyColor }}>
+                  <h3 className="mt-2 text-3xl font-black text-slate-950">
                     {partyResults[currentPartyIndex]?.party}
                   </h3>
                   <p className="mt-1 text-sm font-medium text-slate-700">
                     {partyResults[currentPartyIndex]?.name}
                   </p>
                 </div>
-                <CheckCircle2
-                  size={25}
-                  style={{
-                    color: partyResults[currentPartyIndex]?.votes !== "" ? currentPartyColor : `${currentPartyColor}40`,
-                  }}
-                />
+                <CheckCircle2 size={25} className={partyResults[currentPartyIndex]?.votes!==""?"text-slate-700":"text-slate-300"}/>
               </div>
 
               <label className="mt-6 block text-sm font-semibold text-slate-800">
@@ -776,7 +768,7 @@ export default function AgentResults() {
                   step="1"
                   disabled={savedSubmissionId !== null}
                   aria-label={`${partyResults[currentPartyIndex]?.party} votes`}
-                  placeholder="Enter votes only if this party received votes"
+                  placeholder="Leave empty to record 0"
                   value={partyResults[currentPartyIndex]?.votes ?? ""}
                   onChange={(event) => updatePartyVotes(currentPartyIndex, event.target.value)}
                   onKeyDown={(event) => {
@@ -785,8 +777,7 @@ export default function AgentResults() {
                       showNextParty();
                     }
                   }}
-                  className="mt-2 w-full rounded-xl border bg-white px-4 py-4 text-xl font-bold outline-none focus:ring-2 focus:ring-slate-200"
-                  style={{ borderColor: `${currentPartyColor}80` }}
+                  className="mt-2 w-full rounded-xl border border-slate-300 bg-white px-4 py-4 text-xl font-bold outline-none focus:border-slate-500 focus:ring-2 focus:ring-slate-200"
                 />
               </label>
 
@@ -803,46 +794,17 @@ export default function AgentResults() {
                   type="button"
                   disabled={savedSubmissionId !== null}
                   onClick={showNextParty}
-                  className="inline-flex items-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold text-white disabled:opacity-40"
-                  style={{ backgroundColor: currentPartyColor }}
+                  className="inline-flex items-center gap-2 rounded-xl bg-slate-800 px-5 py-3 text-sm font-semibold text-white hover:bg-slate-900 disabled:opacity-40"
                 >
-                  {currentPartyIndex === partyResults.length - 1 ? "Last party" : "Next party"}
+                  {currentPartyIndex === partyResults.length - 1 ? "Finish party entry" : "Next party"}
                   {currentPartyIndex < partyResults.length - 1 && <ChevronRight size={17} />}
                 </button>
               </div>
             </div>
           )}
 
-          {partyResults.length > 0 && (
-            <div className="mt-4 grid grid-cols-4 gap-2 sm:grid-cols-6 lg:grid-cols-11" aria-label="Political party entry navigation">
-              {partyResults.map((party, index) => {
-                const color = PARTY_COLORS[party.party] || "#475569";
-                const active = index === currentPartyIndex;
-                return (
-                  <button
-                    key={party.party}
-                    type="button"
-                    onClick={() => setCurrentPartyIndex(index)}
-                    disabled={savedSubmissionId !== null}
-                    title={`${party.party} — ${party.name}`}
-                    aria-label={`${party.party}${Number(party.votes) > 0 ? `, ${party.votes} votes entered` : ", zero votes"}`}
-                    className="rounded-lg border px-2 py-2 text-xs font-black transition hover:-translate-y-0.5 disabled:opacity-50"
-                    style={{
-                      borderColor: color,
-                      backgroundColor: active ? color : Number(party.votes) > 0 ? `${color}20` : "#ffffff",
-                      color: active ? "#ffffff" : color,
-                      boxShadow: active ? `0 0 0 2px ${color}30` : "none",
-                    }}
-                  >
-                    {party.party}
-                  </button>
-                );
-              })}
-            </div>
-          )}
-
           <p className="mt-3 text-xs text-slate-500">
-            Tap a party button and enter its votes. Any party left blank will be recorded automatically as zero.
+            Enter one party at a time. Select Next with an empty field to record zero automatically.
           </p>
 
           <div className="mt-6 rounded-xl bg-slate-50 p-4">
