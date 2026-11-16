@@ -319,3 +319,17 @@ header h3 {
 .app-topbar h1 {
   color: #fff !important;
 }
+
+:root.dark body :is(
+  h1, h2, h3, h4, h5, h6,
+  p, span, label, legend, small, strong, em,
+  a, button, li, dt, dd,
+  th, td, caption,
+  input, select, textarea
+) {
+  color: #fff !important;
+}
+
+:root.dark body :is(input, textarea)::placeholder {
+  color: rgb(255 255 255 / 0.65) !important;
+}
