@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 
 import { useAuth } from "../context/AuthContext";
+import { PartyLogo } from "../constants/partyLogos";
 
 const API_URL = (
   import.meta.env.VITE_API_URL || "http://127.0.0.1:8000"
@@ -743,7 +744,8 @@ export default function AgentResults() {
           ) : (
             <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-5 sm:p-6">
               <div className="mb-6 h-1.5 overflow-hidden rounded-full bg-slate-200" aria-hidden="true"><div className="h-full rounded-full bg-slate-700 transition-all" style={{width:`${((currentPartyIndex+1)/partyResults.length)*100}%`}}/></div>
-              <div>
+              <div className="flex items-center gap-4">
+                <PartyLogo party={partyResults[currentPartyIndex]?.party} name={partyResults[currentPartyIndex]?.name} className="h-16 w-16 sm:h-20 sm:w-20" />
                 <div>
                   <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-500">
                     Party {currentPartyIndex + 1} of {partyResults.length}

@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { partyColor } from "../constants/partyColors";
 import { useBranding } from "../context/branding";
+import { PartyLogo } from "../constants/partyLogos";
 
 const API_URL = (
   import.meta.env.VITE_API_URL || "http://127.0.0.1:8000"
@@ -271,14 +272,7 @@ function MapPanel({
                 Current leader
               </p>
               <div className="mt-2 flex items-center gap-3">
-                <span
-                  className="h-3 w-3 rounded-full"
-                  style={{
-                    backgroundColor: partyColor(
-                      selectedResult.leader?.party
-                    ),
-                  }}
-                />
+                <PartyLogo party={selectedResult.leader?.party} className="h-9 w-9" />
                 <span className="text-2xl font-black text-slate-900">
                   {selectedResult.leader?.party || "No report"}
                 </span>
@@ -291,10 +285,7 @@ function MapPanel({
               {selectedResult.party_totals.slice(0, 5).map((party) => (
                 <div key={party.party} className="flex items-center justify-between">
                   <span className="flex items-center gap-2 text-sm font-semibold text-slate-700">
-                    <span
-                      className="h-2.5 w-2.5 rounded-full"
-                      style={{ backgroundColor: partyColor(party.party) }}
-                    />
+                    <PartyLogo party={party.party} className="h-7 w-7" />
                     {party.party}
                   </span>
                   <span className="text-sm font-bold text-slate-950">
@@ -687,7 +678,7 @@ export default function LandingPage() {
             <div className="mt-8 flex flex-wrap gap-3">
               {displayOverview.party_totals.slice(0, 8).map((party) => (
                 <div key={party.party} className="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm shadow-sm">
-                  <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: partyColor(party.party) }} />
+                  <PartyLogo party={party.party} className="h-7 w-7" />
                   <strong>{party.party}</strong>
                   <span className="text-slate-500">{formatNumber(party.votes)}</span>
                 </div>
@@ -727,7 +718,7 @@ export default function LandingPage() {
                       <div className="mb-2 flex items-end justify-between gap-4">
                         <div className="flex min-w-0 items-center gap-3">
                           <span className="w-5 text-[10px] font-black text-slate-400">{String(index + 1).padStart(2, "0")}</span>
-                          <span className="h-3 w-3 shrink-0 rounded-full ring-4 ring-white" style={{ backgroundColor: partyColor(party.party) }} />
+                          <PartyLogo party={party.party} className="h-9 w-9" />
                           <span className="font-black text-slate-900">{party.party}</span>
                         </div>
                         <div className="shrink-0 text-right">
@@ -782,7 +773,7 @@ export default function LandingPage() {
                   <div className="mt-5 flex items-center justify-between border-t border-slate-100 pt-4">
                     <span className="text-xs text-slate-500">Reported leader</span>
                     <span className="flex items-center gap-2 font-bold text-slate-800">
-                      <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: partyColor(update.leading_party?.party) }} />
+                      <PartyLogo party={update.leading_party?.party} className="h-7 w-7" />
                       {update.leading_party?.party || "Pending totals"}
                     </span>
                   </div>
