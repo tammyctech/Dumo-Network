@@ -731,6 +731,7 @@ class OrganizationSettings(Base):
     font_style: Mapped[str] = mapped_column(String(20), nullable=False, default="normal")
     background_image_data_url: Mapped[str | None] = mapped_column(Text, nullable=True)
     favicon_data_url: Mapped[str | None] = mapped_column(Text, nullable=True)
+    landing_text: Mapped[dict] = mapped_column(JSON, nullable=False, default=dict)
     notification_emails: Mapped[list] = mapped_column(JSON, nullable=False, default=list)
     email_sender_name: Mapped[str] = mapped_column(String(100), nullable=False)
     sms_sender_name: Mapped[str | None] = mapped_column(String(11), nullable=True)

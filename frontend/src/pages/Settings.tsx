@@ -22,7 +22,7 @@ import { changePassword } from "../services/api";
 import EnableNotifications from "../components/EnableNotifications";
 import PasswordChecklist from "../components/PasswordChecklist";
 import { useSearchParams } from "react-router-dom";
-import { applyBranding } from "../context/branding";
+import { applyBranding, defaultLandingText } from "../context/branding";
 
 const API_URL = import.meta.env.DEV
   ? (import.meta.env.VITE_API_URL || "http://127.0.0.1:8000").replace(/\/$/, "")
@@ -47,6 +47,7 @@ type OrganizationForm = {
   font_style: string;
   background_image_data_url: string | null;
   favicon_data_url: string | null;
+  landing_text: Record<string, { text: string; color: string }>;
   notification_emails: string;
   email_sender_name: string;
   sms_sender_name: string;
@@ -60,7 +61,18 @@ const emptyOrganization: OrganizationForm = {
   primary_color: "#047857", background_color: "#f6f8f7", text_color: "#0f172a",
   font_family: "Inter", font_size: 16, font_style: "normal",
   background_image_data_url: null, favicon_data_url: null,
+  landing_text: defaultLandingText,
   email_sender_name: "Dumo Youth Network", sms_sender_name: "",
+};
+
+const landingTextLabels: Record<string, string> = {
+  nav_results:"Navigation — Live results", nav_updates:"Navigation — Updates", nav_methodology:"Navigation — Methodology", nav_login:"Navigation — Login button",
+  hero_line_1:"Hero heading — Line 1", hero_line_2:"Hero heading — Highlighted line", hero_line_3:"Hero heading — Line 3", hero_description:"Hero description", hero_results_button:"Hero — Results button", hero_login_button:"Hero — Sign-in button", hero_disclaimer:"Hero disclaimer",
+  map_eyebrow:"Map section label", map_heading:"Map section heading", map_description:"Map explanation",
+  totals_eyebrow:"Totals section label", totals_heading:"Totals section heading", totals_description:"Totals description",
+  updates_eyebrow:"Updates section label", updates_heading:"Updates section heading", updates_description:"Updates description",
+  method_eyebrow:"Method section label", method_heading:"Method section heading", method_description:"Method description",
+  cta_label:"Sign-in banner label", cta_heading:"Sign-in banner heading", cta_button:"Sign-in banner button", footer_notice:"Footer notice",
 };
 
 type SettingsTab =
@@ -156,6 +168,7 @@ export default function Settings() {
           primary_color: data.primary_color || "#047857", background_color: data.background_color || "#f6f8f7", text_color: data.text_color || "#0f172a",
           font_family: data.font_family || "Inter", font_size: data.font_size || 16, font_style: data.font_style || "normal",
           background_image_data_url: data.background_image_data_url || null, favicon_data_url: data.favicon_data_url || null,
+          landing_text: { ...defaultLandingText, ...(data.landing_text || {}) },
           notification_emails: Array.isArray(data.notification_emails) ? data.notification_emails.join("\n") : "",
           email_sender_name: data.email_sender_name || "Dumo Youth Network",
           sms_sender_name: data.sms_sender_name || "",
@@ -174,17 +187,31 @@ export default function Settings() {
     setOrganization((current) => ({ ...current, [key]: value }));
   }
 
+  function updateLandingText(key: string, field: "text" | "color", value: string) {
+    setOrganization((current) => ({
+      ...current,
+      landing_text: { ...current.landing_text, [key]: { ...current.landing_text[key], [field]: value } },
+    }));
+  }
+
   function selectBrandImage(key: "background_image_data_url" | "favicon_data_url", file: File | undefined) {
     setOrganizationError("");
     if (!file) return;
     const allowed = key === "favicon_data_url"
-      ? ["image/png", "image/x-icon", "image/vnd.microsoft.icon", "image/svg+xml"]
+      ? ["image/png", "image/jpeg", "image/webp", "image/x-icon", "image/vnd.microsoft.icon", "image/svg+xml", ""]
       : ["image/png", "image/jpeg", "image/webp", "image/svg+xml"];
     const limit = key === "favicon_data_url" ? 500_000 : 2_000_000;
     if (!allowed.includes(file.type)) return setOrganizationError("Choose a supported image file.");
     if (file.size > limit) return setOrganizationError(`${key === "favicon_data_url" ? "Favicon" : "Background image"} is too large.`);
     const reader = new FileReader();
-    reader.onload = () => updateOrganization(key, String(reader.result));
+    reader.onload = () => {
+      let result = String(reader.result);
+      if (key === "favicon_data_url" && result.startsWith("data:application/octet-stream;")) {
+        const mime = file.name.toLowerCase().endsWith(".ico") ? "image/x-icon" : "image/png";
+        result = result.replace("data:application/octet-stream;", `data:${mime};`);
+      }
+      updateOrganization(key, result);
+    };
     reader.onerror = () => setOrganizationError("Unable to read the selected image.");
     reader.readAsDataURL(file);
   }
@@ -1049,9 +1076,15 @@ export default function Settings() {
                     </div>
                     <div className="grid gap-4 sm:grid-cols-2">
                       <div className="rounded-xl border border-slate-200 p-4"><p className="text-sm font-semibold text-slate-800">Background image</p>{organization.background_image_data_url&&<img src={organization.background_image_data_url} alt="Background preview" className="mt-3 h-28 w-full rounded-lg object-cover"/>}<div className="mt-3 flex flex-wrap gap-3"><label className="cursor-pointer rounded-lg border px-3 py-2 text-xs font-semibold hover:bg-slate-50">Choose image<input type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" className="sr-only" onChange={(e)=>selectBrandImage("background_image_data_url",e.target.files?.[0])}/></label>{organization.background_image_data_url&&<button type="button" onClick={()=>updateOrganization("background_image_data_url",null)} className="text-xs font-semibold text-red-700">Remove</button>}</div><p className="mt-2 text-xs text-slate-500">Maximum 2 MB.</p></div>
-                      <div className="rounded-xl border border-slate-200 p-4"><p className="text-sm font-semibold text-slate-800">Browser favicon</p>{organization.favicon_data_url?<img src={organization.favicon_data_url} alt="Favicon preview" className="mt-3 h-14 w-14 rounded-lg border object-contain p-1"/>:<div className="mt-3 grid h-14 w-14 place-items-center rounded-lg bg-slate-100 text-xs text-slate-400">Icon</div>}<div className="mt-3 flex flex-wrap gap-3"><label className="cursor-pointer rounded-lg border px-3 py-2 text-xs font-semibold hover:bg-slate-50">Choose favicon<input type="file" accept="image/png,image/x-icon,image/vnd.microsoft.icon,image/svg+xml" className="sr-only" onChange={(e)=>selectBrandImage("favicon_data_url",e.target.files?.[0])}/></label>{organization.favicon_data_url&&<button type="button" onClick={()=>updateOrganization("favicon_data_url",null)} className="text-xs font-semibold text-red-700">Remove</button>}</div><p className="mt-2 text-xs text-slate-500">PNG, ICO, or SVG; maximum 500 KB.</p></div>
+                      <div className="rounded-xl border border-slate-200 p-4"><p className="text-sm font-semibold text-slate-800">Browser favicon</p>{organization.favicon_data_url?<img src={organization.favicon_data_url} alt="Favicon preview" className="mt-3 h-14 w-14 rounded-lg border object-contain p-1"/>:<div className="mt-3 grid h-14 w-14 place-items-center rounded-lg bg-slate-100 text-xs text-slate-400">Icon</div>}<input type="file" accept=".png,.jpg,.jpeg,.webp,.ico,.svg" className="mt-3 block w-full cursor-pointer rounded-lg border border-slate-300 bg-white text-xs file:mr-3 file:border-0 file:border-r file:border-slate-200 file:bg-slate-50 file:px-3 file:py-2.5 file:font-semibold" onChange={(e)=>selectBrandImage("favicon_data_url",e.currentTarget.files?.[0])}/>{organization.favicon_data_url&&<button type="button" onClick={()=>updateOrganization("favicon_data_url",null)} className="mt-3 text-xs font-semibold text-red-700">Remove favicon</button>}<p className="mt-2 text-xs text-slate-500">Select one PNG, JPG, WebP, ICO, or SVG image; maximum 500 KB.</p></div>
                     </div>
                     <div className="overflow-hidden rounded-2xl border border-slate-200 shadow-sm" style={{backgroundColor:organization.background_color,color:organization.text_color,fontFamily:organization.font_family,fontSize:organization.font_size,fontStyle:organization.font_style,backgroundImage:organization.background_image_data_url?`linear-gradient(rgb(255 255 255 / .78),rgb(255 255 255 / .78)),url(${organization.background_image_data_url})`:undefined,backgroundSize:"cover"}}><div className="flex items-center gap-3 border-b border-black/10 p-4">{organization.logo_data_url?<img src={organization.logo_data_url} alt="" className="h-10 w-10 rounded-lg bg-white object-contain p-1"/>:<Building2/>}<div><p className="font-bold">{organization.logo_title}</p><p className="text-xs opacity-70">{organization.logo_subtitle}</p></div></div><div className="p-6"><p className="text-2xl font-bold">{organization.login_heading}</p><p className="mt-2 opacity-75">{organization.login_description}</p><button type="button" className="mt-5 rounded-lg px-4 py-2 text-sm font-bold text-white" style={{backgroundColor:organization.primary_color}}>Preview button</button></div></div>
+                  </section>
+                  <section className="space-y-5 rounded-xl border border-slate-200 p-5">
+                    <div><h3 className="font-bold text-slate-900">Landing-page text and colors</h3><p className="mt-1 text-xs leading-5 text-slate-500">Edit each public-page text block and choose its exact text color. Dynamic election figures and polling-unit names remain generated from live data.</p></div>
+                    <div className="grid gap-4 lg:grid-cols-2">
+                      {Object.entries(landingTextLabels).map(([key,label])=>{const item=organization.landing_text[key]||defaultLandingText[key];return <div key={key} className="rounded-xl border border-slate-200 bg-slate-50/60 p-4"><label className="text-xs font-bold uppercase tracking-wide text-slate-600">{label}<textarea rows={item.text.length>90?3:2} maxLength={600} required value={item.text} onChange={(e)=>updateLandingText(key,"text",e.target.value)} className="mt-2 w-full resize-y rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-normal normal-case tracking-normal text-slate-900"/></label><label className="mt-3 flex items-center gap-3 text-xs font-semibold text-slate-600">Text color<input type="color" value={item.color} onChange={(e)=>updateLandingText(key,"color",e.target.value)} className="h-9 w-12 cursor-pointer rounded border-0 bg-transparent"/><input value={item.color} pattern="#[0-9A-Fa-f]{6}" onChange={(e)=>updateLandingText(key,"color",e.target.value)} className="w-28 rounded-lg border border-slate-300 bg-white px-2 py-1.5 font-mono"/><span className="min-w-0 flex-1 truncate rounded-lg bg-white px-3 py-2" style={{color:item.color}}>{item.text}</span></label></div>})}
+                    </div>
                   </section>
                   <section className="grid gap-4 rounded-xl border border-slate-200 p-5 sm:grid-cols-2">
                     <h3 className="font-bold text-slate-900 sm:col-span-2">Official contact details</h3>

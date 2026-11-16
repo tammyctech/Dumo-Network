@@ -18,6 +18,7 @@ import {
   X,
 } from "lucide-react";
 import { partyColor } from "../constants/partyColors";
+import { useBranding } from "../context/branding";
 
 const API_URL = (
   import.meta.env.VITE_API_URL || "http://127.0.0.1:8000"
@@ -344,6 +345,8 @@ function MapPanel({
 }
 
 export default function LandingPage() {
+  const branding = useBranding();
+  const lt = (key: string) => branding.landing_text[key];
   const [overview, setOverview] = useState<PublicOverview | null>(null);
   const [geoJson, setGeoJson] = useState<GeoJson | null>(null);
   const [loading, setLoading] = useState(true);
@@ -423,15 +426,13 @@ export default function LandingPage() {
       <header className="sticky top-0 z-40 border-b border-slate-200/80 bg-white/95 shadow-sm shadow-slate-900/[0.03] backdrop-blur-xl">
         <div className="mx-auto flex h-[4.5rem] max-w-7xl items-center justify-between px-5 lg:px-8">
           <Link to="/" className="flex items-center gap-3 text-slate-950">
-            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-700 text-white shadow-md shadow-emerald-950/15">
-              <Activity size={20} strokeWidth={2.5} />
-            </span>
+            {branding.logo_data_url ? <img src={branding.logo_data_url} alt="" className="h-10 w-10 rounded-xl object-contain"/> : <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-700 text-white shadow-md shadow-emerald-950/15"><Activity size={20} strokeWidth={2.5} /></span>}
             <span>
               <span className="block text-sm font-black tracking-[0.12em]">
-                DUMO YOUTH NETWORK
+                {branding.logo_title.toUpperCase()}
               </span>
               <span className="mt-0.5 block text-[9px] uppercase tracking-[0.2em] text-slate-500">
-                Election Monitoring System
+                {branding.logo_subtitle}
               </span>
             </span>
           </Link>
@@ -441,26 +442,26 @@ export default function LandingPage() {
               href="#results"
               className="relative py-2 text-sm font-semibold text-slate-600 transition-colors duration-200 after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:origin-left after:scale-x-0 after:rounded-full after:bg-emerald-700 after:transition-transform after:duration-200 after:content-[''] hover:text-emerald-800 hover:after:scale-x-100"
             >
-              Live results
+              <span style={{color:lt("nav_results").color}}>{lt("nav_results").text}</span>
             </a>
             <a
               href="#updates"
               className="relative py-2 text-sm font-semibold text-slate-600 transition-colors duration-200 after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:origin-left after:scale-x-0 after:rounded-full after:bg-emerald-700 after:transition-transform after:duration-200 after:content-[''] hover:text-emerald-800 hover:after:scale-x-100"
             >
-              Updates
+              <span style={{color:lt("nav_updates").color}}>{lt("nav_updates").text}</span>
             </a>
             <a
               href="#methodology"
               className="relative py-2 text-sm font-semibold text-slate-600 transition-colors duration-200 after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:origin-left after:scale-x-0 after:rounded-full after:bg-emerald-700 after:transition-transform after:duration-200 after:content-[''] hover:text-emerald-800 hover:after:scale-x-100"
             >
-              Methodology
+              <span style={{color:lt("nav_methodology").color}}>{lt("nav_methodology").text}</span>
             </a>
             <Link
               to="/login"
               className="group inline-flex min-h-11 items-center gap-2 rounded-xl bg-emerald-700 px-4 text-sm font-bold text-white shadow-md shadow-emerald-950/15 transition duration-200 hover:-translate-y-0.5 hover:bg-emerald-800 active:translate-y-0"
             >
               <LogIn size={17} aria-hidden="true" />
-              Monitor login
+              <span style={{color:lt("nav_login").color}}>{lt("nav_login").text}</span>
               <ArrowRight
                 size={15}
                 aria-hidden="true"
@@ -488,28 +489,28 @@ export default function LandingPage() {
                 onClick={() => setMobileMenuOpen(false)}
                 className="rounded-lg px-3 py-3 transition hover:bg-emerald-50 hover:text-emerald-800"
               >
-                Live results
+                <span style={{color:lt("nav_results").color}}>{lt("nav_results").text}</span>
               </a>
               <a
                 href="#updates"
                 onClick={() => setMobileMenuOpen(false)}
                 className="rounded-lg px-3 py-3 transition hover:bg-emerald-50 hover:text-emerald-800"
               >
-                Updates
+                <span style={{color:lt("nav_updates").color}}>{lt("nav_updates").text}</span>
               </a>
               <a
                 href="#methodology"
                 onClick={() => setMobileMenuOpen(false)}
                 className="rounded-lg px-3 py-3 transition hover:bg-emerald-50 hover:text-emerald-800"
               >
-                Methodology
+                <span style={{color:lt("nav_methodology").color}}>{lt("nav_methodology").text}</span>
               </a>
               <Link
                 to="/login"
                 className="mt-2 inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-emerald-700 px-5 font-bold text-white shadow-md transition hover:bg-emerald-800"
               >
                 <LogIn size={18} aria-hidden="true" />
-                Monitor login
+                <span style={{color:lt("nav_login").color}}>{lt("nav_login").text}</span>
                 <ArrowRight size={16} aria-hidden="true" />
               </Link>
             </div>
@@ -532,26 +533,26 @@ export default function LandingPage() {
                 {loading ? "Loading public results · Rivers State" : "Public results · Rivers State"}
               </div>
               <h1 className="mt-7 max-w-2xl text-[2.8rem] font-semibold leading-[1.04] tracking-[-0.055em] text-slate-950 sm:text-6xl lg:text-[4.4rem]">
-                See what’s
-                <span className="block text-emerald-800">happening at</span>
-                <span className="block">the polling unit.</span>
+                <span className="block" style={{color:lt("hero_line_1").color}}>{lt("hero_line_1").text}</span>
+                <span className="block" style={{color:lt("hero_line_2").color}}>{lt("hero_line_2").text}</span>
+                <span className="block" style={{color:lt("hero_line_3").color}}>{lt("hero_line_3").text}</span>
               </h1>
-              <p className="mt-6 max-w-xl text-base leading-7 text-slate-600 sm:text-lg sm:leading-8">
-                "Follow unofficial reports submitted by assigned monitors across all 23 local government areas."
+              <p className="mt-6 max-w-xl text-base leading-7 sm:text-lg sm:leading-8" style={{color:lt("hero_description").color}}>
+                {lt("hero_description").text}
               </p>
               <div className="mt-8 flex flex-wrap gap-3">
                 <a
                   href="#results"
                   className="group inline-flex min-h-12 items-center gap-2 rounded-lg bg-emerald-800 px-5 py-3 text-sm font-semibold text-white shadow-md shadow-emerald-950/10 transition duration-200 hover:-translate-y-0.5 hover:bg-emerald-900 active:translate-y-0"
                 >
-                  Explore the results <ArrowRight size={18} className="transition-transform group-hover:translate-x-1" />
+                  <span style={{color:lt("hero_results_button").color}}>{lt("hero_results_button").text}</span> <ArrowRight size={18} className="transition-transform group-hover:translate-x-1" />
                 </a>
                 <Link
                   to="/login"
                   className="group inline-flex min-h-12 items-center gap-2 rounded-lg border border-slate-300 bg-white/70 px-5 py-3 text-sm font-semibold text-slate-800 transition duration-200 hover:-translate-y-0.5 hover:border-emerald-700/40 hover:bg-white active:translate-y-0"
                 >
                   <LogIn size={18} aria-hidden="true" />
-                  Monitor sign in
+                  <span style={{color:lt("hero_login_button").color}}>{lt("hero_login_button").text}</span>
                   <ArrowRight
                     size={17}
                     aria-hidden="true"
@@ -561,12 +562,7 @@ export default function LandingPage() {
               </div>
               <div className="mt-8 flex max-w-xl items-start gap-3 border-l-2 border-amber-500 pl-4 text-sm leading-6 text-slate-600">
                 <ShieldCheck size={18} className="mt-0.5 shrink-0 text-amber-700" aria-hidden="true" />
-                <p>
-                  Unofficial — Agent-Submitted Data. Dumo Youth Network Election
-                  Monitoring System does not
-                  declare election winners; only authorized electoral bodies
-                  do.
-                </p>
+                <p style={{color:lt("hero_disclaimer").color}}>{lt("hero_disclaimer").text}</p>
               </div>
             </div>
 
@@ -657,20 +653,18 @@ export default function LandingPage() {
           <div className="mx-auto max-w-7xl px-2 sm:px-5 lg:px-8">
             <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
               <div>
-                <p className="text-xs font-black uppercase tracking-[0.2em] text-emerald-700">
-                  Rivers State · LGA overview
+                <p className="text-xs font-black uppercase tracking-[0.2em]" style={{color:lt("map_eyebrow").color}}>
+                  {lt("map_eyebrow").text}
                 </p>
-                <h2 className="mt-3 max-w-3xl text-4xl font-black tracking-[-0.035em] text-slate-950 sm:text-5xl">
-                  See where submitted results currently lead.
+                <h2 className="mt-3 max-w-3xl text-4xl font-black tracking-[-0.035em] sm:text-5xl" style={{color:lt("map_heading").color}}>
+                  {lt("map_heading").text}
                 </h2>
               </div>
               <div className="flex max-w-xl items-start gap-3 rounded-2xl border border-emerald-200 bg-white p-4 text-base leading-7 text-slate-800 shadow-sm">
                 <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-800">
                   <Info size={18} aria-hidden="true" />
                 </span>
-                <p>
-                  Map colors show the <strong>party currently leading</strong>{" "}from reports received in each LGA. Always check the{" "}<strong>reporting coverage percentage</strong> before interpreting the result.
-                </p>
+                <p style={{color:lt("map_description").color}}>{lt("map_description").text}</p>
               </div>
             </div>
 
@@ -706,10 +700,10 @@ export default function LandingPage() {
           <div className="mx-auto max-w-7xl px-5 lg:px-8">
             <div className="grid gap-10 lg:grid-cols-[0.72fr_1.28fr] lg:gap-16">
               <div className="lg:sticky lg:top-28 lg:self-start">
-                <p className="flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.2em] text-emerald-700"><BarChart3 size={15} /> Statewide totals</p>
-                <h2 className="mt-4 text-4xl font-black leading-[1.08] tracking-[-0.045em] text-slate-950 sm:text-5xl">Reported vote position</h2>
-                <p className="mt-5 max-w-md text-sm leading-7 text-slate-600">
-                  Totals update as monitors submit polling-unit records. These figures remain provisional and unofficial.
+                <p className="flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.2em]" style={{color:lt("totals_eyebrow").color}}><BarChart3 size={15} /> {lt("totals_eyebrow").text}</p>
+                <h2 className="mt-4 text-4xl font-black leading-[1.08] tracking-[-0.045em] sm:text-5xl" style={{color:lt("totals_heading").color}}>{lt("totals_heading").text}</h2>
+                <p className="mt-5 max-w-md text-sm leading-7" style={{color:lt("totals_description").color}}>
+                  {lt("totals_description").text}
                 </p>
                 <div className="mt-6 flex items-start gap-3 rounded-xl border border-emerald-100 bg-emerald-50/70 p-4 text-sm leading-6 text-emerald-950">
                   <Info size={17} className="mt-0.5 shrink-0 text-emerald-700" aria-hidden="true" />
@@ -771,10 +765,10 @@ export default function LandingPage() {
           <div className="mx-auto max-w-7xl px-5 lg:px-8">
             <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
               <div>
-                <p className="flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.2em] text-emerald-800"><Radio size={14} /> Election updates</p>
-                <h2 className="mt-3 text-4xl font-bold tracking-[-0.045em] text-slate-950 sm:text-5xl">Latest field reports</h2>
+                <p className="flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.2em]" style={{color:lt("updates_eyebrow").color}}><Radio size={14} /> {lt("updates_eyebrow").text}</p>
+                <h2 className="mt-3 text-4xl font-bold tracking-[-0.045em] sm:text-5xl" style={{color:lt("updates_heading").color}}>{lt("updates_heading").text}</h2>
               </div>
-              <p className="max-w-lg text-sm leading-6 text-slate-600">A privacy-safe stream of the newest polling-unit submissions. Agent identities are not published.</p>
+              <p className="max-w-lg text-sm leading-6" style={{color:lt("updates_description").color}}>{lt("updates_description").text}</p>
             </div>
             <div className="mt-10 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
               {displayOverview.updates.slice(0, 9).map((update) => (
@@ -813,11 +807,10 @@ export default function LandingPage() {
           <div className="relative mx-auto max-w-7xl px-5 lg:px-8">
             <div className="grid gap-10 lg:grid-cols-[0.8fr_1.2fr]">
               <div>
-                <p className="text-sm font-black uppercase tracking-[0.2em] text-emerald-800">How it works</p>
-                <h2 className="mt-4 max-w-xl bg-gradient-to-r from-emerald-950 via-emerald-700 to-teal-600 bg-clip-text text-4xl font-black leading-tight tracking-[-0.035em] text-transparent sm:text-5xl">Transparent from field report to public view.</h2>
-                <p className="mt-5 max-w-lg text-base font-medium leading-7 text-emerald-950">
-                  Follow each result through a clear, structured process—from
-                  an assigned monitor's submission to the public dashboard.
+                <p className="text-sm font-black uppercase tracking-[0.2em]" style={{color:lt("method_eyebrow").color}}>{lt("method_eyebrow").text}</p>
+                <h2 className="mt-4 max-w-xl text-4xl font-black leading-tight tracking-[-0.035em] sm:text-5xl" style={{color:lt("method_heading").color}}>{lt("method_heading").text}</h2>
+                <p className="mt-5 max-w-lg text-base font-medium leading-7" style={{color:lt("method_description").color}}>
+                  {lt("method_description").text}
                 </p>
               </div>
               <div className="grid gap-4 sm:grid-cols-2">
@@ -840,15 +833,15 @@ export default function LandingPage() {
             </div>
             <div className="mt-14 flex flex-col gap-6 rounded-3xl bg-emerald-900 p-7 text-white sm:flex-row sm:items-center sm:justify-between sm:p-10">
               <div>
-                <p className="text-sm font-bold text-emerald-100">Part of the monitoring network?</p>
-                <h3 className="command-center-title mt-2 text-3xl font-black text-white">Sign in to your command center.</h3>
+                <p className="text-sm font-bold" style={{color:lt("cta_label").color}}>{lt("cta_label").text}</p>
+                <h3 className="command-center-title mt-2 text-3xl font-black" style={{color:lt("cta_heading").color}}>{lt("cta_heading").text}</h3>
               </div>
               <Link
                 to="/login"
                 className="group inline-flex min-h-13 shrink-0 items-center justify-center gap-2 rounded-full bg-emerald-800 px-6 py-3.5 font-black text-white shadow-xl shadow-emerald-950/20 transition duration-200 hover:-translate-y-0.5 hover:bg-emerald-700 hover:shadow-emerald-950/30 active:translate-y-0"
               >
                 <LogIn size={18} aria-hidden="true" />
-                Monitor login
+                <span style={{color:lt("cta_button").color}}>{lt("cta_button").text}</span>
                 <ChevronRight
                   size={18}
                   aria-hidden="true"
@@ -864,9 +857,9 @@ export default function LandingPage() {
         <div className="mx-auto flex max-w-7xl flex-col gap-6 px-5 text-sm text-slate-500 sm:flex-row sm:items-center sm:justify-between lg:px-8">
           <div className="flex items-center gap-3">
             <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-50 text-emerald-700"><Activity size={18} /></span>
-            <div><strong className="block text-slate-900">Dumo Youth Network</strong><span>Election Monitoring System</span></div>
+            <div><strong className="block text-slate-900">{branding.logo_title}</strong><span>{branding.logo_subtitle}</span></div>
           </div>
-          <p>Unofficial — Agent-Submitted Data</p>
+          <p style={{color:lt("footer_notice").color}}>{lt("footer_notice").text}</p>
           <a href="https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer" target="_blank" rel="noreferrer" className="hover:text-emerald-700">Map boundary source <ArrowRight size={13} className="inline" /></a>
         </div>
       </footer>

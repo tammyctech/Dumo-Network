@@ -14,10 +14,51 @@ from ..security import get_current_user
 router = APIRouter(prefix="/api/admin/organization", tags=["Organization Settings"])
 DEFAULT_NAME = "Dumo Youth Network"
 LOGO_PATTERN = re.compile(r"^data:image/(png|jpeg|webp|svg\+xml);base64,", re.I)
-FAVICON_PATTERN = re.compile(r"^data:image/(png|x-icon|vnd\.microsoft\.icon|svg\+xml);base64,", re.I)
+FAVICON_PATTERN = re.compile(r"^data:image/(png|jpeg|webp|x-icon|vnd\.microsoft\.icon|svg\+xml);base64,", re.I)
 HEX_COLOR_PATTERN = re.compile(r"^#[0-9a-f]{6}$", re.I)
 FONT_FAMILIES = {"Inter", "Arial", "Georgia", "Verdana", "Tahoma", "Trebuchet MS", "Courier New"}
 FONT_STYLES = {"normal", "italic"}
+DEFAULT_LANDING_TEXT = {
+    "nav_results": {"text": "Live results", "color": "#475569"},
+    "nav_updates": {"text": "Updates", "color": "#475569"},
+    "nav_methodology": {"text": "Methodology", "color": "#475569"},
+    "nav_login": {"text": "Monitor login", "color": "#ffffff"},
+    "hero_line_1": {"text": "See what’s", "color": "#0f172a"},
+    "hero_line_2": {"text": "happening at", "color": "#065f46"},
+    "hero_line_3": {"text": "the polling unit.", "color": "#0f172a"},
+    "hero_description": {"text": "Follow unofficial reports submitted by assigned monitors across all 23 local government areas.", "color": "#475569"},
+    "hero_results_button": {"text": "Explore the results", "color": "#ffffff"},
+    "hero_login_button": {"text": "Monitor sign in", "color": "#1e293b"},
+    "hero_disclaimer": {"text": "Unofficial — Agent-Submitted Data. Dumo Youth Network Election Monitoring System does not declare election winners; only authorized electoral bodies do.", "color": "#475569"},
+    "map_eyebrow": {"text": "Rivers State · LGA overview", "color": "#047857"},
+    "map_heading": {"text": "See where submitted results currently lead.", "color": "#0f172a"},
+    "map_description": {"text": "Map colors show the party currently leading from reports received in each LGA. Always check the reporting coverage percentage before interpreting the result.", "color": "#1e293b"},
+    "totals_eyebrow": {"text": "Statewide totals", "color": "#047857"},
+    "totals_heading": {"text": "Reported vote position", "color": "#0f172a"},
+    "totals_description": {"text": "Totals update as monitors submit polling-unit records. These figures remain provisional and unofficial.", "color": "#475569"},
+    "updates_eyebrow": {"text": "Election updates", "color": "#065f46"},
+    "updates_heading": {"text": "Latest field reports", "color": "#0f172a"},
+    "updates_description": {"text": "A privacy-safe stream of the newest polling-unit submissions. Agent identities are not published.", "color": "#475569"},
+    "method_eyebrow": {"text": "How it works", "color": "#065f46"},
+    "method_heading": {"text": "Transparent from field report to public view.", "color": "#064e3b"},
+    "method_description": {"text": "Follow each result through a clear, structured process—from an assigned monitor's submission to the public dashboard.", "color": "#064e3b"},
+    "cta_label": {"text": "Part of the monitoring network?", "color": "#d1fae5"},
+    "cta_heading": {"text": "Sign in to your command center.", "color": "#ffffff"},
+    "cta_button": {"text": "Open monitoring workspace", "color": "#ffffff"},
+    "footer_notice": {"text": "Unofficial — Agent-Submitted Data", "color": "#64748b"},
+}
+
+
+class LandingTextItem(BaseModel):
+    text: str = Field(min_length=1, max_length=600)
+    color: str
+
+    @field_validator("color")
+    @classmethod
+    def validate_item_color(cls, value: str):
+        if not HEX_COLOR_PATTERN.fullmatch(value):
+            raise ValueError("Use a six-digit hex color.")
+        return value.lower()
 
 
 class OrganizationSettingsPayload(BaseModel):
@@ -39,6 +80,7 @@ class OrganizationSettingsPayload(BaseModel):
     font_style: str = "normal"
     background_image_data_url: str | None = Field(default=None, max_length=3_000_000)
     favicon_data_url: str | None = Field(default=None, max_length=800_000)
+    landing_text: dict[str, LandingTextItem] = Field(default_factory=lambda: DEFAULT_LANDING_TEXT.copy())
     notification_emails: list[EmailStr] = Field(default_factory=list, max_length=20)
     email_sender_name: str = Field(min_length=2, max_length=100)
     sms_sender_name: str | None = Field(default=None, min_length=3, max_length=11)
@@ -101,6 +143,14 @@ class OrganizationSettingsPayload(BaseModel):
             raise ValueError("Choose normal or italic font style.")
         return value
 
+    @field_validator("landing_text")
+    @classmethod
+    def validate_landing_text(cls, value: dict[str, LandingTextItem]):
+        unknown = set(value) - set(DEFAULT_LANDING_TEXT)
+        if unknown:
+            raise ValueError("Unknown landing-page text field.")
+        return value
+
 
 def validate_image(value: str | None, pattern: re.Pattern, maximum_bytes: int, label: str):
     if not value:
@@ -143,6 +193,7 @@ def serialize(item: OrganizationSettings | None) -> dict:
         "font_style": item.font_style if item else "normal",
         "background_image_data_url": item.background_image_data_url if item else None,
         "favicon_data_url": item.favicon_data_url if item else None,
+        "landing_text": {**DEFAULT_LANDING_TEXT, **(item.landing_text or {})} if item else DEFAULT_LANDING_TEXT,
         "notification_emails": item.notification_emails if item else [],
         "email_sender_name": item.email_sender_name if item else DEFAULT_NAME,
         "sms_sender_name": item.sms_sender_name if item else None,
@@ -157,7 +208,7 @@ def get_public_branding(db: Session = Depends(get_db)):
         "organization_name", "logo_data_url", "logo_title", "logo_subtitle",
         "login_heading", "login_description", "primary_color", "background_color",
         "text_color", "font_family", "font_size", "font_style",
-        "background_image_data_url", "favicon_data_url",
+        "background_image_data_url", "favicon_data_url", "landing_text",
     )
     return {key: data[key] for key in allowed}
 
