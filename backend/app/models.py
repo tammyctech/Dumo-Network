@@ -692,6 +692,21 @@ class NotificationCampaign(Base):
     created_by: Mapped[int] = mapped_column(
         ForeignKey("users.id"), nullable=False, index=True
     )
+    title: Mapped[str] = mapped_column(String(120), nullable=False)
+    body: Mapped[str] = mapped_column(String(500), nullable=False)
+    url: Mapped[str] = mapped_column(String(500), nullable=False)
+    audience_type: Mapped[str] = mapped_column(String(30), nullable=False)
+    audience_data: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    target_users: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    devices_found: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    sent: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    failed: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    expired_removed: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
+        nullable=False,
+    )
 
 
 class EmailCampaign(Base):
@@ -720,21 +735,6 @@ class EmailUnsubscribe(Base):
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), nullable=False, unique=True, index=True)
     email: Mapped[str] = mapped_column(String(255), nullable=False)
     unsubscribed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
-    title: Mapped[str] = mapped_column(String(120), nullable=False)
-    body: Mapped[str] = mapped_column(String(500), nullable=False)
-    url: Mapped[str] = mapped_column(String(500), nullable=False)
-    audience_type: Mapped[str] = mapped_column(String(30), nullable=False)
-    audience_data: Mapped[dict | None] = mapped_column(JSON, nullable=True)
-    target_users: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
-    devices_found: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
-    sent: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
-    failed: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
-    expired_removed: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True),
-        default=lambda: datetime.now(timezone.utc),
-        nullable=False,
-    )
 
 
 class OrganizationSettings(Base):

@@ -81,23 +81,18 @@ export default function AdminNotifications() {
     if (!token) return;
     setLoading(true); setError("");
     try {
-      const responses = await Promise.all([
-        fetch(`${API_URL}/api/admin/agents`, { headers: headers() }),
-        fetch(`${API_URL}/api/admin/elections`, { headers: headers() }),
-        fetch(`${API_URL}/api/wards/lgas`, { headers: headers() }),
-        fetch(`${API_URL}/api/push/campaigns`, { headers: headers() }),
-        fetch(`${API_URL}/api/push/readiness`, { headers: headers() }),
-        fetch(`${API_URL}/api/admin/email/welcome-agents/status`, { headers: headers() }),
-        fetch(`${API_URL}/api/admin/email/templates`, { headers: headers() }),
-        fetch(`${API_URL}/api/admin/email/campaigns`, { headers: headers() }),
+      async function section(path:string){const response=await fetch(`${API_URL}${path}`,{headers:headers()});if(!response.ok)throw new Error(await apiError(response));return response.json();}
+      const results=await Promise.allSettled([
+        section("/api/admin/agents"),section("/api/admin/elections"),section("/api/wards/lgas"),section("/api/push/campaigns"),
+        section("/api/push/readiness"),section("/api/admin/email/welcome-agents/status"),section("/api/admin/email/templates"),section("/api/admin/email/campaigns"),
       ]);
-      for (const response of responses) if (!response.ok) throw new Error(await apiError(response));
-      const [agentData, electionData, lgaData, campaignData, readinessData, welcomeData,templateData,emailCampaignData] = await Promise.all(responses.map(response => response.json()));
-      setAgents(agentData.agents || []); setElections(electionData.elections || []);
-      setLgas(lgaData.lgas || []); setCampaigns(campaignData.campaigns || []);
-      setReadiness(readinessData);
-      setWelcomeStatus(welcomeData);
-      setEmailTemplates(templateData.templates||[]);setEmailCampaigns(emailCampaignData.campaigns||[]);
+      const data=results.map(result=>result.status==="fulfilled"?result.value:null);
+      if(data[0])setAgents(data[0].agents||[]);if(data[1])setElections(data[1].elections||[]);
+      if(data[2])setLgas(data[2].lgas||[]);if(data[3])setCampaigns(data[3].campaigns||[]);
+      if(data[4])setReadiness(data[4]);if(data[5])setWelcomeStatus(data[5]);
+      if(data[6])setEmailTemplates(data[6].templates||[]);if(data[7])setEmailCampaigns(data[7].campaigns||[]);
+      const failures=results.filter(result=>result.status==="rejected") as PromiseRejectedResult[];
+      if(failures.length)setError(`${failures.length} Notification Centre section${failures.length===1?"":"s"} could not load. The available sections remain usable. ${failures[0].reason instanceof Error?failures[0].reason.message:""}`.trim());
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Unable to load Notification Centre.");
     } finally { setLoading(false); }
