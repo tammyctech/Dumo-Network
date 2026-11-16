@@ -213,3 +213,105 @@ header h3 {
 :root[data-custom-brand="true"] :is(.hover\:bg-emerald-800, .hover\:bg-emerald-700):hover {
   background-color: color-mix(in srgb, var(--brand-primary) 82%, black) !important;
 }
+
+/* ==========================================
+   DARK WORKSPACE THEME
+========================================== */
+
+:root.dark {
+  --brand-background: #08120f;
+  --brand-text: #e5eee9;
+  color: #e5eee9;
+  background-color: #08120f;
+  color-scheme: dark;
+}
+
+:root.dark body,
+:root.dark #root,
+:root.dark .bg-canvas,
+:root.dark .dashboard-canvas {
+  background-color: #08120f !important;
+  color: #e5eee9;
+}
+
+:root.dark .dashboard-canvas {
+  background-image: radial-gradient(circle at 84% 0%, rgb(16 185 129 / 0.12), transparent 28rem);
+}
+
+:root.dark :is(.bg-white, .bg-slate-50, .bg-slate-50\/70, .bg-slate-50\/80) {
+  background-color: #111c18 !important;
+}
+
+:root.dark :is(.bg-slate-100, .bg-slate-100\/80) {
+  background-color: #18241f !important;
+}
+
+:root.dark :is(.bg-emerald-50, .bg-emerald-50\/70) {
+  background-color: rgb(6 78 59 / 0.28) !important;
+}
+
+:root.dark :is(.bg-amber-50, .bg-yellow-50) {
+  background-color: rgb(120 53 15 / 0.24) !important;
+}
+
+:root.dark :is(.bg-red-50, .bg-rose-50) {
+  background-color: rgb(127 29 29 / 0.24) !important;
+}
+
+:root.dark :is(.text-slate-950, .text-slate-900, .text-slate-800),
+:root.dark main :is(h1, h2, h3, h4, h5, h6),
+:root.dark header :is(h1, h2, h3) {
+  color: #f1f5f3 !important;
+}
+
+:root.dark :is(.text-slate-700, .text-slate-600) {
+  color: #bdc9c3 !important;
+}
+
+:root.dark :is(.text-slate-500, .text-slate-400) {
+  color: #93a39b !important;
+}
+
+:root.dark :is(.border, .border-t, .border-b, .border-r, .border-l, .divide-y > :not(:last-child)),
+:root.dark :is(.border-slate-100, .border-slate-200, .border-slate-300) {
+  border-color: #2b3b34 !important;
+}
+
+:root.dark :is(input, select, textarea, .input) {
+  border-color: #3a4b43 !important;
+  background-color: #0d1713 !important;
+  color: #eef5f1 !important;
+}
+
+:root.dark :is(input, textarea)::placeholder {
+  color: #718078 !important;
+}
+
+:root.dark select option {
+  background-color: #0d1713;
+  color: #eef5f1;
+}
+
+:root.dark table thead,
+:root.dark thead.bg-slate-50 {
+  background-color: #17231e !important;
+  color: #bdc9c3 !important;
+}
+
+:root.dark tbody tr:hover,
+:root.dark .hover\:bg-slate-50:hover,
+:root.dark .hover\:bg-slate-100:hover {
+  background-color: #182720 !important;
+}
+
+:root.dark :is(button, a).bg-white {
+  background-color: #14211b !important;
+}
+
+:root.dark :is(.shadow-sm, .shadow-md, .shadow-lg, .shadow-xl, .shadow-2xl) {
+  --tw-shadow-color: rgb(0 0 0 / 0.35);
+}
+
+:root.dark .landing-page main .command-center-title {
+  color: #fff !important;
+}

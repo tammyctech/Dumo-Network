@@ -993,7 +993,7 @@ export default function Settings() {
                 </h2>
 
                 <p className="text-sm text-slate-500">
-                  The workspace uses a consistent light theme with accessible green accents.
+                  The workspace uses a consistent dark theme with accessible green accents.
                 </p>
 
                 <div className="flex items-start gap-4 rounded-2xl border border-emerald-200 bg-emerald-50/70 p-5">
@@ -1002,10 +1002,10 @@ export default function Settings() {
                   </span>
                   <div>
                     <p className="font-semibold text-slate-900">
-                      Light appearance is enabled
+                      Dark appearance is enabled
                     </p>
                     <p className="mt-1 text-sm leading-6 text-slate-600">
-                      Pages, navigation, and forms stay bright and readable, with green reserved for key actions and status highlights.
+                      Pages, navigation, forms, and data tables use comfortable dark surfaces, with green reserved for key actions and status highlights.
                     </p>
                   </div>
                 </div>

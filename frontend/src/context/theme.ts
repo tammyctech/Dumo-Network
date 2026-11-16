@@ -1,8 +1,8 @@
 export function initializeTheme(): void {
   const root = document.documentElement;
 
-  root.classList.remove("dark");
-  root.dataset.theme = "light";
-  root.style.colorScheme = "light";
-  window.localStorage.removeItem("dumo-theme");
+  root.classList.add("dark");
+  root.dataset.theme = "dark";
+  root.style.colorScheme = "dark";
+  window.localStorage.setItem("dumo-theme", "dark");
 }
