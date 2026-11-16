@@ -326,6 +326,18 @@ header h3 {
   border-color: #494949 !important;
 }
 
+:root.dark .app-sidebar {
+  border-color: var(--dark-border) !important;
+  background-color: var(--dark-surface-card) !important;
+  box-shadow: 0 12px 30px rgb(0 0 0 / 0.38) !important;
+}
+
+:root.dark .app-sidebar nav a[aria-current="page"] {
+  border-color: #86cdb2 !important;
+  background-color: var(--dark-surface-overlay) !important;
+  color: #faf5ef !important;
+}
+
 :root.dark :is(.bg-emerald-700, .bg-emerald-600) {
   background-color: #477f69 !important;
 }

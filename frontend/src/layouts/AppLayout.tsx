@@ -271,6 +271,7 @@ export default function AppLayout() {
       <aside
         aria-label="Application navigation"
         className={`
+          app-sidebar
           fixed inset-y-0 left-0 z-50
           flex w-64 flex-col
           border-r border-emerald-950/40 bg-[#073f33] text-white shadow-xl shadow-emerald-950/20
