@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, Navigate, useNavigate } from "react-router-dom";
 import { AlertCircle, ArrowRight, CheckCircle2, Eye, EyeOff, Fingerprint, LoaderCircle, LockKeyhole, MapPin, RadioTower, ShieldCheck, UserRound, Users } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useBranding } from "../context/branding";
@@ -11,10 +11,12 @@ const features=[
 ];
 
 export default function Login(){
- const navigate=useNavigate();const {login}=useAuth();
+ const navigate=useNavigate();const {login,user,token,isLoading}=useAuth();
  const branding=useBranding();
  const [identifier,setIdentifier]=useState(""),[password,setPassword]=useState(""),[showPassword,setShowPassword]=useState(false),[error,setError]=useState(""),[loading,setLoading]=useState(false);
  async function handleSubmit(e:FormEvent<HTMLFormElement>){e.preventDefault();if(loading)return;setError("");setLoading(true);try{await login(identifier.trim(),password);navigate("/dashboard",{replace:true})}catch(err){setError(err instanceof Error?err.message:"Unable to sign in. Please try again.")}finally{setLoading(false)}}
+ if(isLoading)return <main className="grid min-h-screen place-items-center bg-[#eef3ef]"><div className="text-center"><LoaderCircle className="mx-auto animate-spin text-emerald-700"/><p className="mt-3 text-sm font-semibold text-slate-600">Checking your session…</p></div></main>;
+ if(user&&token)return <Navigate to={user.must_change_password?"/change-password":"/dashboard"} replace/>;
  return <main className="min-h-screen bg-[#eef3ef] p-0 lg:p-5">
   <div className="mx-auto grid min-h-screen max-w-[1500px] overflow-hidden bg-white shadow-2xl shadow-slate-900/10 lg:min-h-[calc(100vh-2.5rem)] lg:grid-cols-[1.05fr_.95fr] lg:rounded-[2rem]">
    <section className="relative hidden overflow-hidden bg-[#063f32] px-12 py-10 text-white lg:flex lg:flex-col xl:px-16 xl:py-12">

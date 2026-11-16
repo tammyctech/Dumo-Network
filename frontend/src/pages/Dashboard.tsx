@@ -35,6 +35,16 @@ import {
 } from "recharts";
 
 import { useAuth } from "../context/AuthContext";
+import { partyLogoUrls } from "../constants/partyLogos";
+
+function PartyAxisTick({ x = 0, y = 0, payload }: { x?: number; y?: number; payload?: { value?: string } }) {
+  const party = String(payload?.value || "");
+  const logo = partyLogoUrls[party.toUpperCase()];
+  return <g transform={`translate(${x},${y})`}>
+    {logo ? <image href={logo} x={-10} y={7} width={20} height={20} preserveAspectRatio="xMidYMid meet"/> : <rect x={-10} y={7} width={20} height={20} rx={4} fill="#f1f5f9" stroke="#cbd5e1"/>}
+    <text x={0} y={40} textAnchor="middle" fill="#475569" fontSize={11} fontWeight={700}>{party}</text>
+  </g>;
+}
 
 // ==========================================
 
@@ -1540,7 +1550,7 @@ const workflowUnavailableMessage = statistics?.election
 
                       left: 0,
 
-                      bottom: 10,
+                      bottom: 42,
 
                     }}
 
@@ -1548,7 +1558,7 @@ const workflowUnavailableMessage = statistics?.election
 
                     <CartesianGrid stroke="#e2e8f0" strokeDasharray="3 3" vertical={false} />
 
-                    <XAxis dataKey="party" tick={{ fill: "#64748b", fontSize: 12 }} axisLine={{ stroke: "#cbd5e1" }} tickLine={false} />
+                    <XAxis dataKey="party" tick={<PartyAxisTick />} height={58} axisLine={{ stroke: "#cbd5e1" }} tickLine={false} />
 
                     <YAxis
                       allowDecimals={false}

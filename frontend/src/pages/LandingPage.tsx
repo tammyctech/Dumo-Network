@@ -608,9 +608,7 @@ export default function LandingPage() {
                 </div>
                 <div className="rounded-xl border border-slate-200/80 bg-[#f8faf8] p-4 transition hover:border-emerald-200">
                   <p className="text-[11px] font-medium text-slate-500">Current statewide lead</p>
-                  <p className="mt-2 truncate text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl">
-                    {hasUploadedResults && leadingParty ? leadingParty.party : "—"}
-                  </p>
+                  {hasUploadedResults && leadingParty ? <p className="mt-2 flex items-center gap-2 text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl"><PartyLogo party={leadingParty.party} className="h-9 w-9"/><span className="truncate">{leadingParty.party}</span></p> : <p className="mt-2 text-2xl font-bold text-slate-950 sm:text-3xl">—</p>}
                 </div>
               </div>
               <p className="relative mt-5 flex items-center gap-2 border-t border-slate-200 pt-4 text-xs text-slate-500">

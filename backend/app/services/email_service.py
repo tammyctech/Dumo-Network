@@ -2,6 +2,7 @@ import logging
 import os
 import smtplib
 import base64
+import re
 from email.message import EmailMessage
 from email.utils import formataddr
 from html import escape
@@ -9,6 +10,33 @@ import requests
 
 
 logger = logging.getLogger(__name__)
+
+
+def _email_shell(subject: str, content: str) -> str:
+    """Wrap message-specific markup in an email-client-safe DYN layout."""
+    body_match = re.search(r"<body[^>]*>(.*?)</body>", content, re.I | re.S)
+    inner = body_match.group(1) if body_match else content
+    frontend_url = os.getenv("FRONTEND_URL", "https://dumo-network.vercel.app").strip().rstrip("/")
+    logo_url = f"{frontend_url}/dyn-favicon-192.png"
+    safe_subject = escape(subject)
+    return f"""<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light only"><title>{safe_subject}</title></head>
+<body style="margin:0;padding:0;background:#eef3ef;color:#172033;font-family:Arial,'Helvetica Neue',sans-serif;-webkit-text-size-adjust:100%">
+<div style="display:none;max-height:0;overflow:hidden;opacity:0">{safe_subject} · Dumo Youth Network</div>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="width:100%;background:#eef3ef;border-collapse:collapse"><tr><td align="center" style="padding:28px 12px">
+  <table role="presentation" width="620" cellpadding="0" cellspacing="0" style="width:100%;max-width:620px;border-collapse:separate;background:#ffffff;border:1px solid #dbe5df;border-radius:22px;overflow:hidden;box-shadow:0 12px 30px rgba(6,63,50,.08)">
+    <tr><td style="background:#063f32;padding:26px 30px">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>
+        <td width="58" valign="middle"><img src="{escape(logo_url)}" width="48" height="48" alt="Dumo Youth Network" style="display:block;width:48px;height:48px;border-radius:13px;background:#ffffff;object-fit:contain"></td>
+        <td valign="middle"><div style="font-size:14px;line-height:18px;font-weight:800;letter-spacing:1.2px;color:#ffffff">DUMO YOUTH NETWORK</div><div style="margin-top:4px;font-size:10px;line-height:14px;font-weight:700;letter-spacing:1.5px;color:#a7f3d0">ELECTION MONITORING SYSTEM</div></td>
+      </tr></table>
+    </td></tr>
+    <tr><td style="padding:30px 30px 8px"><div style="display:inline-block;padding:6px 10px;border-radius:999px;background:#ecfdf5;color:#047857;font-size:10px;line-height:12px;font-weight:800;letter-spacing:1.2px">OFFICIAL COMMUNICATION</div><h1 style="margin:14px 0 0;color:#0f172a;font-size:24px;line-height:32px;font-weight:800">{safe_subject}</h1></td></tr>
+    <tr><td class="email-content" style="padding:8px 30px 32px;font-size:15px;line-height:24px;color:#334155">{inner}</td></tr>
+    <tr><td style="border-top:1px solid #e2e8f0;background:#f8faf9;padding:22px 30px;text-align:center"><p style="margin:0;color:#64748b;font-size:12px;line-height:19px">This message was sent by Dumo Youth Network Election Monitoring System.</p><p style="margin:5px 0 0;color:#94a3b8;font-size:11px;line-height:17px">Please do not share passwords or verification details with anyone.</p></td></tr>
+  </table>
+</td></tr></table>
+</body></html>"""
 
 
 def _gmail_configuration() -> tuple[str, str, str, str] | None:
@@ -74,7 +102,7 @@ def _message(recipient: str, subject: str, plain_text: str, html: str, sender_na
     message["From"] = formataddr((sender_name or os.getenv("SMTP_FROM_NAME", "Dumo Youth Network"), _from_email()))
     message["To"] = recipient
     message.set_content(plain_text)
-    message.add_alternative(html, subtype="html")
+    message.add_alternative(_email_shell(subject, html), subtype="html")
     return message
 
 
@@ -166,12 +194,7 @@ Temporary password: <strong>{escape(temporary_password)}</strong>
     if _provider() == "gmail_api":
         return send_system_email(recipient=recipient, subject=subject, plain_text=plain_text, html=html, sender_name=from_name)
 
-    message = EmailMessage()
-    message["Subject"] = subject
-    message["From"] = formataddr((from_name, from_email))
-    message["To"] = recipient
-    message.set_content(plain_text)
-    message.add_alternative(html, subtype="html")
+    message = _message(recipient, subject, plain_text, html, from_name)
 
     try:
         smtp_class = smtplib.SMTP_SSL if use_ssl else smtplib.SMTP
@@ -204,12 +227,7 @@ def send_system_email(*, recipient: str, subject: str, plain_text: str, html: st
     password = os.getenv("SMTP_PASSWORD", "")
     use_ssl = _enabled(os.getenv("SMTP_USE_SSL"))
     use_tls = _enabled(os.getenv("SMTP_USE_TLS"), default=not use_ssl)
-    message = EmailMessage()
-    message["Subject"] = subject
-    message["From"] = formataddr((sender_name or os.getenv("SMTP_FROM_NAME", "Dumo Youth Network"), from_email))
-    message["To"] = recipient
-    message.set_content(plain_text)
-    message.add_alternative(html, subtype="html")
+    message = _message(recipient, subject, plain_text, html, sender_name)
     try:
         smtp_class = smtplib.SMTP_SSL if use_ssl else smtplib.SMTP
         with smtp_class(host, port, timeout=15) as smtp:
@@ -259,13 +277,13 @@ def send_bulk_system_email(*, recipients: list[tuple[str, str]], subject: str, b
             if username:
                 smtp.login(username, password)
             for recipient, full_name in recipients:
-                message = EmailMessage()
-                message["Subject"] = subject
-                message["From"] = formataddr((sender_name or os.getenv("SMTP_FROM_NAME", "Dumo Youth Network"), from_email))
-                message["To"] = recipient
-                message.set_content(f"Hello {full_name},\n\n{body}\n\nDumo Youth Network")
                 safe_body = escape(body).replace("\n", "<br>")
-                message.add_alternative(f"<p>Hello {escape(full_name)},</p><p>{safe_body}</p><p>Dumo Youth Network</p>", subtype="html")
+                message = _message(
+                    recipient, subject,
+                    f"Hello {full_name},\n\n{body}\n\nDumo Youth Network",
+                    f"<p>Hello {escape(full_name)},</p><p>{safe_body}</p><p style=\"margin-top:24px\"><strong>Dumo Youth Network</strong></p>",
+                    sender_name,
+                )
                 try:
                     smtp.send_message(message)
                     sent += 1
