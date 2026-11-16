@@ -1,3 +1,4 @@
+import asyncio
 import os
 
 from fastapi import FastAPI, Depends
@@ -77,6 +78,29 @@ app = FastAPI(
     description="Dumo Youth Network Election Monitoring System",
     version="1.0.0",
 )
+
+
+async def _email_campaign_scheduler() -> None:
+    while True:
+        try:
+            await asyncio.to_thread(admin_email.process_due_email_campaigns)
+        except Exception:
+            # Individual failures are recorded by the campaign sender; the
+            # scheduler must stay alive for the next due run.
+            pass
+        await asyncio.sleep(300)
+
+
+@app.on_event("startup")
+async def start_email_campaign_scheduler() -> None:
+    app.state.email_campaign_task = asyncio.create_task(_email_campaign_scheduler())
+
+
+@app.on_event("shutdown")
+async def stop_email_campaign_scheduler() -> None:
+    task = getattr(app.state, "email_campaign_task", None)
+    if task:
+        task.cancel()
 
 
 # =====================================================

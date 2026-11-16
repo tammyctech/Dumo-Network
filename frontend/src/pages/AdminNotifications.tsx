@@ -29,6 +29,8 @@ type Campaign = {
 };
 type Readiness = { ready: boolean; detail?: string };
 type WelcomeStatus = { sent:number; queued:number; failed:number };
+type EmailTemplate = {key:string;name:string;subject:string;body:string};
+type EmailCampaign = {id:number;template_key:string;subject:string;body:string;audience:string;frequency:string;status:string;next_send_at:string;last_sent_at:string|null;total_sent:number;total_failed:number;total_skipped:number};
 type AudienceType = "selected_agents" | "election" | "lga" | "all_agents";
 
 const audiences: { value: AudienceType; label: string; description: string; icon: typeof Users }[] = [
@@ -65,6 +67,9 @@ export default function AdminNotifications() {
   const [emailForm,setEmailForm]=useState({subject:"",body:""});
   const [welcomeStatus,setWelcomeStatus]=useState<WelcomeStatus>({sent:0,queued:0,failed:0});
   const [welcomeSending,setWelcomeSending]=useState(false);
+  const [emailTemplates,setEmailTemplates]=useState<EmailTemplate[]>([]),[emailCampaigns,setEmailCampaigns]=useState<EmailCampaign[]>([]);
+  const [scheduleSaving,setScheduleSaving]=useState(false);
+  const [scheduleForm,setScheduleForm]=useState({template_key:"",subject:"",body:"",audience:"agents",frequency:"weekly",next_send_at:""});
   const [welcomeUserIds,setWelcomeUserIds]=useState<number[]>([]),[welcomeSearch,setWelcomeSearch]=useState("");
   const [form, setForm] = useState({
     title: "", body: "", url: "/dashboard", audience_type: "selected_agents" as AudienceType,
@@ -83,13 +88,16 @@ export default function AdminNotifications() {
         fetch(`${API_URL}/api/push/campaigns`, { headers: headers() }),
         fetch(`${API_URL}/api/push/readiness`, { headers: headers() }),
         fetch(`${API_URL}/api/admin/email/welcome-agents/status`, { headers: headers() }),
+        fetch(`${API_URL}/api/admin/email/templates`, { headers: headers() }),
+        fetch(`${API_URL}/api/admin/email/campaigns`, { headers: headers() }),
       ]);
       for (const response of responses) if (!response.ok) throw new Error(await apiError(response));
-      const [agentData, electionData, lgaData, campaignData, readinessData, welcomeData] = await Promise.all(responses.map(response => response.json()));
+      const [agentData, electionData, lgaData, campaignData, readinessData, welcomeData,templateData,emailCampaignData] = await Promise.all(responses.map(response => response.json()));
       setAgents(agentData.agents || []); setElections(electionData.elections || []);
       setLgas(lgaData.lgas || []); setCampaigns(campaignData.campaigns || []);
       setReadiness(readinessData);
       setWelcomeStatus(welcomeData);
+      setEmailTemplates(templateData.templates||[]);setEmailCampaigns(emailCampaignData.campaigns||[]);
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Unable to load Notification Centre.");
     } finally { setLoading(false); }
@@ -142,6 +150,9 @@ export default function AdminNotifications() {
   }
   async function sendWelcome(event:FormEvent){event.preventDefault();setWelcomeSending(true);setError("");setSuccess("");try{const response=await fetch(`${API_URL}/api/admin/email/welcome-agents`,{method:"POST",headers:{...headers(),"Content-Type":"application/json"},body:JSON.stringify({user_ids:welcomeUserIds})});if(!response.ok)throw new Error(await apiError(response));const result=await response.json();const summary=`${result.queued} personalized welcome email${result.queued===1?" was":"s were"} queued. ${result.already_sent} already sent, ${result.already_queued} currently processing, ${result.missing_email} missing real email, ${result.missing_assignment} missing assignment, and ${result.remaining} remain for the next batch.`;if(result.queued===0&&result.already_sent>0)setError(`${summary} No email was sent because every eligible marked agent is already recorded as sent. Use “Force resend to marked” only if you intend to send it again.`);else{setSuccess(summary);setWelcomeUserIds([])}await load()}catch(caught){setError(caught instanceof Error?caught.message:"Unable to queue welcome emails.")}finally{setWelcomeSending(false)}}
   async function resendWelcome(){if(!window.confirm(`Resend the welcome email to the ${welcomeUserIds.length} selected agent${welcomeUserIds.length===1?"":"s"}? A recipient may receive a duplicate if the earlier message is delayed or in spam.`))return;setWelcomeSending(true);setError("");setSuccess("");try{const response=await fetch(`${API_URL}/api/admin/email/welcome-agents?resend_sent=true`,{method:"POST",headers:{...headers(),"Content-Type":"application/json"},body:JSON.stringify({user_ids:welcomeUserIds})});if(!response.ok)throw new Error(await apiError(response));const result=await response.json();setSuccess(`${result.queued} selected welcome email${result.queued===1?" was":"s were"} queued again.`);setWelcomeUserIds([]);await load()}catch(caught){setError(caught instanceof Error?caught.message:"Unable to resend welcome emails.")}finally{setWelcomeSending(false)}}
+  function chooseEmailTemplate(key:string){const item=emailTemplates.find(value=>value.key===key);setScheduleForm(current=>({...current,template_key:key,subject:item?.subject||"",body:item?.body||""}));}
+  async function scheduleEmail(event:FormEvent){event.preventDefault();setScheduleSaving(true);setError("");setSuccess("");try{const response=await fetch(`${API_URL}/api/admin/email/campaigns`,{method:"POST",headers:{...headers(),"Content-Type":"application/json"},body:JSON.stringify({...scheduleForm,next_send_at:new Date(scheduleForm.next_send_at).toISOString()})});if(!response.ok)throw new Error(await apiError(response));setSuccess("Email campaign scheduled successfully.");setScheduleForm(current=>({...current,next_send_at:""}));await load()}catch(caught){setError(caught instanceof Error?caught.message:"Unable to schedule email campaign.")}finally{setScheduleSaving(false)}}
+  async function campaignAction(id:number,action:string){setError("");setSuccess("");try{const response=await fetch(`${API_URL}/api/admin/email/campaigns/${id}/${action}`,{method:"PATCH",headers:headers()});if(!response.ok)throw new Error(await apiError(response));setSuccess(action==="send-now"?"Campaign delivery started.":`Campaign ${action}d.`);await load()}catch(caught){setError(caught instanceof Error?caught.message:"Unable to update campaign.")}}
 
   return (
     <div className="space-y-7">
@@ -176,6 +187,19 @@ export default function AdminNotifications() {
         <SectionHeading step="Email" title="Email all users" description="Send an individual email to every active user with a real email address. Placeholder addresses are skipped." icon={Mail}/>
         <div className="mt-6 grid gap-5"><Field label="Email subject" hint={`${emailForm.subject.length}/150`}><input required minLength={2} maxLength={150} className="input" value={emailForm.subject} onChange={event=>setEmailForm({...emailForm,subject:event.target.value})} placeholder="Message from Dumo Youth Network"/></Field><Field label="Email message" hint={`${emailForm.body.length}/5000`}><textarea required minLength={2} maxLength={5000} rows={7} className="input resize-y" value={emailForm.body} onChange={event=>setEmailForm({...emailForm,body:event.target.value})} placeholder="Write the message that every active user should receive."/></Field><button disabled={emailSending||loading} className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-emerald-700 px-5 py-3 font-black text-white disabled:opacity-50">{emailSending?<Loader2 className="animate-spin" size={18}/>:<Mail size={18}/>} {emailSending?"Sending emails…":"Send email to all users"}</button></div>
       </form>
+      <section className="rounded-3xl border border-emerald-200 bg-white p-5 shadow-sm sm:p-7">
+        <SectionHeading step="Recurring email" title="Important email series" description="Choose a prepared message, decide who receives it, and send it once or on a recurring schedule. Optional campaigns always include an unsubscribe link." icon={Mail}/>
+        <form onSubmit={scheduleEmail} className="mt-6 grid gap-5 lg:grid-cols-2">
+          <Field label="Message template"><select required className="input" value={scheduleForm.template_key} onChange={event=>chooseEmailTemplate(event.target.value)}><option value="">Choose an important message</option>{emailTemplates.map(item=><option key={item.key} value={item.key}>{item.name}</option>)}</select></Field>
+          <Field label="Recipients"><select className="input" value={scheduleForm.audience} onChange={event=>setScheduleForm({...scheduleForm,audience:event.target.value})}><option value="agents">All active agents</option><option value="admins">Administrators</option><option value="all">All active users</option></select></Field>
+          <Field label="Subject"><input required minLength={2} maxLength={150} className="input" value={scheduleForm.subject} onChange={event=>setScheduleForm({...scheduleForm,subject:event.target.value})}/></Field>
+          <Field label="Frequency"><select className="input" value={scheduleForm.frequency} onChange={event=>setScheduleForm({...scheduleForm,frequency:event.target.value})}><option value="once">Send once</option><option value="daily">Every day</option><option value="weekly">Every week</option><option value="monthly">Every 30 days</option></select></Field>
+          <div className="lg:col-span-2"><Field label="Message"><textarea required minLength={2} maxLength={5000} rows={5} className="input resize-y" value={scheduleForm.body} onChange={event=>setScheduleForm({...scheduleForm,body:event.target.value})}/></Field></div>
+          <Field label="First delivery date and time"><input required type="datetime-local" className="input" value={scheduleForm.next_send_at} onChange={event=>setScheduleForm({...scheduleForm,next_send_at:event.target.value})}/></Field>
+          <button disabled={scheduleSaving||!scheduleForm.template_key} className="min-h-12 self-end rounded-xl bg-emerald-700 px-5 py-3 font-black text-white disabled:opacity-50">{scheduleSaving?"Scheduling…":"Schedule email series"}</button>
+        </form>
+        <div className="mt-7 overflow-hidden rounded-2xl border border-slate-200"><div className="border-b bg-slate-50 px-4 py-3"><h3 className="font-black">Scheduled email campaigns</h3></div><div className="divide-y">{emailCampaigns.map(item=><article key={item.id} className="grid gap-4 p-4 lg:grid-cols-[1fr_auto] lg:items-center"><div><div className="flex flex-wrap items-center gap-2"><strong>{item.subject}</strong><span className="rounded-full bg-slate-100 px-2 py-1 text-[10px] font-black uppercase">{item.status}</span><span className="rounded-full bg-emerald-50 px-2 py-1 text-[10px] font-black uppercase text-emerald-800">{item.frequency}</span></div><p className="mt-1 text-xs text-slate-500">Next: {new Date(item.next_send_at).toLocaleString("en-NG")} · Sent {item.total_sent} · Failed {item.total_failed} · Skipped/unsubscribed {item.total_skipped}</p></div><div className="flex flex-wrap gap-2"><button type="button" onClick={()=>void campaignAction(item.id,"send-now")} className="rounded-lg bg-emerald-700 px-3 py-2 text-xs font-bold text-white">Send now</button>{item.status==="paused"?<button type="button" onClick={()=>void campaignAction(item.id,"resume")} className="rounded-lg border px-3 py-2 text-xs font-bold">Resume</button>:item.status!=="completed"&&<button type="button" onClick={()=>void campaignAction(item.id,"pause")} className="rounded-lg border px-3 py-2 text-xs font-bold">Pause</button>}</div></article>)}{!emailCampaigns.length&&<p className="p-8 text-center text-sm text-slate-500">No recurring email campaigns have been scheduled.</p>}</div></div>
+      </section>
       <form onSubmit={sendWelcome} className="rounded-3xl border border-emerald-200 bg-white p-5 shadow-sm sm:p-7">
         <SectionHeading step="Welcome" title="Welcome polling-unit agents" description="Send each assigned agent one personalized welcome email. Successfully delivered emails are never repeated." icon={Mail}/>
         <div className="mt-5 grid gap-4 sm:grid-cols-3">{[["Sent",welcomeStatus.sent],["Queued",welcomeStatus.queued],["Failed",welcomeStatus.failed]].map(([label,value])=><div key={String(label)} className="rounded-xl bg-slate-50 p-4"><p className="text-xs font-bold uppercase text-slate-500">{label}</p><p className="mt-1 text-2xl font-black">{value}</p></div>)}</div>

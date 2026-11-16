@@ -692,6 +692,34 @@ class NotificationCampaign(Base):
     created_by: Mapped[int] = mapped_column(
         ForeignKey("users.id"), nullable=False, index=True
     )
+
+
+class EmailCampaign(Base):
+    __tablename__ = "email_campaigns"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    created_by: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False, index=True)
+    template_key: Mapped[str] = mapped_column(String(50), nullable=False)
+    subject: Mapped[str] = mapped_column(String(150), nullable=False)
+    body: Mapped[str] = mapped_column(Text, nullable=False)
+    audience: Mapped[str] = mapped_column(String(20), nullable=False, default="agents")
+    frequency: Mapped[str] = mapped_column(String(20), nullable=False, default="once")
+    status: Mapped[str] = mapped_column(String(20), nullable=False, default="active", index=True)
+    next_send_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, index=True)
+    last_sent_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    total_sent: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    total_failed: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    total_skipped: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
+
+
+class EmailUnsubscribe(Base):
+    __tablename__ = "email_unsubscribes"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), nullable=False, unique=True, index=True)
+    email: Mapped[str] = mapped_column(String(255), nullable=False)
+    unsubscribed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
     title: Mapped[str] = mapped_column(String(120), nullable=False)
     body: Mapped[str] = mapped_column(String(500), nullable=False)
     url: Mapped[str] = mapped_column(String(500), nullable=False)
