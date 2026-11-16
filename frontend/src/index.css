@@ -333,3 +333,7 @@ header h3 {
 :root.dark body :is(input, textarea)::placeholder {
   color: rgb(250 245 239 / 0.65) !important;
 }
+
+html.dark body #root :is(main, header, section, article, aside, dialog, [role="dialog"]) :is(h1, h2, h3, h4, h5, h6) {
+  color: #faf5ef !important;
+}
