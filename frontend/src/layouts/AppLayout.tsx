@@ -132,7 +132,7 @@ const navigation = [
     available: true,
   },
   {
-    name: "Notification Centre",
+    name: "Email Centre",
     path: "/admin/notifications",
     section: "Administration",
     icon: Bell,
@@ -504,7 +504,7 @@ export default function AppLayout() {
 
             {/* NOTIFICATIONS */}
 
-            <div ref={notificationsRef} className="relative">
+            {false && <div ref={notificationsRef} className="relative">
               <button
                 type="button"
                 title="Notification options"
@@ -600,7 +600,7 @@ export default function AppLayout() {
                   </div>
                 </div>
               )}
-            </div>
+            </div>}
 
             {/* ACCOUNT */}
 

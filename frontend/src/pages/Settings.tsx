@@ -3,7 +3,6 @@ import { useEffect, useState, type FormEvent } from "react";
 import {
   UserRound,
   ShieldCheck,
-  Bell,
   Palette,
   Building2,
   ChevronRight,
@@ -19,7 +18,6 @@ import {
 
 import { useAuth } from "../context/AuthContext";
 import { changePassword } from "../services/api";
-import EnableNotifications from "../components/EnableNotifications";
 import PasswordChecklist from "../components/PasswordChecklist";
 import { useSearchParams } from "react-router-dom";
 import { applyBranding, defaultLandingText } from "../context/branding";
@@ -78,7 +76,6 @@ const landingTextLabels: Record<string, string> = {
 type SettingsTab =
   | "profile"
   | "security"
-  | "notifications"
   | "appearance"
   | "organization";
 
@@ -93,7 +90,6 @@ export default function Settings() {
   const requestedTab = searchParams.get("tab");
   const [activeTab, setActiveTab] = useState<SettingsTab>(
     requestedTab === "security" ||
-      requestedTab === "notifications" ||
       requestedTab === "appearance" ||
       requestedTab === "organization"
       ? requestedTab
@@ -423,12 +419,6 @@ export default function Settings() {
       name: "Security",
       description: "Password and account protection",
       icon: ShieldCheck,
-    },
-    {
-      id: "notifications",
-      name: "Notifications",
-      description: "Manage notification preferences",
-      icon: Bell,
     },
     {
       id: "appearance",
@@ -989,24 +979,6 @@ export default function Settings() {
                     </button>
                   </div>
                 </form>
-              </div>
-            )}
-
-            {/* ======================================
-                NOTIFICATIONS
-            ====================================== */}
-
-            {activeTab === "notifications" && (
-              <div className="space-y-4">
-                <h2 className="text-xl font-bold text-slate-900">
-                  Notification Settings
-                </h2>
-
-                <p className="text-sm text-slate-500">
-                  Control how you receive election monitoring alerts.
-                </p>
-
-                <EnableNotifications />
               </div>
             )}
 

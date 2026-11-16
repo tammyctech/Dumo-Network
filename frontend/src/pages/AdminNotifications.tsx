@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useState, type FormEvent } from "react";
 import {
   AlertCircle,
   BellRing,
@@ -56,8 +56,8 @@ export default function AdminNotifications() {
   const [agents, setAgents] = useState<Agent[]>([]);
   const [elections, setElections] = useState<Election[]>([]);
   const [lgas, setLgas] = useState<string[]>([]);
-  const [campaigns, setCampaigns] = useState<Campaign[]>([]);
-  const [readiness, setReadiness] = useState<Readiness | null>(null);
+  const [campaigns] = useState<Campaign[]>([]);
+  const [readiness] = useState<Readiness | null>(null);
   const [agentSearch, setAgentSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
@@ -83,14 +83,13 @@ export default function AdminNotifications() {
     try {
       async function section(path:string){const response=await fetch(`${API_URL}${path}`,{headers:headers()});if(!response.ok)throw new Error(await apiError(response));return response.json();}
       const results=await Promise.allSettled([
-        section("/api/admin/agents"),section("/api/admin/elections"),section("/api/wards/lgas"),section("/api/push/campaigns"),
-        section("/api/push/readiness"),section("/api/admin/email/welcome-agents/status"),section("/api/admin/email/templates"),section("/api/admin/email/campaigns"),
+        section("/api/admin/agents"),section("/api/admin/elections"),section("/api/wards/lgas"),
+        section("/api/admin/email/welcome-agents/status"),section("/api/admin/email/templates"),section("/api/admin/email/campaigns"),
       ]);
       const data=results.map(result=>result.status==="fulfilled"?result.value:null);
       if(data[0])setAgents(data[0].agents||[]);if(data[1])setElections(data[1].elections||[]);
-      if(data[2])setLgas(data[2].lgas||[]);if(data[3])setCampaigns(data[3].campaigns||[]);
-      if(data[4])setReadiness(data[4]);if(data[5])setWelcomeStatus(data[5]);
-      if(data[6])setEmailTemplates(data[6].templates||[]);if(data[7])setEmailCampaigns(data[7].campaigns||[]);
+      if(data[2])setLgas(data[2].lgas||[]);if(data[3])setWelcomeStatus(data[3]);
+      if(data[4])setEmailTemplates(data[4].templates||[]);if(data[5])setEmailCampaigns(data[5].campaigns||[]);
       const failures=results.filter(result=>result.status==="rejected") as PromiseRejectedResult[];
       if(failures.length)setError(`${failures.length} Notification Centre section${failures.length===1?"":"s"} could not load. The available sections remain usable. ${failures[0].reason instanceof Error?failures[0].reason.message:""}`.trim());
     } catch (caught) {
@@ -100,12 +99,6 @@ export default function AdminNotifications() {
 
   useEffect(() => { void load(); }, [load]);
 
-  const totals = useMemo(() => campaigns.reduce((result, item) => ({
-    sent: result.sent + item.sent,
-    devices: result.devices + item.devices_found,
-    failed: result.failed + item.failed,
-  }), { sent: 0, devices: 0, failed: 0 }), [campaigns]);
-  const deliveryRate = totals.devices ? Math.round((totals.sent / totals.devices) * 100) : 0;
   const filteredAgents = agents.filter(agent => `${agent.full_name} ${agent.email}`.toLowerCase().includes(agentSearch.toLowerCase()));
   const welcomeAgents=agents.filter(agent=>`${agent.full_name} ${agent.email}`.toLowerCase().includes(welcomeSearch.toLowerCase()));
 
@@ -155,22 +148,18 @@ export default function AdminNotifications() {
         <div className="relative flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
           <div>
             <div className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.2em] text-emerald-700"><Radio size={15}/> Communications command centre</div>
-            <h1 className="mt-3 text-3xl font-black tracking-tight sm:text-4xl">Notification Centre</h1>
-            <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600">Create targeted operational alerts, preview the recipient experience, and track delivery health across the monitoring network.</p>
+            <h1 className="mt-3 text-3xl font-black tracking-tight sm:text-4xl">Email Centre</h1>
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600">Send branded email campaigns, welcome assigned agents, and manage recurring communications.</p>
           </div>
           <button onClick={() => void load()} disabled={loading} className="inline-flex w-fit items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-700 transition hover:bg-slate-50 disabled:opacity-50"><RefreshCw size={17} className={loading ? "animate-spin" : ""}/> Refresh data</button>
         </div>
-        <div className="relative mt-7 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-          <Summary label="Delivery status" value={readiness?.ready ? "Operational" : "Needs attention"} icon={readiness?.ready ? CheckCircle2 : AlertCircle} accent={readiness?.ready ? "emerald" : "amber"}/>
-          <Summary label="Campaigns sent" value={campaigns.length.toLocaleString("en-NG")} icon={BellRing}/>
-          <Summary label="Notifications delivered" value={totals.sent.toLocaleString("en-NG")} icon={Send}/>
-          <Summary label="Delivery rate" value={`${deliveryRate}%`} icon={Smartphone}/>
+        <div className="relative mt-7 grid gap-3 sm:grid-cols-3">
+          <Summary label="Email series" value={emailCampaigns.length.toLocaleString("en-NG")} icon={Mail}/>
+          <Summary label="Emails delivered" value={emailCampaigns.reduce((sum,item)=>sum+item.total_sent,0).toLocaleString("en-NG")} icon={Send}/>
+          <Summary label="Welcome emails sent" value={welcomeStatus.sent.toLocaleString("en-NG")} icon={CheckCircle2} accent="emerald"/>
         </div>
       </section>
 
-      {readiness && !readiness.ready && (
-        <Notice kind="error" title="Push delivery needs configuration" message={readiness.detail || "The VAPID private key or subject is unavailable."}/>
-      )}
       {error && (
         <Notice kind="error" title="Action unsuccessful" message={error}/>
       )}
@@ -202,7 +191,7 @@ export default function AdminNotifications() {
         <div className="mt-5 flex flex-wrap gap-3"><button disabled={welcomeSending||loading||welcomeUserIds.length===0} className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-emerald-700 px-5 py-3 font-black text-white disabled:opacity-50">{welcomeSending?<Loader2 className="animate-spin" size={18}/>:<Send size={18}/>} {welcomeSending?"Queuing welcome emails…":`Send to ${welcomeUserIds.length} unsent marked`}</button><button type="button" disabled={welcomeSending||loading||welcomeUserIds.length===0} onClick={()=>void resendWelcome()} className="rounded-xl border border-amber-300 bg-amber-50 px-5 py-3 text-sm font-black text-amber-900 disabled:opacity-50">Force resend to marked</button></div>
       </form>
 
-      <form onSubmit={send} className="grid gap-6 2xl:grid-cols-[minmax(0,1.2fr)_minmax(340px,.8fr)]">
+      {false && <><form onSubmit={send} className="grid gap-6 2xl:grid-cols-[minmax(0,1.2fr)_minmax(340px,.8fr)]">
         <div className="space-y-6">
           <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7">
             <SectionHeading step="01" title="Compose the message" description="Keep field communications concise, specific, and actionable." icon={Megaphone}/>
@@ -241,7 +230,7 @@ export default function AdminNotifications() {
       <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
         <div className="flex flex-col gap-3 border-b border-slate-200 p-6 sm:flex-row sm:items-center sm:justify-between"><div><p className="text-xs font-black uppercase tracking-widest text-emerald-700">Campaign log</p><h2 className="mt-1 text-xl font-black text-slate-950">Recent delivery history</h2></div><span className="rounded-full bg-slate-100 px-3 py-1.5 text-xs font-bold text-slate-600">Last {campaigns.length} campaigns</span></div>
         {loading ? <div className="p-14"><Loader2 className="mx-auto animate-spin text-emerald-700"/></div> : <div className="divide-y divide-slate-100">{campaigns.map(item => { const rate = item.devices_found ? Math.round((item.sent / item.devices_found) * 100) : 0; return <article key={item.id} className="grid gap-5 p-5 transition hover:bg-slate-50/70 sm:p-6 xl:grid-cols-[minmax(0,1fr)_360px] xl:items-center"><div><div className="flex flex-wrap items-center gap-2"><h3 className="font-black text-slate-950">{item.title}</h3><span className="rounded-full bg-emerald-50 px-2.5 py-1 text-[10px] font-black uppercase tracking-wide text-emerald-800">{item.audience_type.replaceAll("_", " ")}</span></div><p className="mt-2 line-clamp-2 text-sm leading-6 text-slate-600">{item.body}</p><p className="mt-3 flex items-center gap-1.5 text-xs text-slate-400"><Clock3 size={13}/>{new Date(item.created_at).toLocaleString("en-NG")} · Sent by {item.created_by}</p></div><div><div className="grid grid-cols-4 gap-2 text-center"><HistoryMetric label="Agents" value={item.target_users}/><HistoryMetric label="Devices" value={item.devices_found}/><HistoryMetric label="Sent" value={item.sent} positive/><HistoryMetric label="Failed" value={item.failed} danger={item.failed > 0}/></div><div className="mt-3 h-1.5 overflow-hidden rounded-full bg-slate-100"><div className="h-full rounded-full bg-emerald-500" style={{ width: `${rate}%` }}/></div><p className="mt-1.5 text-right text-[10px] font-bold uppercase tracking-wide text-slate-400">{rate}% delivered</p></div></article>; })}{!campaigns.length && <div className="p-14 text-center"><BellRing className="mx-auto text-slate-300" size={30}/><p className="mt-3 font-bold text-slate-800">No campaigns sent yet</p><p className="mt-1 text-sm text-slate-500">Your notification history will appear here.</p></div>}</div>}
-      </section>
+      </section></>}
     </div>
   );
 }

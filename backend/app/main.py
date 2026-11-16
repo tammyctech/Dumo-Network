@@ -35,7 +35,6 @@ from .routes import (
     assignment_management,
     dashboard_statistics,
     result_details,
-    push_notifications,
     public_results,
     operations,
     agent_applications,
@@ -197,16 +196,6 @@ app.include_router(dashboard_statistics.router)
 # Result Details
 app.include_router(result_details.router)
 
-
-# =====================================================
-# 6. PUSH NOTIFICATIONS
-# =====================================================
-
-# Register and unregister agent devices.
-# Check subscription status.
-# Authentication is enforced inside the push router.
-
-app.include_router(push_notifications.router)
 
 # Privacy-safe, read-only election overview for the public landing page.
 app.include_router(public_results.router)

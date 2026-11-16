@@ -1132,7 +1132,7 @@ const workflowUnavailableMessage = statistics?.election
                       to="/admin/notifications"
                       className="flex min-h-12 items-center justify-between gap-2 rounded-xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50"
                     >
-                      Notification centre <ArrowRight size={16} />
+                      Email centre <ArrowRight size={16} />
                     </Link>
                   </>
                 ) : user?.role === "agent" ? (
