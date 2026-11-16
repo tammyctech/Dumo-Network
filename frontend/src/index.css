@@ -219,10 +219,10 @@ header h3 {
 ========================================== */
 
 :root.dark {
-  --brand-background: #08120f;
+  --brand-background: #061710;
   --brand-text: #e5eee9;
   color: #e5eee9;
-  background-color: #08120f;
+  background-color: #061710;
   color-scheme: dark;
 }
 
@@ -230,7 +230,7 @@ header h3 {
 :root.dark #root,
 :root.dark .bg-canvas,
 :root.dark .dashboard-canvas {
-  background-color: #08120f !important;
+  background-color: #061710 !important;
   color: #e5eee9;
 }
 
@@ -239,11 +239,11 @@ header h3 {
 }
 
 :root.dark :is(.bg-white, .bg-slate-50, .bg-slate-50\/70, .bg-slate-50\/80) {
-  background-color: #111c18 !important;
+  background-color: #0c241a !important;
 }
 
 :root.dark :is(.bg-slate-100, .bg-slate-100\/80) {
-  background-color: #18241f !important;
+  background-color: #123023 !important;
 }
 
 :root.dark :is(.bg-emerald-50, .bg-emerald-50\/70) {
@@ -279,7 +279,7 @@ header h3 {
 
 :root.dark :is(input, select, textarea, .input) {
   border-color: #3a4b43 !important;
-  background-color: #0d1713 !important;
+  background-color: #092018 !important;
   color: #eef5f1 !important;
 }
 
@@ -288,24 +288,24 @@ header h3 {
 }
 
 :root.dark select option {
-  background-color: #0d1713;
+  background-color: #092018;
   color: #eef5f1;
 }
 
 :root.dark table thead,
 :root.dark thead.bg-slate-50 {
-  background-color: #17231e !important;
+  background-color: #103224 !important;
   color: #bdc9c3 !important;
 }
 
 :root.dark tbody tr:hover,
 :root.dark .hover\:bg-slate-50:hover,
 :root.dark .hover\:bg-slate-100:hover {
-  background-color: #182720 !important;
+  background-color: #16402e !important;
 }
 
 :root.dark :is(button, a).bg-white {
-  background-color: #14211b !important;
+  background-color: #113326 !important;
 }
 
 :root.dark :is(.shadow-sm, .shadow-md, .shadow-lg, .shadow-xl, .shadow-2xl) {
@@ -313,5 +313,9 @@ header h3 {
 }
 
 :root.dark .landing-page main .command-center-title {
+  color: #fff !important;
+}
+
+.app-topbar h1 {
   color: #fff !important;
 }

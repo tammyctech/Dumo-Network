@@ -14,6 +14,8 @@ import {
   Eye,
   EyeOff,
   LockKeyhole,
+  Moon,
+  Sun,
 } from "lucide-react";
 
 import { useAuth } from "../context/AuthContext";
@@ -21,6 +23,7 @@ import { changePassword } from "../services/api";
 import PasswordChecklist from "../components/PasswordChecklist";
 import { useSearchParams } from "react-router-dom";
 import { applyBranding, defaultLandingText } from "../context/branding";
+import { setTheme } from "../context/theme";
 
 const API_URL = import.meta.env.DEV
   ? (import.meta.env.VITE_API_URL || "http://127.0.0.1:8000").replace(/\/$/, "")
@@ -82,6 +85,12 @@ type SettingsTab =
 export default function Settings() {
   const { user, token, updateProfile } = useAuth();
   const [searchParams] = useSearchParams();
+  const [darkMode, setDarkMode] = useState(() => document.documentElement.classList.contains("dark"));
+
+  function changeTheme(enabled: boolean) {
+    setDarkMode(enabled);
+    setTheme(enabled ? "dark" : "light");
+  }
 
   // ==========================================
   // SETTINGS NAVIGATION
@@ -996,18 +1005,28 @@ export default function Settings() {
                   The workspace uses a consistent dark theme with accessible green accents.
                 </p>
 
-                <div className="flex items-start gap-4 rounded-2xl border border-emerald-200 bg-emerald-50/70 p-5">
+                <div className="flex items-center gap-4 rounded-2xl border border-emerald-200 bg-emerald-50/70 p-5">
                   <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white text-emerald-700 shadow-sm">
-                    <Palette size={21} />
+                    {darkMode ? <Moon size={21} /> : <Sun size={21} />}
                   </span>
-                  <div>
+                  <div className="min-w-0 flex-1">
                     <p className="font-semibold text-slate-900">
-                      Dark appearance is enabled
+                      {darkMode ? "Dark appearance is enabled" : "Light appearance is enabled"}
                     </p>
                     <p className="mt-1 text-sm leading-6 text-slate-600">
-                      Pages, navigation, forms, and data tables use comfortable dark surfaces, with green reserved for key actions and status highlights.
+                      {darkMode ? "Pages, navigation, forms, and data tables use deep green surfaces with comfortable contrast." : "Pages use bright neutral surfaces with green accents."}
                     </p>
                   </div>
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={darkMode}
+                    aria-label="Toggle dark mode"
+                    onClick={() => changeTheme(!darkMode)}
+                    className={`relative h-7 w-13 shrink-0 rounded-full border transition-colors ${darkMode ? "border-emerald-400 bg-emerald-600" : "border-slate-300 bg-slate-300"}`}
+                  >
+                    <span className={`absolute top-0.5 h-5.5 w-5.5 rounded-full bg-white shadow transition-transform ${darkMode ? "translate-x-5.5" : "translate-x-0.5"}`} />
+                  </button>
                 </div>
               </div>
             )}

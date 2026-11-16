@@ -1,8 +1,14 @@
-export function initializeTheme(): void {
-  const root = document.documentElement;
+export type ThemeMode = "light" | "dark";
 
-  root.classList.add("dark");
-  root.dataset.theme = "dark";
-  root.style.colorScheme = "dark";
-  window.localStorage.setItem("dumo-theme", "dark");
+export function setTheme(mode: ThemeMode): void {
+  const root = document.documentElement;
+  root.classList.toggle("dark", mode === "dark");
+  root.dataset.theme = mode;
+  root.style.colorScheme = mode;
+  window.localStorage.setItem("dumo-theme", mode);
+}
+
+export function initializeTheme(): void {
+  const saved = window.localStorage.getItem("dumo-theme");
+  setTheme(saved === "light" ? "light" : "dark");
 }
