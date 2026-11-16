@@ -15,6 +15,13 @@
 ========================================== */
 
 :root {
+  --brand-primary: #047857;
+  --brand-background: #f6f8f7;
+  --brand-text: #0f172a;
+  --brand-font-size: 16px;
+  --brand-font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  --brand-font-style: normal;
+  --brand-background-image: none;
   font-family: var(--font-sans);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -38,7 +45,15 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
-  background-color: var(--color-canvas);
+  background-color: var(--brand-background);
+  background-image: var(--brand-background-image);
+  background-position: center;
+  background-size: cover;
+  background-attachment: fixed;
+  color: var(--brand-text);
+  font-family: var(--brand-font-family);
+  font-size: var(--brand-font-size);
+  font-style: var(--brand-font-style);
 }
 
 /* ==========================================
@@ -164,4 +179,37 @@ header h3 {
 
 .landing-page main .command-center-title {
   color: #fff;
+}
+
+:root[data-custom-brand="true"] .bg-emerald-700,
+:root[data-custom-brand="true"] .bg-emerald-600 {
+  background-color: var(--brand-primary) !important;
+}
+
+:root[data-custom-brand="true"] .text-emerald-700,
+:root[data-custom-brand="true"] .text-emerald-600 {
+  color: var(--brand-primary) !important;
+}
+
+:root[data-custom-brand="true"] .border-emerald-600,
+:root[data-custom-brand="true"] .border-emerald-500 {
+  border-color: var(--brand-primary) !important;
+}
+
+:root[data-custom-brand="true"] .dashboard-canvas,
+:root[data-custom-brand="true"] .bg-canvas {
+  background-color: color-mix(in srgb, var(--brand-background) 92%, white) !important;
+  background-image: var(--brand-background-image) !important;
+  background-position: center;
+  background-size: cover;
+  background-attachment: fixed;
+}
+
+:root[data-custom-brand="true"] .dashboard-canvas :is(.text-slate-950, .text-slate-900, .text-slate-800),
+:root[data-custom-brand="true"] .bg-canvas :is(.text-slate-950, .text-slate-900, .text-slate-800) {
+  color: var(--brand-text) !important;
+}
+
+:root[data-custom-brand="true"] :is(.hover\:bg-emerald-800, .hover\:bg-emerald-700):hover {
+  background-color: color-mix(in srgb, var(--brand-primary) 82%, black) !important;
 }

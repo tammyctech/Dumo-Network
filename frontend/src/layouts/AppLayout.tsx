@@ -33,6 +33,7 @@ import {
 } from "lucide-react";
 
 import { useAuth } from "../context/AuthContext";
+import { useBranding } from "../context/branding";
 
 // =====================================================
 // NAVIGATION MENU
@@ -160,6 +161,7 @@ export default function AppLayout() {
   const profileRef = useRef<HTMLDivElement>(null);
 
   const { user, logout } = useAuth();
+  const branding = useBranding();
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const isDashboardPage = pathname === "/dashboard";
@@ -288,18 +290,22 @@ export default function AppLayout() {
 
           <div className="flex min-w-0 items-center gap-2.5">
 
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-emerald-300 shadow-sm shadow-emerald-950/20">
-              <Activity size={15} className="text-emerald-950" />
-            </div>
+            {branding.logo_data_url ? (
+              <img src={branding.logo_data_url} alt="" className="h-9 w-9 shrink-0 rounded-xl bg-white object-contain p-1 shadow-sm" />
+            ) : (
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-emerald-300 shadow-sm shadow-emerald-950/20">
+                <Activity size={15} className="text-emerald-950" />
+              </div>
+            )}
 
             <div className="min-w-0">
 
               <p className="text-[13px] font-bold tracking-[0.07em] text-white">
-                DUMO YOUTH NETWORK
+                {branding.logo_title.toUpperCase()}
               </p>
 
               <p className="text-[10px] text-emerald-200">
-                ELECTION MONITORING SYSTEM
+                {branding.logo_subtitle.toUpperCase()}
               </p> 
 
             </div>

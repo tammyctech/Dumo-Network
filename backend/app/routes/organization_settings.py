@@ -14,6 +14,10 @@ from ..security import get_current_user
 router = APIRouter(prefix="/api/admin/organization", tags=["Organization Settings"])
 DEFAULT_NAME = "Dumo Youth Network"
 LOGO_PATTERN = re.compile(r"^data:image/(png|jpeg|webp|svg\+xml);base64,", re.I)
+FAVICON_PATTERN = re.compile(r"^data:image/(png|x-icon|vnd\.microsoft\.icon|svg\+xml);base64,", re.I)
+HEX_COLOR_PATTERN = re.compile(r"^#[0-9a-f]{6}$", re.I)
+FONT_FAMILIES = {"Inter", "Arial", "Georgia", "Verdana", "Tahoma", "Trebuchet MS", "Courier New"}
+FONT_STYLES = {"normal", "italic"}
 
 
 class OrganizationSettingsPayload(BaseModel):
@@ -23,6 +27,18 @@ class OrganizationSettingsPayload(BaseModel):
     office_address: str | None = Field(default=None, max_length=500)
     website: str | None = Field(default=None, max_length=500)
     logo_data_url: str | None = Field(default=None, max_length=1_500_000)
+    logo_title: str = Field(default=DEFAULT_NAME, min_length=2, max_length=200)
+    logo_subtitle: str = Field(default="Election Monitoring System", min_length=2, max_length=200)
+    login_heading: str = Field(default="Welcome back.", min_length=2, max_length=200)
+    login_description: str = Field(default="Enter your registered email or phone number to continue to your monitoring dashboard.", min_length=2, max_length=500)
+    primary_color: str = "#047857"
+    background_color: str = "#f6f8f7"
+    text_color: str = "#0f172a"
+    font_family: str = "Inter"
+    font_size: int = Field(default=16, ge=12, le=22)
+    font_style: str = "normal"
+    background_image_data_url: str | None = Field(default=None, max_length=3_000_000)
+    favicon_data_url: str | None = Field(default=None, max_length=800_000)
     notification_emails: list[EmailStr] = Field(default_factory=list, max_length=20)
     email_sender_name: str = Field(min_length=2, max_length=100)
     sms_sender_name: str | None = Field(default=None, min_length=3, max_length=11)
@@ -52,18 +68,53 @@ class OrganizationSettingsPayload(BaseModel):
     @field_validator("logo_data_url")
     @classmethod
     def validate_logo(cls, value: str | None):
-        if not value:
-            return None
-        match = LOGO_PATTERN.match(value)
-        if not match:
-            raise ValueError("Logo must be a PNG, JPEG, WebP, or SVG image.")
-        try:
-            decoded = base64.b64decode(value[match.end():], validate=True)
-        except (ValueError, binascii.Error) as exc:
-            raise ValueError("Logo image data is invalid.") from exc
-        if len(decoded) > 1_000_000:
-            raise ValueError("Logo must not exceed 1 MB.")
+        return validate_image(value, LOGO_PATTERN, 1_000_000, "Logo")
+
+    @field_validator("background_image_data_url")
+    @classmethod
+    def validate_background_image(cls, value: str | None):
+        return validate_image(value, LOGO_PATTERN, 2_000_000, "Background image")
+
+    @field_validator("favicon_data_url")
+    @classmethod
+    def validate_favicon(cls, value: str | None):
+        return validate_image(value, FAVICON_PATTERN, 500_000, "Favicon")
+
+    @field_validator("primary_color", "background_color", "text_color")
+    @classmethod
+    def validate_color(cls, value: str):
+        if not HEX_COLOR_PATTERN.fullmatch(value):
+            raise ValueError("Use a six-digit hex color such as #047857.")
+        return value.lower()
+
+    @field_validator("font_family")
+    @classmethod
+    def validate_font_family(cls, value: str):
+        if value not in FONT_FAMILIES:
+            raise ValueError("Choose a supported font family.")
         return value
+
+    @field_validator("font_style")
+    @classmethod
+    def validate_font_style(cls, value: str):
+        if value not in FONT_STYLES:
+            raise ValueError("Choose normal or italic font style.")
+        return value
+
+
+def validate_image(value: str | None, pattern: re.Pattern, maximum_bytes: int, label: str):
+    if not value:
+        return None
+    match = pattern.match(value)
+    if not match:
+        raise ValueError(f"{label} uses an unsupported image format.")
+    try:
+        decoded = base64.b64decode(value[match.end():], validate=True)
+    except (ValueError, binascii.Error) as exc:
+        raise ValueError(f"{label} image data is invalid.") from exc
+    if len(decoded) > maximum_bytes:
+        raise ValueError(f"{label} is too large.")
+    return value
 
 
 def require_admin(user: User = Depends(get_current_user)) -> User:
@@ -80,11 +131,35 @@ def serialize(item: OrganizationSettings | None) -> dict:
         "office_address": item.office_address if item else None,
         "website": item.website if item else None,
         "logo_data_url": item.logo_data_url if item else None,
+        "logo_title": item.logo_title if item else DEFAULT_NAME,
+        "logo_subtitle": item.logo_subtitle if item else "Election Monitoring System",
+        "login_heading": item.login_heading if item else "Welcome back.",
+        "login_description": item.login_description if item else "Enter your registered email or phone number to continue to your monitoring dashboard.",
+        "primary_color": item.primary_color if item else "#047857",
+        "background_color": item.background_color if item else "#f6f8f7",
+        "text_color": item.text_color if item else "#0f172a",
+        "font_family": item.font_family if item else "Inter",
+        "font_size": item.font_size if item else 16,
+        "font_style": item.font_style if item else "normal",
+        "background_image_data_url": item.background_image_data_url if item else None,
+        "favicon_data_url": item.favicon_data_url if item else None,
         "notification_emails": item.notification_emails if item else [],
         "email_sender_name": item.email_sender_name if item else DEFAULT_NAME,
         "sms_sender_name": item.sms_sender_name if item else None,
         "updated_at": item.updated_at.isoformat() if item and item.updated_at else None,
     }
+
+
+@router.get("/branding")
+def get_public_branding(db: Session = Depends(get_db)):
+    data = serialize(db.get(OrganizationSettings, 1))
+    allowed = (
+        "organization_name", "logo_data_url", "logo_title", "logo_subtitle",
+        "login_heading", "login_description", "primary_color", "background_color",
+        "text_color", "font_family", "font_size", "font_style",
+        "background_image_data_url", "favicon_data_url",
+    )
+    return {key: data[key] for key in allowed}
 
 
 @router.get("")
@@ -116,8 +191,9 @@ def update_organization_settings(
         item.updated_at = datetime.now(timezone.utc)
     db.flush()
     new_data = serialize(item)
-    audit_old = {**old_data, "logo_data_url": "stored" if old_data.get("logo_data_url") else None}
-    audit_new = {**new_data, "logo_data_url": "stored" if item.logo_data_url else None}
+    image_fields = ("logo_data_url", "background_image_data_url", "favicon_data_url")
+    audit_old = {**old_data, **{key: "stored" if old_data.get(key) else None for key in image_fields}}
+    audit_new = {**new_data, **{key: "stored" if new_data.get(key) else None for key in image_fields}}
     db.add(AuditLog(
         user_id=admin.id, action="UPDATE_ORGANIZATION", table_name="organization_settings",
         record_id=1, old_data=audit_old, new_data=audit_new,

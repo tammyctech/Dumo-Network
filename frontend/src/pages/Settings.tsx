@@ -22,6 +22,7 @@ import { changePassword } from "../services/api";
 import EnableNotifications from "../components/EnableNotifications";
 import PasswordChecklist from "../components/PasswordChecklist";
 import { useSearchParams } from "react-router-dom";
+import { applyBranding } from "../context/branding";
 
 const API_URL = import.meta.env.DEV
   ? (import.meta.env.VITE_API_URL || "http://127.0.0.1:8000").replace(/\/$/, "")
@@ -34,6 +35,18 @@ type OrganizationForm = {
   office_address: string;
   website: string;
   logo_data_url: string | null;
+  logo_title: string;
+  logo_subtitle: string;
+  login_heading: string;
+  login_description: string;
+  primary_color: string;
+  background_color: string;
+  text_color: string;
+  font_family: string;
+  font_size: number;
+  font_style: string;
+  background_image_data_url: string | null;
+  favicon_data_url: string | null;
   notification_emails: string;
   email_sender_name: string;
   sms_sender_name: string;
@@ -42,6 +55,11 @@ type OrganizationForm = {
 const emptyOrganization: OrganizationForm = {
   organization_name: "Dumo Youth Network", official_email: "", official_phone: "",
   office_address: "", website: "", logo_data_url: null, notification_emails: "",
+  logo_title: "Dumo Youth Network", logo_subtitle: "Election Monitoring System",
+  login_heading: "Welcome back.", login_description: "Enter your registered email or phone number to continue to your monitoring dashboard.",
+  primary_color: "#047857", background_color: "#f6f8f7", text_color: "#0f172a",
+  font_family: "Inter", font_size: 16, font_style: "normal",
+  background_image_data_url: null, favicon_data_url: null,
   email_sender_name: "Dumo Youth Network", sms_sender_name: "",
 };
 
@@ -133,6 +151,11 @@ export default function Settings() {
           official_email: data.official_email || "", official_phone: data.official_phone || "",
           office_address: data.office_address || "", website: data.website || "",
           logo_data_url: data.logo_data_url || null,
+          logo_title: data.logo_title || "Dumo Youth Network", logo_subtitle: data.logo_subtitle || "Election Monitoring System",
+          login_heading: data.login_heading || "Welcome back.", login_description: data.login_description || "Enter your registered email or phone number to continue to your monitoring dashboard.",
+          primary_color: data.primary_color || "#047857", background_color: data.background_color || "#f6f8f7", text_color: data.text_color || "#0f172a",
+          font_family: data.font_family || "Inter", font_size: data.font_size || 16, font_style: data.font_style || "normal",
+          background_image_data_url: data.background_image_data_url || null, favicon_data_url: data.favicon_data_url || null,
           notification_emails: Array.isArray(data.notification_emails) ? data.notification_emails.join("\n") : "",
           email_sender_name: data.email_sender_name || "Dumo Youth Network",
           sms_sender_name: data.sms_sender_name || "",
@@ -147,8 +170,23 @@ export default function Settings() {
     return () => controller.abort();
   }, [token, isAdmin, activeTab]);
 
-  function updateOrganization(key: keyof OrganizationForm, value: string | null) {
+  function updateOrganization(key: keyof OrganizationForm, value: string | number | null) {
     setOrganization((current) => ({ ...current, [key]: value }));
+  }
+
+  function selectBrandImage(key: "background_image_data_url" | "favicon_data_url", file: File | undefined) {
+    setOrganizationError("");
+    if (!file) return;
+    const allowed = key === "favicon_data_url"
+      ? ["image/png", "image/x-icon", "image/vnd.microsoft.icon", "image/svg+xml"]
+      : ["image/png", "image/jpeg", "image/webp", "image/svg+xml"];
+    const limit = key === "favicon_data_url" ? 500_000 : 2_000_000;
+    if (!allowed.includes(file.type)) return setOrganizationError("Choose a supported image file.");
+    if (file.size > limit) return setOrganizationError(`${key === "favicon_data_url" ? "Favicon" : "Background image"} is too large.`);
+    const reader = new FileReader();
+    reader.onload = () => updateOrganization(key, String(reader.result));
+    reader.onerror = () => setOrganizationError("Unable to read the selected image.");
+    reader.readAsDataURL(file);
   }
 
   function selectLogo(file: File | undefined) {
@@ -188,7 +226,9 @@ export default function Settings() {
         const message = typeof data.detail === "string" ? data.detail : Array.isArray(data.detail) ? data.detail.map((item: { msg?: string }) => item.msg).filter(Boolean).join("; ") : "Unable to save organization settings.";
         throw new Error(message);
       }
-      setOrganizationSuccess("Organization settings saved successfully.");
+      const data = await response.json();
+      applyBranding(data);
+      setOrganizationSuccess("Organization settings and branding saved successfully.");
     } catch (error) {
       setOrganizationError(error instanceof Error ? error.message : "Unable to save organization settings.");
     } finally {
@@ -990,6 +1030,28 @@ export default function Settings() {
                       {organization.logo_data_url ? <img src={organization.logo_data_url} alt="Organization logo preview" className="h-20 w-20 rounded-xl border object-contain p-2"/> : <div className="grid h-20 w-20 place-items-center rounded-xl bg-slate-100"><Building2 className="text-slate-400"/></div>}
                       <div><label className="inline-flex cursor-pointer rounded-xl border border-slate-300 px-4 py-2 text-sm font-semibold hover:bg-slate-50">Choose logo<input type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" className="sr-only" onChange={(e)=>selectLogo(e.target.files?.[0])}/></label><p className="mt-2 text-xs text-slate-500">PNG, JPEG, WebP, or SVG; maximum 1 MB.</p>{organization.logo_data_url&&<button type="button" onClick={()=>updateOrganization("logo_data_url",null)} className="mt-2 text-xs font-semibold text-red-700">Remove logo</button>}</div>
                     </div>
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <label className="text-sm font-medium text-slate-700">Logo title<input required minLength={2} maxLength={200} value={organization.logo_title} onChange={(e)=>updateOrganization("logo_title",e.target.value)} className="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3"/></label>
+                      <label className="text-sm font-medium text-slate-700">Logo subtitle<input required minLength={2} maxLength={200} value={organization.logo_subtitle} onChange={(e)=>updateOrganization("logo_subtitle",e.target.value)} className="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3"/></label>
+                      <label className="text-sm font-medium text-slate-700">Login heading<input required minLength={2} maxLength={200} value={organization.login_heading} onChange={(e)=>updateOrganization("login_heading",e.target.value)} className="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3"/></label>
+                      <label className="text-sm font-medium text-slate-700">Login description<textarea required rows={3} minLength={2} maxLength={500} value={organization.login_description} onChange={(e)=>updateOrganization("login_description",e.target.value)} className="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3"/></label>
+                    </div>
+                  </section>
+                  <section className="space-y-5 rounded-xl border border-slate-200 p-5">
+                    <div><h3 className="font-bold text-slate-900">Colors, typography, and page artwork</h3><p className="mt-1 text-xs text-slate-500">These choices are applied to the login page and authenticated workspace.</p></div>
+                    <div className="grid gap-4 sm:grid-cols-3">
+                      {([['primary_color','Primary color'],['background_color','Background color'],['text_color','Text color']] as const).map(([key,label])=><label key={key} className="text-sm font-medium text-slate-700">{label}<span className="mt-2 flex items-center gap-2 rounded-xl border border-slate-300 p-2"><input type="color" value={organization[key]} onChange={(e)=>updateOrganization(key,e.target.value)} className="h-9 w-12 cursor-pointer rounded border-0 bg-transparent"/><input pattern="#[0-9A-Fa-f]{6}" value={organization[key]} onChange={(e)=>updateOrganization(key,e.target.value)} className="min-w-0 flex-1 bg-transparent font-mono text-sm outline-none"/></span></label>)}
+                    </div>
+                    <div className="grid gap-4 sm:grid-cols-3">
+                      <label className="text-sm font-medium text-slate-700">Font family<select value={organization.font_family} onChange={(e)=>updateOrganization("font_family",e.target.value)} className="mt-2 w-full rounded-xl border border-slate-300 bg-white px-4 py-3">{["Inter","Arial","Georgia","Verdana","Tahoma","Trebuchet MS","Courier New"].map(font=><option key={font}>{font}</option>)}</select></label>
+                      <label className="text-sm font-medium text-slate-700">Font size ({organization.font_size}px)<input type="range" min={12} max={22} value={organization.font_size} onChange={(e)=>updateOrganization("font_size",Number(e.target.value))} className="mt-4 w-full accent-emerald-700"/></label>
+                      <label className="text-sm font-medium text-slate-700">Font style<select value={organization.font_style} onChange={(e)=>updateOrganization("font_style",e.target.value)} className="mt-2 w-full rounded-xl border border-slate-300 bg-white px-4 py-3"><option value="normal">Normal</option><option value="italic">Italic</option></select></label>
+                    </div>
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <div className="rounded-xl border border-slate-200 p-4"><p className="text-sm font-semibold text-slate-800">Background image</p>{organization.background_image_data_url&&<img src={organization.background_image_data_url} alt="Background preview" className="mt-3 h-28 w-full rounded-lg object-cover"/>}<div className="mt-3 flex flex-wrap gap-3"><label className="cursor-pointer rounded-lg border px-3 py-2 text-xs font-semibold hover:bg-slate-50">Choose image<input type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" className="sr-only" onChange={(e)=>selectBrandImage("background_image_data_url",e.target.files?.[0])}/></label>{organization.background_image_data_url&&<button type="button" onClick={()=>updateOrganization("background_image_data_url",null)} className="text-xs font-semibold text-red-700">Remove</button>}</div><p className="mt-2 text-xs text-slate-500">Maximum 2 MB.</p></div>
+                      <div className="rounded-xl border border-slate-200 p-4"><p className="text-sm font-semibold text-slate-800">Browser favicon</p>{organization.favicon_data_url?<img src={organization.favicon_data_url} alt="Favicon preview" className="mt-3 h-14 w-14 rounded-lg border object-contain p-1"/>:<div className="mt-3 grid h-14 w-14 place-items-center rounded-lg bg-slate-100 text-xs text-slate-400">Icon</div>}<div className="mt-3 flex flex-wrap gap-3"><label className="cursor-pointer rounded-lg border px-3 py-2 text-xs font-semibold hover:bg-slate-50">Choose favicon<input type="file" accept="image/png,image/x-icon,image/vnd.microsoft.icon,image/svg+xml" className="sr-only" onChange={(e)=>selectBrandImage("favicon_data_url",e.target.files?.[0])}/></label>{organization.favicon_data_url&&<button type="button" onClick={()=>updateOrganization("favicon_data_url",null)} className="text-xs font-semibold text-red-700">Remove</button>}</div><p className="mt-2 text-xs text-slate-500">PNG, ICO, or SVG; maximum 500 KB.</p></div>
+                    </div>
+                    <div className="overflow-hidden rounded-2xl border border-slate-200 shadow-sm" style={{backgroundColor:organization.background_color,color:organization.text_color,fontFamily:organization.font_family,fontSize:organization.font_size,fontStyle:organization.font_style,backgroundImage:organization.background_image_data_url?`linear-gradient(rgb(255 255 255 / .78),rgb(255 255 255 / .78)),url(${organization.background_image_data_url})`:undefined,backgroundSize:"cover"}}><div className="flex items-center gap-3 border-b border-black/10 p-4">{organization.logo_data_url?<img src={organization.logo_data_url} alt="" className="h-10 w-10 rounded-lg bg-white object-contain p-1"/>:<Building2/>}<div><p className="font-bold">{organization.logo_title}</p><p className="text-xs opacity-70">{organization.logo_subtitle}</p></div></div><div className="p-6"><p className="text-2xl font-bold">{organization.login_heading}</p><p className="mt-2 opacity-75">{organization.login_description}</p><button type="button" className="mt-5 rounded-lg px-4 py-2 text-sm font-bold text-white" style={{backgroundColor:organization.primary_color}}>Preview button</button></div></div>
                   </section>
                   <section className="grid gap-4 rounded-xl border border-slate-200 p-5 sm:grid-cols-2">
                     <h3 className="font-bold text-slate-900 sm:col-span-2">Official contact details</h3>
