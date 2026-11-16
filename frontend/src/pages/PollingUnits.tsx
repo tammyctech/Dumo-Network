@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
+import { ExternalLink } from "lucide-react";
 
 const API_URL =
   import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
+const INEC_IREV_URL = "https://irev.inecnigeria.org/";
 
 // ============================================================
 // TYPES
@@ -855,9 +857,7 @@ export default function PollingUnits() {
                   <th className="p-4">LGA</th>
                   <th className="p-4">Ward</th>
 
-                  {isAdmin && (
-                    <th className="p-4">Action</th>
-                  )}
+                  <th className="p-4">Action</th>
                 </tr>
               </thead>
 
@@ -865,7 +865,7 @@ export default function PollingUnits() {
                 {loading ? (
                   <tr>
                     <td
-                      colSpan={isAdmin ? 6 : 5}
+                      colSpan={6}
                       className="p-8 text-center text-slate-500"
                     >
                       Loading polling units...
@@ -874,7 +874,7 @@ export default function PollingUnits() {
                 ) : (directory?.polling_units.length ?? 0) === 0 ? (
                   <tr>
                     <td
-                      colSpan={isAdmin ? 6 : 5}
+                      colSpan={6}
                       className="p-8 text-center text-slate-500"
                     >
                       No polling units found.
@@ -906,8 +906,9 @@ export default function PollingUnits() {
                         {unit.ward}
                       </td>
 
-                      {isAdmin && (
-                        <td className="p-4">
+                      <td className="p-4">
+                        <div className="flex flex-wrap gap-2">
+                        {isAdmin && (
                           <button
                             type="button"
                             onClick={() => startEditing(unit)}
@@ -915,8 +916,19 @@ export default function PollingUnits() {
                           >
                             Edit
                           </button>
-                        </td>
-                      )}
+                        )}
+                        <a
+                          href={INEC_IREV_URL}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          aria-label={`Open ${unit.code} on the INEC IReV portal`}
+                          className="inline-flex items-center gap-2 rounded-lg border border-emerald-300 bg-white px-4 py-2 font-medium text-emerald-800 hover:bg-emerald-50"
+                        >
+                          <ExternalLink size={16} />
+                          Open on IReV
+                        </a>
+                        </div>
+                      </td>
                     </tr>
                   ))
                 )}
