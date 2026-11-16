@@ -9,6 +9,5 @@ export function setTheme(mode: ThemeMode): void {
 }
 
 export function initializeTheme(): void {
-  const saved = window.localStorage.getItem("dumo-theme");
-  setTheme(saved === "light" ? "light" : "dark");
+  setTheme("light");
 }
