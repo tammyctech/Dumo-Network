@@ -11,14 +11,12 @@ import {
   X,
   ChevronLeft,
   ChevronRight,
-  ExternalLink,
 } from "lucide-react";
 
 import { useAuth } from "../context/AuthContext";
 
 const API_URL =
   import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
-const INEC_IREV_URL = "https://irev.inecnigeria.org/";
 
 // ============================================================
 // TYPES
@@ -691,7 +689,6 @@ export default function PollingUnitManagement() {
                     </td>
 
                     <td className="px-5 py-4">
-                      <div className="flex flex-wrap gap-2">
                       <button
                         type="button"
                         onClick={() => setSelectedUnit(unit)}
@@ -700,17 +697,6 @@ export default function PollingUnitManagement() {
                         <Eye size={16} />
                         View
                       </button>
-                      <a
-                        href={INEC_IREV_URL}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        aria-label={`Open ${unit.code} on the INEC IReV portal`}
-                        className="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 font-medium text-slate-700 hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-800"
-                      >
-                        <ExternalLink size={16} />
-                        Open on IReV
-                      </a>
-                      </div>
                     </td>
                   </tr>
                 ))
@@ -829,16 +815,7 @@ export default function PollingUnitManagement() {
               ))}
             </div>
 
-            <div className="mt-6 flex flex-wrap justify-end gap-2">
-              <a
-                href={INEC_IREV_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 rounded-xl border border-emerald-300 bg-white px-5 py-3 font-medium text-emerald-800 hover:bg-emerald-50"
-              >
-                <ExternalLink size={17} />
-                Open on IReV
-              </a>
+            <div className="mt-6 flex justify-end">
               <button
                 type="button"
                 onClick={() => setSelectedUnit(null)}
