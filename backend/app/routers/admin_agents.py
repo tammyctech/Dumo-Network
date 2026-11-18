@@ -14,6 +14,7 @@ from ..schemas import (
     AgentResponse,
 )
 from ..security import hash_password, require_admin
+from ..utils.names import normalize_person_name
 
 
 load_dotenv()
@@ -46,7 +47,7 @@ def create_agent(
     Only administrators may access this endpoint.
     """
 
-    full_name = payload.full_name.strip()
+    full_name = normalize_person_name(payload.full_name)
     email = str(payload.email).strip().lower()
     phone_number = payload.phone_number
 

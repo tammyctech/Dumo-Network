@@ -14,6 +14,7 @@ from app.models import (
 )
 from app.security import get_current_user
 from app.utils.phone import normalize_nigerian_phone
+from app.utils.names import normalize_person_name
 
 
 router = APIRouter(
@@ -228,7 +229,7 @@ def update_user(
         except ValueError as exc:
             raise HTTPException(422, str(exc)) from exc
     old_data = serialize_user(user)
-    user.full_name = payload.full_name.strip()
+    user.full_name = normalize_person_name(payload.full_name)
     user.email = str(payload.email).strip().lower()
     user.phone_number = phone
     user.role = role

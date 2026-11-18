@@ -14,6 +14,7 @@ from sqlalchemy.orm import Session
 from ..database import get_db
 from ..models import AgentApplication, AgentAssignment, AuditLog, PollingUnit, User
 from ..utils.phone import normalize_nigerian_phone
+from ..utils.names import normalize_person_name
 
 from ..schemas import (
     UserResponse,
@@ -372,7 +373,7 @@ def update_profile(
                 detail="Full name cannot be null",
             )
 
-        full_name = profile_data.full_name.strip()
+        full_name = normalize_person_name(profile_data.full_name)
 
         if len(full_name) < 2:
             raise HTTPException(

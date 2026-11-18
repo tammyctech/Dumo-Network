@@ -13,6 +13,7 @@ from app.models import AgentAssignment, User
 from app.utils.phone import normalize_nigerian_phone
 from app.services.agent_integrity import polling_unit_capacity
 from app.services.electoral_lookup import PollingUnitDirectory, display_polling_unit_number
+from app.utils.names import normalize_person_name
 
 MAX_AGENT_FILE_SIZE = 10 * 1024 * 1024
 HEADERS = [
@@ -89,7 +90,7 @@ def validate_agents(db: Session, records: list[dict[str, str]]) -> dict:
 
     for row_number, row in enumerate(records, 2):
         errors: list[str] = []
-        name = row.get("full name", "").strip()
+        name = normalize_person_name(row.get("full name", ""))
         lga, ward = row.get("lga", ""), row.get("ward", "")
         number = row.get("polling unit number", "")
         code = row.get("polling unit code", "")

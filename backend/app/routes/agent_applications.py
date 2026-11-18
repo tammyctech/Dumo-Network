@@ -25,6 +25,7 @@ from ..services.sms_service import send_agent_approval_sms
 from ..services.organization_service import admin_notification_recipients, email_sender_name, sms_sender_name
 from ..services.agent_integrity import active_assignment_count, polling_unit_capacity, validate_assignment
 from ..utils.phone import normalize_nigerian_phone
+from ..utils.names import normalize_person_name
 
 
 router = APIRouter(tags=["Agent Applications"])
@@ -238,7 +239,7 @@ def submit_application(token: str, payload: ApplicationCreate, db: Session = Dep
     item = AgentApplication(
         link_id=link.id,
         polling_unit_id=unit.id,
-        full_name=payload.full_name.strip(),
+        full_name=normalize_person_name(payload.full_name),
         phone_number=phone,
         email=email,
     )
