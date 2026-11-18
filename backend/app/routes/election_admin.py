@@ -21,6 +21,7 @@ from ..models import (
     ResultSubmission,
 )
 from ..security import get_current_user
+from ..services.agent_integrity import validate_assignment
 from ..monitoring.admin_schemas import (
     ElectionCreate,
     ElectionResponse,
@@ -239,17 +240,7 @@ def assign_agent(
             detail="The selected user must have the agent role.",
         )
 
-    existing = db.scalar(
-        select(AgentAssignment).where(
-            AgentAssignment.polling_unit_id == payload.polling_unit_id,
-        )
-    )
-
-    if existing is not None:
-        raise HTTPException(
-            status_code=409,
-            detail="This polling unit already has a permanent agent.",
-        )
+    validate_assignment(db, agent=agent, unit=polling_unit)
 
     assignment = AgentAssignment(
         election_id=None,
@@ -266,7 +257,7 @@ def assign_agent(
         db.rollback()
         raise HTTPException(
             status_code=409,
-            detail="This agent assignment already exists.",
+            detail="This agent or polling-unit assignment conflicts with existing data.",
         )
 
     return AgentAssignmentResponse(

@@ -1,0 +1,10 @@
+{
+  "agent_rows": 980,
+  "conflicts": 27,
+  "duplicate_normalized_phone_agents": 0,
+  "invalid_phone_agents": 3,
+  "agents_with_multiple_assignments": 12,
+  "over_capacity_polling_units": 0,
+  "duplicate_polling_unit_codes": 0,
+  "orphan_assignments": 0
+}

@@ -22,6 +22,7 @@ from app.services.email_service import send_system_email
 from app.imports.agent_service import (
     HEADERS, MAX_AGENT_FILE_SIZE, parse_agent_file, validate_agents,
 )
+from app.services.agent_integrity import validate_assignment
 
 logger = logging.getLogger(__name__)
 DEFAULT_AGENT_PASSWORD = os.getenv("DEFAULT_AGENT_PASSWORD", "12345")
@@ -261,8 +262,12 @@ async def confirm(background_tasks: BackgroundTasks, file: UploadFile = File(...
                 "phone_number": user.phone_number,
                 "temporary_password": DEFAULT_AGENT_PASSWORD,
             })
-        db.add(AgentAssignment(election_id=None, polling_unit_id=row["polling_unit_id"], agent_id=user.id))
         unit = db.get(PollingUnit, row["polling_unit_id"])
+        if unit is None:
+            db.rollback()
+            raise HTTPException(409, "A polling unit was removed after preview. Preview the file again.")
+        validate_assignment(db, agent=user, unit=unit, registered_lga=row["lga"])
+        db.add(AgentAssignment(election_id=None, polling_unit_id=row["polling_unit_id"], agent_id=user.id))
         if unit and not user.email.casefold().endswith((".invalid", "@dumo-network.vercel.app")):
             delivery = AgentEmailDelivery(import_id=history.id, agent_id=user.id, recipient=user.email)
             db.add(delivery)

@@ -23,6 +23,7 @@ from ..security import hash_password, require_admin
 from ..services.email_service import send_agent_approval_email, send_bulk_system_email
 from ..services.sms_service import send_agent_approval_sms
 from ..services.organization_service import admin_notification_recipients, email_sender_name, sms_sender_name
+from ..services.agent_integrity import active_assignment_count, polling_unit_capacity, validate_assignment
 from ..utils.phone import normalize_nigerian_phone
 
 
@@ -188,11 +189,12 @@ def public_polling_units(token: str, lga: str = Query(min_length=2, max_length=1
         .where(PollingUnit.state.ilike("Rivers"), func.lower(PollingUnit.lga) == lga.strip().lower())
         .order_by(PollingUnit.ward, PollingUnit.code)
     ).all()
-    assigned_unit_ids = set(db.scalars(
-        select(AgentAssignment.polling_unit_id).where(
-            AgentAssignment.polling_unit_id.in_([unit.id for unit in units])
-        )
-    ).all()) if units else set()
+    assignment_counts = dict(db.execute(
+        select(AgentAssignment.polling_unit_id, func.count(AgentAssignment.id))
+        .join(User, User.id == AgentAssignment.agent_id)
+        .where(AgentAssignment.polling_unit_id.in_([unit.id for unit in units]), User.is_active.is_(True))
+        .group_by(AgentAssignment.polling_unit_id)
+    ).all()) if units else {}
     ward_numbers = {
         ward.name.casefold(): ward.ward_number
         for ward in db.scalars(select(Ward).where(
@@ -206,7 +208,9 @@ def public_polling_units(token: str, lga: str = Query(min_length=2, max_length=1
         "name": unit.name,
         "ward": unit.ward,
         "ward_number": ward_numbers.get(unit.ward.casefold()),
-        "taken": unit.id in assigned_unit_ids,
+        "capacity": polling_unit_capacity(unit),
+        "assigned_agents": assignment_counts.get(unit.id, 0),
+        "taken": assignment_counts.get(unit.id, 0) >= polling_unit_capacity(unit),
     } for unit in units]
 
 
@@ -216,8 +220,8 @@ def submit_application(token: str, payload: ApplicationCreate, db: Session = Dep
     unit = db.get(PollingUnit, payload.polling_unit_id)
     if unit is None or unit.state.casefold() != "rivers":
         raise HTTPException(422, "Select a valid Rivers State polling unit.")
-    if db.scalar(select(AgentAssignment.id).where(AgentAssignment.polling_unit_id == unit.id)):
-        raise HTTPException(409, "This polling unit has already been taken. Select another polling unit.")
+    if active_assignment_count(db, unit.id) >= polling_unit_capacity(unit):
+        raise HTTPException(409, "This polling unit has already been taken and has reached its maximum number of agents.")
     try:
         phone = normalize_nigerian_phone(payload.phone_number)
     except ValueError as exc:
@@ -281,9 +285,6 @@ def approve_application(
         raise HTTPException(409, "The selected polling unit no longer exists.")
     if db.scalar(select(User.id).where((User.email == item.email) | (User.phone_number == item.phone_number))):
         raise HTTPException(409, "An account already uses this email address or phone number.")
-    if db.scalar(select(AgentAssignment.id).where(AgentAssignment.polling_unit_id == item.polling_unit_id)):
-        raise HTTPException(409, "This polling unit already has a permanent agent.")
-
     agent = User(
         full_name=item.full_name,
         email=item.email,
@@ -295,6 +296,7 @@ def approve_application(
     )
     db.add(agent)
     db.flush()
+    validate_assignment(db, agent=agent, unit=unit)
     db.add(AgentAssignment(election_id=None, polling_unit_id=item.polling_unit_id, agent_id=agent.id))
     item.status = "approved"
     item.admin_notes = payload.notes.strip() if payload.notes else None

@@ -60,6 +60,13 @@ class UserProfileUpdate(BaseModel):
         extra="forbid"
     )
 
+    @field_validator("phone_number")
+    @classmethod
+    def validate_optional_phone_number(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        return normalize_nigerian_phone(value)
+
 
 # ============================================================
 # 4. USER RESPONSE

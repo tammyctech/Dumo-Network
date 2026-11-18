@@ -40,6 +40,7 @@ from .routes import (
     agent_applications,
     admin_email,
     organization_settings,
+    data_quality,
 )
 
 
@@ -203,6 +204,7 @@ app.include_router(operations.router)
 app.include_router(agent_applications.router)
 app.include_router(admin_email.router)
 app.include_router(organization_settings.router)
+app.include_router(data_quality.router)
 
 
 # =====================================================

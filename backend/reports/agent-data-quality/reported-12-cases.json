@@ -1,0 +1,302 @@
+[
+  {
+    "reported_name": "Diepriye Briggs",
+    "normalized_phone": "+2348140346831",
+    "status": "administrator_resolution_required",
+    "matches": [
+      {
+        "agent_id": 1363,
+        "full_name": "Diepriye Briggs",
+        "phone_number": "+2348140346831",
+        "lga": "Akuku-Toru",
+        "ward": "BRIGGS III",
+        "polling_unit_code": "32/04/06/011",
+        "assignment_id": 2204
+      },
+      {
+        "agent_id": 1363,
+        "full_name": "Diepriye Briggs",
+        "phone_number": "+2348140346831",
+        "lga": "Akuku-Toru",
+        "ward": "BRIGGS I",
+        "polling_unit_code": "32/04/04/010",
+        "assignment_id": 2250
+      }
+    ]
+  },
+  {
+    "reported_name": "Orusah Orusoso Dabiri",
+    "normalized_phone": "+2347034965149",
+    "status": "administrator_resolution_required",
+    "matches": [
+      {
+        "agent_id": 1369,
+        "full_name": "Orusah Orusoso Dabiri",
+        "phone_number": "+2347034965149",
+        "lga": "Akuku-Toru",
+        "ward": "ALISE GROUP",
+        "polling_unit_code": "32/04/13/001",
+        "assignment_id": 1364
+      },
+      {
+        "agent_id": 1369,
+        "full_name": "Orusah Orusoso Dabiri",
+        "phone_number": "+2347034965149",
+        "lga": "Akuku-Toru",
+        "ward": "ALISE GROUP",
+        "polling_unit_code": "32/04/13/003",
+        "assignment_id": 2210
+      }
+    ]
+  },
+  {
+    "reported_name": "Nwalozie Chimaobi",
+    "normalized_phone": "+2348129431399",
+    "status": "administrator_resolution_required",
+    "matches": [
+      {
+        "agent_id": 1961,
+        "full_name": "Nwalozie Chimaobi",
+        "phone_number": "+2348129431399",
+        "lga": "Omuma",
+        "ward": "EBERI-DIKEOMUUO COMMUNITY",
+        "polling_unit_code": "32/19/01/003",
+        "assignment_id": 1956
+      },
+      {
+        "agent_id": 1961,
+        "full_name": "Nwalozie Chimaobi",
+        "phone_number": "+2348129431399",
+        "lga": "Omuma",
+        "ward": "ARIRANIIRI/OWU-AHIA COMMUNITY",
+        "polling_unit_code": "32/19/02/009",
+        "assignment_id": 2245
+      }
+    ]
+  },
+  {
+    "reported_name": "Obayi Amarachi Lynda",
+    "normalized_phone": "+2347066168287",
+    "status": "administrator_resolution_required",
+    "matches": [
+      {
+        "agent_id": 2259,
+        "full_name": "Obayi Amarachi Lynda",
+        "phone_number": "+2347066168287",
+        "lga": "Oyigbo",
+        "ward": "ASA",
+        "polling_unit_code": "32/21/07/001",
+        "assignment_id": 2258
+      },
+      {
+        "agent_id": 2259,
+        "full_name": "Obayi Amarachi Lynda",
+        "phone_number": "+2347066168287",
+        "lga": "Oyigbo",
+        "ward": "OYIGBO CENTRAL",
+        "polling_unit_code": "32/21/09/004",
+        "assignment_id": 2287
+      }
+    ]
+  },
+  {
+    "reported_name": "Ndumechi Louis",
+    "normalized_phone": "+2348101656622",
+    "status": "administrator_resolution_required",
+    "matches": [
+      {
+        "agent_id": 2204,
+        "full_name": "Ndumechi Louis",
+        "phone_number": "+2348101656622",
+        "lga": "Oyigbo",
+        "ward": "ASA",
+        "polling_unit_code": "32/21/07/002",
+        "assignment_id": 2193
+      },
+      {
+        "agent_id": 2204,
+        "full_name": "Ndumechi Louis",
+        "phone_number": "+2348101656622",
+        "lga": "Oyigbo",
+        "ward": "ASA",
+        "polling_unit_code": "32/21/07/005",
+        "assignment_id": 2302
+      }
+    ]
+  },
+  {
+    "reported_name": "Glory Biishi",
+    "normalized_phone": "+2348036368489",
+    "status": "administrator_resolution_required",
+    "matches": [
+      {
+        "agent_id": 2254,
+        "full_name": "Glory Biishi",
+        "phone_number": "+2348036368489",
+        "lga": "Oyigbo",
+        "ward": "ASA",
+        "polling_unit_code": "32/21/07/003",
+        "assignment_id": 2253
+      },
+      {
+        "agent_id": 2254,
+        "full_name": "Glory Biishi",
+        "phone_number": "+2348036368489",
+        "lga": "Oyigbo",
+        "ward": "OYIGBO CENTRAL",
+        "polling_unit_code": "32/21/09/017",
+        "assignment_id": 2285
+      }
+    ]
+  },
+  {
+    "reported_name": "Prince C. David",
+    "normalized_phone": "+2348136054828",
+    "status": "administrator_resolution_required",
+    "matches": [
+      {
+        "agent_id": 2201,
+        "full_name": "Prince C. David",
+        "phone_number": "+2348136054828",
+        "lga": "Oyigbo",
+        "ward": "OYIGBO WEST",
+        "polling_unit_code": "32/21/08/019",
+        "assignment_id": 2190
+      },
+      {
+        "agent_id": 2201,
+        "full_name": "Prince C. David",
+        "phone_number": "+2348136054828",
+        "lga": "Oyigbo",
+        "ward": "OYIGBO WEST",
+        "polling_unit_code": "32/21/08/022",
+        "assignment_id": 2300
+      }
+    ]
+  },
+  {
+    "reported_name": "Mabel Ijeoma",
+    "normalized_phone": "+2348128194072",
+    "status": "administrator_resolution_required",
+    "matches": [
+      {
+        "agent_id": 2202,
+        "full_name": "Mabel Ijeoma Onyemachi",
+        "phone_number": "+2348128194072",
+        "lga": "Oyigbo",
+        "ward": "OYIGBO WEST",
+        "polling_unit_code": "32/21/08/020",
+        "assignment_id": 2191
+      },
+      {
+        "agent_id": 2202,
+        "full_name": "Mabel Ijeoma Onyemachi",
+        "phone_number": "+2348128194072",
+        "lga": "Oyigbo",
+        "ward": "OYIGBO WEST",
+        "polling_unit_code": "32/21/08/023",
+        "assignment_id": 2301
+      }
+    ]
+  },
+  {
+    "reported_name": "Chiamaka Cordelia Obi",
+    "normalized_phone": "+2349035417511",
+    "status": "administrator_resolution_required",
+    "matches": [
+      {
+        "agent_id": 2203,
+        "full_name": "Chiamaka Cordelia Obi",
+        "phone_number": "+2349035417511",
+        "lga": "Oyigbo",
+        "ward": "OYIGBO WEST",
+        "polling_unit_code": "32/21/08/021",
+        "assignment_id": 2192
+      },
+      {
+        "agent_id": 2203,
+        "full_name": "Chiamaka Cordelia Obi",
+        "phone_number": "+2349035417511",
+        "lga": "Oyigbo",
+        "ward": "OYIGBO CENTRAL",
+        "polling_unit_code": "32/21/09/021",
+        "assignment_id": 2299
+      }
+    ]
+  },
+  {
+    "reported_name": "Ogbuagu Ifeoma",
+    "normalized_phone": "+2348030670697",
+    "status": "administrator_resolution_required",
+    "matches": [
+      {
+        "agent_id": 2249,
+        "full_name": "Ogbuagu Ifeoma",
+        "phone_number": "+2348030670697",
+        "lga": "Oyigbo",
+        "ward": "OYIGBO WEST",
+        "polling_unit_code": "32/21/08/038",
+        "assignment_id": 2247
+      },
+      {
+        "agent_id": 2249,
+        "full_name": "Ogbuagu Ifeoma",
+        "phone_number": "+2348030670697",
+        "lga": "Oyigbo",
+        "ward": "OYIGBO CENTRAL",
+        "polling_unit_code": "32/21/09/022",
+        "assignment_id": 2298
+      }
+    ]
+  },
+  {
+    "reported_name": "Goodluck Benjamin",
+    "normalized_phone": "+2348143043307",
+    "status": "administrator_resolution_required",
+    "matches": [
+      {
+        "agent_id": 2268,
+        "full_name": "Goodluck Benjamin Nwankwo",
+        "phone_number": "+2348143043307",
+        "lga": "Oyigbo",
+        "ward": "KOMKOM",
+        "polling_unit_code": "32/21/10/010",
+        "assignment_id": 2267
+      },
+      {
+        "agent_id": 2268,
+        "full_name": "Goodluck Benjamin Nwankwo",
+        "phone_number": "+2348143043307",
+        "lga": "Oyigbo",
+        "ward": "OYIGBO CENTRAL",
+        "polling_unit_code": "32/21/09/015",
+        "assignment_id": 2296
+      }
+    ]
+  },
+  {
+    "reported_name": "Opara Favour",
+    "normalized_phone": "+2348134656724",
+    "status": "administrator_resolution_required",
+    "matches": [
+      {
+        "agent_id": 2248,
+        "full_name": "Opara Favour",
+        "phone_number": "+2348134656724",
+        "lga": "Oyigbo",
+        "ward": "KOMKOM",
+        "polling_unit_code": "32/21/10/011",
+        "assignment_id": 2246
+      },
+      {
+        "agent_id": 2248,
+        "full_name": "Opara Favour",
+        "phone_number": "+2348134656724",
+        "lga": "Oyigbo",
+        "ward": "KOMKOM",
+        "polling_unit_code": "32/21/10/012",
+        "assignment_id": 2305
+      }
+    ]
+  }
+]

@@ -212,8 +212,8 @@ class AgentAssignment(Base):
 
     __table_args__ = (
         UniqueConstraint(
-            "polling_unit_id",
-            name="uq_assignment_polling_unit",
+            "agent_id",
+            name="uq_assignment_agent",
         ),
     )
 

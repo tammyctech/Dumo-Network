@@ -322,40 +322,7 @@ def update_profile(
 
     if "phone_number" in updates:
 
-        phone_number = profile_data.phone_number
-
-        if phone_number is not None:
-
-            phone_number = phone_number.strip()
-
-            if not phone_number:
-                raise HTTPException(
-                    status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                    detail="Phone number cannot be empty",
-                )
-
-            if not phone_number.lstrip("+").isdigit():
-                raise HTTPException(
-                    status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                    detail=(
-                        "Phone number must contain only "
-                        "digits or a leading +"
-                    ),
-                )
-
-            if len(phone_number.lstrip("+")) < 7:
-                raise HTTPException(
-                    status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                    detail="Phone number is too short",
-                )
-
-            if phone_number.count("+") > 1:
-                raise HTTPException(
-                    status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                    detail="Phone number has an invalid format",
-                )
-
-        current_user.phone_number = phone_number
+        current_user.phone_number = profile_data.phone_number
 
     # --------------------------------------
     # SAVE PROFILE CHANGES

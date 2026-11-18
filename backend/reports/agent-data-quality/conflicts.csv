@@ -1,0 +1,28 @@
+agent_id,full_name,phone_number,lga,ward,polling_unit_code,conflict_type,recommended_correction
+1363,Diepriye Briggs,+2348140346831,Akuku-Toru,BRIGGS III,32/04/06/011,agent_multiple_polling_units,Administrator must select the correct assignment and deactivate the other assignment(s).
+1363,Diepriye Briggs,+2348140346831,Akuku-Toru,BRIGGS I,32/04/04/010,agent_multiple_polling_units,Administrator must select the correct assignment and deactivate the other assignment(s).
+1369,Orusah Orusoso Dabiri,+2347034965149,Akuku-Toru,ALISE GROUP,32/04/13/001,agent_multiple_polling_units,Administrator must select the correct assignment and deactivate the other assignment(s).
+1369,Orusah Orusoso Dabiri,+2347034965149,Akuku-Toru,ALISE GROUP,32/04/13/003,agent_multiple_polling_units,Administrator must select the correct assignment and deactivate the other assignment(s).
+1775,Queen Nanna,+2349192199808,Obio/Akpor,RUMUOLUMENI,32/15/17/034,invalid_phone,Obtain and validate the complete Nigerian mobile number; never truncate or infer digits.
+1961,Nwalozie Chimaobi,+2348129431399,Omuma,EBERI-DIKEOMUUO COMMUNITY,32/19/01/003,agent_multiple_polling_units,Administrator must select the correct assignment and deactivate the other assignment(s).
+1961,Nwalozie Chimaobi,+2348129431399,Omuma,ARIRANIIRI/OWU-AHIA COMMUNITY,32/19/02/009,agent_multiple_polling_units,Administrator must select the correct assignment and deactivate the other assignment(s).
+2201,Prince C. David,+2348136054828,Oyigbo,OYIGBO WEST,32/21/08/019,agent_multiple_polling_units,Administrator must select the correct assignment and deactivate the other assignment(s).
+2201,Prince C. David,+2348136054828,Oyigbo,OYIGBO WEST,32/21/08/022,agent_multiple_polling_units,Administrator must select the correct assignment and deactivate the other assignment(s).
+2202,Mabel Ijeoma Onyemachi,+2348128194072,Oyigbo,OYIGBO WEST,32/21/08/020,agent_multiple_polling_units,Administrator must select the correct assignment and deactivate the other assignment(s).
+2202,Mabel Ijeoma Onyemachi,+2348128194072,Oyigbo,OYIGBO WEST,32/21/08/023,agent_multiple_polling_units,Administrator must select the correct assignment and deactivate the other assignment(s).
+2203,Chiamaka Cordelia Obi,+2349035417511,Oyigbo,OYIGBO WEST,32/21/08/021,agent_multiple_polling_units,Administrator must select the correct assignment and deactivate the other assignment(s).
+2203,Chiamaka Cordelia Obi,+2349035417511,Oyigbo,OYIGBO CENTRAL,32/21/09/021,agent_multiple_polling_units,Administrator must select the correct assignment and deactivate the other assignment(s).
+2204,Ndumechi Louis,+2348101656622,Oyigbo,ASA,32/21/07/002,agent_multiple_polling_units,Administrator must select the correct assignment and deactivate the other assignment(s).
+2204,Ndumechi Louis,+2348101656622,Oyigbo,ASA,32/21/07/005,agent_multiple_polling_units,Administrator must select the correct assignment and deactivate the other assignment(s).
+2222,Mercy Nweke,+2349175981590,Omuma,ARIRANIIRI/OWU-AHIA COMMUNITY,32/19/02/007,invalid_phone,Obtain and validate the complete Nigerian mobile number; never truncate or infer digits.
+2248,Opara Favour,+2348134656724,Oyigbo,KOMKOM,32/21/10/011,agent_multiple_polling_units,Administrator must select the correct assignment and deactivate the other assignment(s).
+2248,Opara Favour,+2348134656724,Oyigbo,KOMKOM,32/21/10/012,agent_multiple_polling_units,Administrator must select the correct assignment and deactivate the other assignment(s).
+2249,Ogbuagu Ifeoma,+2348030670697,Oyigbo,OYIGBO WEST,32/21/08/038,agent_multiple_polling_units,Administrator must select the correct assignment and deactivate the other assignment(s).
+2249,Ogbuagu Ifeoma,+2348030670697,Oyigbo,OYIGBO CENTRAL,32/21/09/022,agent_multiple_polling_units,Administrator must select the correct assignment and deactivate the other assignment(s).
+2254,Glory Biishi,+2348036368489,Oyigbo,ASA,32/21/07/003,agent_multiple_polling_units,Administrator must select the correct assignment and deactivate the other assignment(s).
+2254,Glory Biishi,+2348036368489,Oyigbo,OYIGBO CENTRAL,32/21/09/017,agent_multiple_polling_units,Administrator must select the correct assignment and deactivate the other assignment(s).
+2258,Glory Abraham,081028767516751,Eleme,ALETO,32/09/10/014,invalid_phone,Obtain and validate the complete Nigerian mobile number; never truncate or infer digits.
+2259,Obayi Amarachi Lynda,+2347066168287,Oyigbo,ASA,32/21/07/001,agent_multiple_polling_units,Administrator must select the correct assignment and deactivate the other assignment(s).
+2259,Obayi Amarachi Lynda,+2347066168287,Oyigbo,OYIGBO CENTRAL,32/21/09/004,agent_multiple_polling_units,Administrator must select the correct assignment and deactivate the other assignment(s).
+2268,Goodluck Benjamin Nwankwo,+2348143043307,Oyigbo,KOMKOM,32/21/10/010,agent_multiple_polling_units,Administrator must select the correct assignment and deactivate the other assignment(s).
+2268,Goodluck Benjamin Nwankwo,+2348143043307,Oyigbo,OYIGBO CENTRAL,32/21/09/015,agent_multiple_polling_units,Administrator must select the correct assignment and deactivate the other assignment(s).

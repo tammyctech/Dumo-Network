@@ -14,6 +14,7 @@ from app.models import (
     Election,
     PollingUnit,
     AgentAssignment,
+    AuditLog,
     ResultSubmission,
     Ward,
 )
@@ -21,6 +22,7 @@ from app.security import get_current_user
 from app.services.email_service import send_system_email
 from app.services.sms_service import send_sms
 from app.services.organization_service import sms_sender_name
+from app.services.agent_integrity import validate_assignment
 
 
 router = APIRouter(
@@ -203,18 +205,18 @@ def reassign_agent(
     ))
     if existing_submission is not None:
         raise HTTPException(409, "This assignment has an existing result submission and cannot be reassigned.")
-    occupied = db.scalar(select(AgentAssignment.id).where(
-        AgentAssignment.polling_unit_id == new_unit.id,
-        AgentAssignment.id != assignment.id,
-    ))
-    if occupied is not None:
-        raise HTTPException(409, "The selected polling unit already has a permanent agent.")
+    validate_assignment(db, agent=agent, unit=new_unit,
+        exclude_assignment_id=assignment.id, registered_lga=old_unit.lga)
     assignment.polling_unit_id = new_unit.id
+    db.add(AuditLog(user_id=admin.id, action="REASSIGN_AGENT", table_name="agent_assignments",
+        record_id=assignment.id,
+        old_data={"agent_id": agent.id, "polling_unit_id": old_unit.id, "polling_unit_code": old_unit.code},
+        new_data={"agent_id": agent.id, "polling_unit_id": new_unit.id, "polling_unit_code": new_unit.code}))
     try:
         db.commit()
     except IntegrityError as exc:
         db.rollback()
-        raise HTTPException(409, "The selected polling unit already has a permanent agent.") from exc
+        raise HTTPException(409, "The agent or polling unit conflicts with existing data.") from exc
     email_sent, email_error = _send_reassignment_email(agent, old_unit, new_unit)
     sms_sent, sms_error = _send_reassignment_sms(db, agent, old_unit, new_unit)
     return {
@@ -287,6 +289,10 @@ def remove_assignment(
             ),
         )
 
+    db.add(AuditLog(user_id=admin.id, action="REMOVE_AGENT_ASSIGNMENT", table_name="agent_assignments",
+        record_id=assignment.id,
+        old_data={"agent_id": assignment.agent_id, "polling_unit_id": assignment.polling_unit_id,
+                  "polling_unit_code": unit.code}, new_data=None))
     db.delete(assignment)
 
     try:

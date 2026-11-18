@@ -5,12 +5,13 @@ import secrets
 import string
 from typing import Any
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 from email_validator import EmailNotValidError, validate_email
 
 from app.models import AgentAssignment, PollingUnit, User
 from app.utils.phone import normalize_nigerian_phone
+from app.services.agent_integrity import polling_unit_capacity
 
 MAX_AGENT_FILE_SIZE = 10 * 1024 * 1024
 HEADERS = [
@@ -82,10 +83,16 @@ def validate_agents(db: Session, records: list[dict[str, str]]) -> dict:
     units_by_location: dict[tuple[str, str], list[PollingUnit]] = {}
     for unit in units:
         units_by_location.setdefault((_key(unit.lga), _key(unit.ward)), []).append(unit)
-    assignments = {item.polling_unit_id: item for item in db.scalars(select(AgentAssignment)).all()}
+    assignment_counts = dict(db.execute(
+        select(AgentAssignment.polling_unit_id, func.count(AgentAssignment.id))
+        .join(User, User.id == AgentAssignment.agent_id)
+        .where(User.is_active.is_(True))
+        .group_by(AgentAssignment.polling_unit_id)
+    ).all())
+    assigned_agent_ids = set(db.scalars(select(AgentAssignment.agent_id)).all())
     existing_users = {u.phone_number: u for u in db.scalars(select(User).where(User.phone_number.is_not(None))).all()}
     seen_phones: set[str] = set()
-    seen_units: set[int] = set()
+    planned_unit_counts: dict[int, int] = {}
     output = []
 
     for row_number, row in enumerate(records, 2):
@@ -123,16 +130,18 @@ def validate_agents(db: Session, records: list[dict[str, str]]) -> dict:
         if not unit:
             detail = "not found" if not matches else "is ambiguous; provide Polling Unit Code"
             errors.append(f"Polling Unit {number} was {detail} in {ward}, {lga} LGA.")
-        elif unit.id in assignments:
-            errors.append("This polling unit already has a permanent agent.")
-        elif unit.id in seen_units:
-            errors.append("This polling unit is duplicated in this file.")
-        else:
-            seen_units.add(unit.id)
+        elif row.get("polling unit name") and _key(row["polling unit name"]) != _key(unit.name):
+            errors.append("Polling-unit name does not match the authoritative database record.")
+        elif assignment_counts.get(unit.id, 0) >= polling_unit_capacity(unit):
+            errors.append("This polling unit already has a permanent agent and has reached its maximum number of agents.")
+        elif planned_unit_counts.get(unit.id, 0) >= polling_unit_capacity(unit):
+            errors.append("This polling unit is duplicated in this file and has reached its maximum number of agents.")
 
         user = existing_users.get(phone) if phone else None
         if user and user.role not in {"agent"}:
             errors.append("This phone number belongs to a non-agent account.")
+        elif user and user.id in assigned_agent_ids:
+            errors.append("This agent already has a polling-unit assignment.")
         email = row.get("email address", "").lower()
         if email:
             try:
@@ -141,6 +150,9 @@ def validate_agents(db: Session, records: list[dict[str, str]]) -> dict:
                 errors.append("Email address is invalid.")
             if not user and db.scalar(select(User.id).where(User.email == email)):
                 errors.append("Email address is already registered.")
+
+        if unit and not errors:
+            planned_unit_counts[unit.id] = planned_unit_counts.get(unit.id, 0) + 1
 
         output.append({
             "row_number": row_number, "full_name": name, "phone_number": phone,

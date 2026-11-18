@@ -30,6 +30,7 @@ import {
   SlidersHorizontal,
   MapPin,
   Link2,
+  AlertTriangle,
 } from "lucide-react";
 
 import { useAuth } from "../context/AuthContext";
@@ -129,6 +130,13 @@ const navigation = [
     path: "/admin/assignments",
     section: "Administration",
     icon: Users,
+    available: true,
+  },
+  {
+    name: "Agent Data Quality",
+    path: "/admin/agent-data-quality",
+    section: "Administration",
+    icon: AlertTriangle,
     available: true,
   },
   {
