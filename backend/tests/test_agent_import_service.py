@@ -10,7 +10,8 @@ from sqlalchemy.pool import StaticPool
 from app.database import Base
 from app.imports.agent_service import parse_agent_file, validate_agents
 from app.imports.agent_routes import _apply_polling_unit_overrides, _send_assignment_emails, clear_history, placeholder_email
-from app.models import AgentAssignment, AgentImport, AgentImportRow, Election, PollingUnit, User
+from app.models import AgentAssignment, AgentImport, AgentImportRow, Election, PollingUnit, User, Ward
+from app.services.electoral_lookup import normalize_lga, normalize_polling_unit_number, normalize_ward_number
 from openpyxl import Workbook
 
 
@@ -28,7 +29,8 @@ class AgentImportServiceTests(unittest.TestCase):
         self.unit = PollingUnit(
             code="33-21-09-003", name="Community School", state="Rivers", lga="Okrika", ward="Ward 9"
         )
-        self.db.add_all([self.election, self.unit]); self.db.commit()
+        self.ward = Ward(state="Rivers", lga="Okrika", name="Ward 9", ward_number=9)
+        self.db.add_all([self.election, self.ward, self.unit]); self.db.commit()
 
     def tearDown(self):
         self.db.close(); self.engine.dispose()
@@ -81,6 +83,33 @@ class AgentImportServiceTests(unittest.TestCase):
         report = validate_agents(self.db, records)
         self.assertTrue(report["rows"][0]["valid"])
         self.assertEqual(report["rows"][0]["polling_unit_id"], self.unit.id)
+
+    def test_statewide_alias_and_identifier_normalization(self):
+        self.assertEqual(normalize_lga("Oyibo"), "Oyigbo")
+        self.assertEqual(normalize_lga("PHALGA"), "Port Harcourt")
+        self.assertEqual(normalize_lga("Obio Akpor"), "Obio/Akpor")
+        for value in ("Ward 9", "Ward 09", "WARD 009", "9", "09"):
+            self.assertEqual(normalize_ward_number(value), 9)
+        for value in ("1", "01", "001", "PU 001", "Polling Unit 001"):
+            self.assertEqual(normalize_polling_unit_number(value), 1)
+
+    def test_code_conflicting_with_ward_is_rejected(self):
+        other_ward = Ward(state="Rivers", lga="Okrika", name="Ward 10", ward_number=10)
+        self.db.add(other_ward); self.db.commit()
+        records = parse_agent_file(self.csv(
+            "Ada Example,08012345678,Okrika,Ward 10,003,33-21-09-003,,\n"
+        ), "agents.csv")
+        report = validate_agents(self.db, records)
+        self.assertFalse(report["rows"][0]["valid"])
+        self.assertIn("does not belong", " ".join(report["rows"][0]["errors"]))
+
+    def test_code_conflicting_with_polling_unit_number_is_rejected(self):
+        records = parse_agent_file(self.csv(
+            "Ada Example,08012345678,Okrika,Ward 9,004,33-21-09-003,,\n"
+        ), "agents.csv")
+        report = validate_agents(self.db, records)
+        self.assertFalse(report["rows"][0]["valid"])
+        self.assertIn("conflicts", " ".join(report["rows"][0]["errors"]))
 
     def test_existing_election_assignment_is_a_conflict(self):
         user = User(full_name="Existing Agent", email="agent@example.com", phone_number="+2348011111111",

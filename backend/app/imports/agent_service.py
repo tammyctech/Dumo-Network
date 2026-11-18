@@ -9,9 +9,10 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 from email_validator import EmailNotValidError, validate_email
 
-from app.models import AgentAssignment, PollingUnit, User
+from app.models import AgentAssignment, User
 from app.utils.phone import normalize_nigerian_phone
 from app.services.agent_integrity import polling_unit_capacity
+from app.services.electoral_lookup import PollingUnitDirectory, display_polling_unit_number
 
 MAX_AGENT_FILE_SIZE = 10 * 1024 * 1024
 HEADERS = [
@@ -72,17 +73,8 @@ def parse_agent_file(content: bytes, filename: str) -> list[dict[str, str]]:
     return [{_key(k): _cell(v) for k, v in row.items() if k} for row in rows]
 
 
-def _polling_number_matches(code: str, number: str) -> bool:
-    code_parts = re.findall(r"\d+", code)
-    return bool(code_parts and code_parts[-1] == number)
-
-
 def validate_agents(db: Session, records: list[dict[str, str]]) -> dict:
-    units = db.scalars(select(PollingUnit).where(PollingUnit.state.ilike("Rivers"))).all()
-    units_by_code = {_key(unit.code): unit for unit in units}
-    units_by_location: dict[tuple[str, str], list[PollingUnit]] = {}
-    for unit in units:
-        units_by_location.setdefault((_key(unit.lga), _key(unit.ward)), []).append(unit)
+    directory = PollingUnitDirectory(db)
     assignment_counts = dict(db.execute(
         select(AgentAssignment.polling_unit_id, func.count(AgentAssignment.id))
         .join(User, User.id == AgentAssignment.agent_id)
@@ -115,26 +107,18 @@ def validate_agents(db: Session, records: list[dict[str, str]]) -> dict:
         if not lga or not ward or not number:
             errors.append("LGA, ward, and polling-unit number are required.")
 
-        candidates = units_by_location.get((_key(lga), _key(ward)), [])
-        if code:
-            # Polling-unit codes are globally unique. Spreadsheets commonly use
-            # numbered ward labels (for example, "Ward 1") while the database
-            # stores the official ward name (for example, "ABUA I"). Resolve an
-            # explicitly supplied code first so that this naming difference does
-            # not reject the correct polling unit.
-            coded_unit = units_by_code.get(_key(code))
-            matches = [coded_unit] if coded_unit and _key(coded_unit.lga) == _key(lga) else []
-        else:
-            matches = [u for u in candidates if _polling_number_matches(u.code, number)]
-        unit = matches[0] if len(matches) == 1 else None
-        if not unit:
-            detail = "not found" if not matches else "is ambiguous; provide Polling Unit Code"
-            errors.append(f"Polling Unit {number} was {detail} in {ward}, {lga} LGA.")
-        elif row.get("polling unit name") and _key(row["polling unit name"]) != _key(unit.name):
-            errors.append("Polling-unit name does not match the authoritative database record.")
-        elif assignment_counts.get(unit.id, 0) >= polling_unit_capacity(unit):
+        unit = None
+        try:
+            match = directory.lookup(lga=lga, ward=ward, polling_unit_number=number,
+                polling_unit_code=code, polling_unit_name=row.get("polling unit name", ""))
+            unit = match.unit
+            lga, ward, number = match.lga, match.ward.name if match.ward else unit.ward, display_polling_unit_number(number)
+            code = unit.code
+        except ValueError as exc:
+            errors.append(str(exc))
+        if unit and assignment_counts.get(unit.id, 0) >= polling_unit_capacity(unit):
             errors.append("This polling unit already has a permanent agent and has reached its maximum number of agents.")
-        elif planned_unit_counts.get(unit.id, 0) >= polling_unit_capacity(unit):
+        elif unit and planned_unit_counts.get(unit.id, 0) >= polling_unit_capacity(unit):
             errors.append("This polling unit is duplicated in this file and has reached its maximum number of agents.")
 
         user = existing_users.get(phone) if phone else None

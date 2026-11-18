@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 
 from app.models import Ward
 from app.wards.routes import RIVERS_LGAS
+from app.services.electoral_lookup import normalize_lga
 
 
 # ============================================================
@@ -54,12 +55,10 @@ def normalize_lga_name(lga: str) -> str:
     They must still pass validation against RIVERS_LGAS.
     """
 
-    cleaned = " ".join(lga.strip().split())
-
-    return LGA_ALIASES.get(
-        cleaned.casefold(),
-        cleaned,
-    )
+    try:
+        return normalize_lga(lga)
+    except ValueError:
+        return " ".join(lga.strip().split())
 
 
 # ============================================================
