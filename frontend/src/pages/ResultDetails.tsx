@@ -3,7 +3,7 @@ import { AlertTriangle, CheckCircle2, Download, Eye, FileImage, Loader2, Refresh
 import { useAuth } from "../context/AuthContext";
 import { PartyLogo } from "../constants/partyLogos";
 
-const API_URL = (import.meta.env.VITE_API_URL || "http://127.0.0.1:8000").replace(/\/$/, "");
+const API_URL = import.meta.env.DEV ? (import.meta.env.VITE_API_URL || "http://127.0.0.1:8000").replace(/\/$/, "") : "";
 type Item = { id:number; submitted_at:string; version:number; is_flagged:boolean; verification_status:string; election:{id:number;name:string}; polling_unit:{id:number;code:string;name:string;lga:string;ward:string}; agent:{id:number;full_name:string} };
 type Detail = Item & { accredited_voters:number;valid_votes:number;rejected_votes:number;party_results:{party:string;votes:number}[];evidence:{id:number;uploaded_at:string;image_url:string}[] };
 type Review = {id:number;status:string;notes:string|null;created_at:string;reviewer:string};

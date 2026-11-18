@@ -52,9 +52,9 @@ function PartyAxisTick({ x = 0, y = 0, payload }: { x?: number; y?: number; payl
 
 // ==========================================
 
-const API_URL =
-
-  import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
+const API_URL = import.meta.env.DEV
+  ? (import.meta.env.VITE_API_URL || "http://127.0.0.1:8000").replace(/\/$/, "")
+  : "";
 
 // ==========================================
 
@@ -396,11 +396,7 @@ const response = await fetch(
 
           {
 
-            headers: {
-
-              Authorization: `Bearer ${token}`,
-
-            },
+            headers: token && token !== "cookie-session" ? {Authorization: `Bearer ${token}`} : {},
 
             signal: controller.signal,
 
@@ -492,11 +488,7 @@ const response = await fetch(
 
           {
 
-            headers: {
-
-              Authorization: `Bearer ${token}`,
-
-            },
+            headers: token && token !== "cookie-session" ? {Authorization: `Bearer ${token}`} : {},
 
             signal,
 

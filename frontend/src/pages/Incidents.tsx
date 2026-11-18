@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { AlertTriangle, CheckCircle2, Loader2, Plus, RefreshCw } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 
-const API_URL=(import.meta.env.VITE_API_URL||"http://127.0.0.1:8000").replace(/\/$/,"");
+const API_URL=import.meta.env.DEV?(import.meta.env.VITE_API_URL||"http://127.0.0.1:8000").replace(/\/$/,""):"";
 type Option={id:number;name:string}; type Unit={id:number;name:string;code:string;lga:string;ward:string};
 type Incident={id:number;election_id:number;polling_unit_id:number|null;category:string;severity:string;status:string;description:string;resolution_notes:string|null;assigned_to:number|null;created_at:string;updated_at:string};
 type Assignment={election:Option;polling_unit:Unit};

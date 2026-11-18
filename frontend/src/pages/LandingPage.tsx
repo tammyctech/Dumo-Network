@@ -21,9 +21,9 @@ import { partyColor } from "../constants/partyColors";
 import { useBranding } from "../context/branding";
 import { PartyLogo } from "../constants/partyLogos";
 
-const API_URL = (
-  import.meta.env.VITE_API_URL || "http://127.0.0.1:8000"
-).replace(/\/$/, "");
+const API_URL = import.meta.env.DEV
+  ? (import.meta.env.VITE_API_URL || "http://127.0.0.1:8000").replace(/\/$/, "")
+  : "";
 
 const RIVERS_GEOJSON_URL =
   "https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/" +
