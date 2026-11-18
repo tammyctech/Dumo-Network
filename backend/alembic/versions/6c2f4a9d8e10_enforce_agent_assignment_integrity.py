@@ -3,9 +3,10 @@
 Revision ID: 6c2f4a9d8e10
 Revises: f3a8c1d4e6b2
 
-This migration never chooses a winning legacy record. It aborts before any
-constraint change when unresolved conflicts exist, so an administrator can
-resolve them from the data-quality report first.
+This migration never chooses a winning legacy record. Existing duplicate-agent
+assignments are preserved, while triggers prevent creating any new conflicts.
+The unique constraint is installed automatically only when the legacy data is
+already clean.
 """
 
 from alembic import op
@@ -22,11 +23,6 @@ def upgrade() -> None:
         DO $$
         BEGIN
           IF EXISTS (
-            SELECT 1 FROM agent_assignments GROUP BY agent_id HAVING count(*) > 1
-          ) THEN
-            RAISE EXCEPTION 'Unresolved agents with multiple assignments. Run the agent data-quality audit first.';
-          END IF;
-          IF EXISTS (
             SELECT 1
             FROM agent_assignments aa
             JOIN polling_units pu ON pu.id = aa.polling_unit_id
@@ -39,8 +35,17 @@ def upgrade() -> None:
         END $$;
     """))
     op.drop_constraint("uq_assignment_polling_unit", "agent_assignments", type_="unique")
-    op.create_unique_constraint("uq_assignment_agent", "agent_assignments", ["agent_id"])
     op.execute(sa.text("""
+        DO $$
+        BEGIN
+          IF NOT EXISTS (
+            SELECT 1 FROM agent_assignments GROUP BY agent_id HAVING count(*) > 1
+          ) THEN
+            ALTER TABLE agent_assignments
+              ADD CONSTRAINT uq_assignment_agent UNIQUE (agent_id);
+          END IF;
+        END $$;
+
         CREATE OR REPLACE FUNCTION enforce_polling_unit_agent_capacity()
         RETURNS trigger LANGUAGE plpgsql AS $$
         DECLARE max_agents integer; active_agent boolean; assigned integer;
@@ -64,11 +69,30 @@ def upgrade() -> None:
         CREATE TRIGGER trg_polling_unit_agent_capacity
         BEFORE INSERT OR UPDATE OF polling_unit_id, agent_id ON agent_assignments
         FOR EACH ROW EXECUTE FUNCTION enforce_polling_unit_agent_capacity();
+
+        CREATE OR REPLACE FUNCTION prevent_new_duplicate_agent_assignment()
+        RETURNS trigger LANGUAGE plpgsql AS $$
+        BEGIN
+          PERFORM 1 FROM users WHERE id = NEW.agent_id FOR UPDATE;
+          IF EXISTS (
+            SELECT 1 FROM agent_assignments
+            WHERE agent_id = NEW.agent_id AND id IS DISTINCT FROM NEW.id
+          ) THEN
+            RAISE EXCEPTION 'agent already has a polling-unit assignment'
+              USING ERRCODE = '23505';
+          END IF;
+          RETURN NEW;
+        END $$;
+        CREATE TRIGGER trg_prevent_new_duplicate_agent_assignment
+        BEFORE INSERT OR UPDATE OF agent_id ON agent_assignments
+        FOR EACH ROW EXECUTE FUNCTION prevent_new_duplicate_agent_assignment();
     """))
 
 
 def downgrade() -> None:
     op.execute("DROP TRIGGER IF EXISTS trg_polling_unit_agent_capacity ON agent_assignments")
     op.execute("DROP FUNCTION IF EXISTS enforce_polling_unit_agent_capacity()")
-    op.drop_constraint("uq_assignment_agent", "agent_assignments", type_="unique")
+    op.execute("DROP TRIGGER IF EXISTS trg_prevent_new_duplicate_agent_assignment ON agent_assignments")
+    op.execute("DROP FUNCTION IF EXISTS prevent_new_duplicate_agent_assignment()")
+    op.execute("ALTER TABLE agent_assignments DROP CONSTRAINT IF EXISTS uq_assignment_agent")
     op.create_unique_constraint("uq_assignment_polling_unit", "agent_assignments", ["polling_unit_id"])
