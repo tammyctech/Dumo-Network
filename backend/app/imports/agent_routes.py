@@ -19,6 +19,8 @@ from app.database import SessionLocal, get_db
 from app.models import AgentAssignment, AgentEmailDelivery, AgentImport, AgentImportRow, Election, PollingUnit, User
 from app.security import hash_password, require_admin
 from app.services.email_service import send_system_email
+from app.services.sms_service import send_agent_approval_sms
+from app.services.organization_service import sms_sender_name
 from app.imports.agent_service import (
     HEADERS, MAX_AGENT_FILE_SIZE, parse_agent_file, validate_agents,
 )
@@ -72,6 +74,26 @@ Login: {login_url}
                 logger.warning("Bulk assignment email was not sent to agent %s: %s", item["agent_id"], error)
         except Exception:
             logger.exception("Unexpected bulk assignment email failure for agent %s", item["agent_id"])
+
+
+def _send_assignment_sms(notifications: list[dict[str, str]], sender_name: str | None) -> None:
+    """Send login credentials and assignments to newly bulk-registered agents."""
+    for item in notifications:
+        try:
+            sent, error = send_agent_approval_sms(
+                recipient=item["phone_number"],
+                full_name=item["full_name"],
+                temporary_password=item["temporary_password"],
+                lga=item["lga"],
+                ward=item["ward"],
+                polling_unit_code=item["polling_unit_code"],
+                polling_unit_name=item["polling_unit_name"],
+                sender_name=sender_name,
+            )
+            if not sent:
+                logger.warning("Bulk registration SMS was not sent to agent %s: %s", item["agent_id"], error)
+        except Exception:
+            logger.exception("Unexpected bulk registration SMS failure for agent %s", item["agent_id"])
 
 
 def placeholder_email(full_name: str, phone_number: str, used_emails: set[str]) -> str:
@@ -213,6 +235,7 @@ async def confirm(background_tasks: BackgroundTasks, file: UploadFile = File(...
     db.flush()
     credentials = []
     email_notifications: list[dict[str, str]] = []
+    sms_notifications: list[dict[str, str]] = []
     email_notifications_skipped = 0
     registered = assigned = 0
     valid_rows = [row for row in report["rows"] if row["valid"]]
@@ -268,6 +291,17 @@ async def confirm(background_tasks: BackgroundTasks, file: UploadFile = File(...
             raise HTTPException(409, "A polling unit was removed after preview. Preview the file again.")
         validate_assignment(db, agent=user, unit=unit, registered_lga=row["lga"])
         db.add(AgentAssignment(election_id=None, polling_unit_id=row["polling_unit_id"], agent_id=user.id))
+        if created:
+            sms_notifications.append({
+                "agent_id": str(user.id),
+                "full_name": user.full_name,
+                "phone_number": user.phone_number or row["phone_number"],
+                "temporary_password": DEFAULT_AGENT_PASSWORD,
+                "lga": unit.lga,
+                "ward": unit.ward,
+                "polling_unit_code": unit.code,
+                "polling_unit_name": unit.name,
+            })
         if unit and not user.email.casefold().endswith((".invalid", "@dumo-network.vercel.app")):
             delivery = AgentEmailDelivery(import_id=history.id, agent_id=user.id, recipient=user.email)
             db.add(delivery)
@@ -297,11 +331,14 @@ async def confirm(background_tasks: BackgroundTasks, file: UploadFile = File(...
     scheduled_notifications = email_notifications[:daily_batch_limit]
     if scheduled_notifications:
         background_tasks.add_task(_send_assignment_emails, scheduled_notifications)
+    if sms_notifications:
+        background_tasks.add_task(_send_assignment_sms, sms_notifications, sms_sender_name(db))
     return {"import_id": history.id, "registered_agents": registered, "assigned_agents": assigned,
             "failed_records": history.failed_records, "credentials": credentials,
             "email_notifications_queued": len(scheduled_notifications),
             "email_notifications_pending": len(email_notifications) - len(scheduled_notifications),
             "email_notifications_skipped": email_notifications_skipped,
+            "sms_notifications_queued": len(sms_notifications),
             "credential_notice": "All new agents must change the shared temporary password after first login."}
 
 

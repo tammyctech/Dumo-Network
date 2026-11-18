@@ -326,6 +326,7 @@ def approve_application(
         lga=unit.lga,
         ward=unit.ward,
         polling_unit_code=unit.code,
+        polling_unit_name=unit.name,
         sender_name=sms_sender_name(db),
     )
     return {

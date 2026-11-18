@@ -109,16 +109,22 @@ def send_admin_sms(
         ).all()
         units_by_agent = {agent_id: unit for agent_id, unit in assignments}
         login_url = f"{os.getenv('FRONTEND_URL', 'http://localhost:5173').rstrip('/')}/login"
+        default_password = os.getenv("DEFAULT_AGENT_PASSWORD", "12345")
         for phone, user in users_by_phone.items():
             unit = units_by_agent.get(user.id)
             assignment = (
                 f"{unit.code}, {unit.name}, {unit.ward}, {unit.lga} LGA"
                 if unit else "No polling unit is currently assigned"
             )
+            password_details = (
+                f"Temporary password: {default_password}. Change it after signing in."
+                if user.must_change_password
+                else "Use your existing password, or Forgot password if needed."
+            )
             personalized = (
                 f"Hello {user.full_name}. Your Dumo Youth Network polling unit: {assignment}. "
                 f"Login phone: {phone}. Sign in: {login_url}. "
-                "Use Forgot password on the login page if you cannot remember your password."
+                f"{password_details}"
             )
             deliveries.append((phone, personalized))
     else:

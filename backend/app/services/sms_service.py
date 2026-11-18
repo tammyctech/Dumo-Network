@@ -71,14 +71,17 @@ def send_sms(*, recipient: str, message: str, sender_name: str | None = None) ->
 
 def send_agent_approval_sms(
     *, recipient: str, full_name: str, temporary_password: str,
-    lga: str, ward: str, polling_unit_code: str, sender_name: str | None = None,
+    lga: str, ward: str, polling_unit_code: str,
+    polling_unit_name: str | None = None, sender_name: str | None = None,
 ) -> tuple[bool, str | None]:
     login_url = f"{os.getenv('FRONTEND_URL', 'http://localhost:5173').rstrip('/')}/login"
+    polling_unit = f"{polling_unit_code} - {polling_unit_name}" if polling_unit_name else polling_unit_code
     return send_sms(
         recipient=recipient,
         message=(
             f"Hello {full_name}, your Dumo agent account is approved. Assignment: "
-            f"{lga}, {ward}, {polling_unit_code}. Login with this phone number and "
-            f"temporary password {temporary_password}: {login_url}"
+            f"{lga} LGA, {ward}, {polling_unit}. Login phone: {recipient}. "
+            f"Temporary password: {temporary_password}. Login: {login_url}. "
+            "Change your password after signing in."
         ), sender_name=sender_name,
     )
