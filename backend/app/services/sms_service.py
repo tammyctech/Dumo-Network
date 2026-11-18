@@ -58,7 +58,11 @@ def send_sms(*, recipient: str, message: str, sender_name: str | None = None) ->
         payload = response.json()
     except ValueError:
         payload = {}
-    if response.ok and payload.get("code") == "ok":
+    if response.ok and (
+        payload.get("code") == "ok"
+        or bool(payload.get("message_id"))
+        or str(payload.get("message", "")).strip().casefold() == "successfully sent"
+    ):
         return True, None
     provider_message = payload.get("message") if isinstance(payload, dict) else None
     logger.warning("Termii SMS failed with HTTP %s: %s", response.status_code, provider_message or "unknown response")
