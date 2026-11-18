@@ -125,6 +125,43 @@ def send_admin_sms(
         deliveries = [(phone, message) for phone in users_by_phone]
 
     sender = sms_sender_name(db)
+
+    # Deliver small sends in the request so the administrator gets Termii's
+    # actual result instead of a misleading "queued" response. Large batches
+    # remain asynchronous to avoid request timeouts.
+    if len(deliveries) <= 10:
+        sent = failed = 0
+        errors: list[str] = []
+        for phone_number, delivery_message in deliveries:
+            try:
+                delivered, delivery_error = send_sms(
+                    recipient=phone_number,
+                    message=delivery_message,
+                    sender_name=sender,
+                )
+            except Exception:
+                logger.exception("Unexpected SMS delivery failure")
+                delivered, delivery_error = False, "Unexpected SMS delivery failure."
+            sent += int(delivered)
+            failed += int(not delivered)
+            if delivery_error and delivery_error not in errors:
+                errors.append(delivery_error)
+        db.add(AuditLog(
+            user_id=admin.id,
+            action="COMPLETE_BULK_SMS",
+            table_name="users",
+            record_id=admin.id,
+            old_data=None,
+            new_data={"recipient_count": len(deliveries), "sent": sent, "failed": failed},
+        ))
+        db.commit()
+        if not sent:
+            raise HTTPException(502, errors[0] if errors else "Termii did not accept the SMS.")
+        response_message = f"SMS sent to {sent} recipient(s)."
+        if failed:
+            response_message += f" {failed} failed: {errors[0] if errors else 'unknown provider error'}"
+        return {"queued": 0, "sent": sent, "failed": failed, "message": response_message}
+
     db.add(AuditLog(
         user_id=admin.id,
         action="QUEUE_BULK_SMS",
