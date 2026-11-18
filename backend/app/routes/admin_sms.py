@@ -22,6 +22,7 @@ class SmsSendRequest(BaseModel):
     message: str = Field(default="", max_length=1000)
     template_key: str | None = None
     send_to_all: bool = False
+    lga: str | None = Field(default=None, max_length=100)
     user_ids: list[int] = Field(default_factory=list, max_length=5000)
     model_config = ConfigDict(extra="forbid")
 
@@ -62,6 +63,11 @@ def list_sms_recipients(db: Session = Depends(get_db), _: User = Depends(require
     users = db.scalars(
         select(User).where(User.is_active.is_(True)).order_by(User.full_name, User.id)
     ).all()
+    assignments = db.execute(
+        select(AgentAssignment.agent_id, PollingUnit.lga)
+        .join(PollingUnit, PollingUnit.id == AgentAssignment.polling_unit_id)
+    ).all()
+    lga_by_user = {agent_id: lga for agent_id, lga in assignments}
     recipients = []
     for user in users:
         phone_number = _valid_phone(user.phone_number)
@@ -71,6 +77,7 @@ def list_sms_recipients(db: Session = Depends(get_db), _: User = Depends(require
                 "full_name": user.full_name,
                 "phone_number": phone_number,
                 "role": user.role,
+                "lga": lga_by_user.get(user.id),
             })
     return {"recipients": recipients, "count": len(recipients)}
 
@@ -91,6 +98,13 @@ def send_admin_sms(
         raise HTTPException(422, "Select at least one recipient or choose send to all.")
 
     query = select(User).where(User.is_active.is_(True))
+    selected_lga = payload.lga.strip() if payload.lga else None
+    if payload.send_to_all and selected_lga:
+        query = (
+            query.join(AgentAssignment, AgentAssignment.agent_id == User.id)
+            .join(PollingUnit, PollingUnit.id == AgentAssignment.polling_unit_id)
+            .where(PollingUnit.lga == selected_lga)
+        )
     if not payload.send_to_all:
         query = query.where(User.id.in_(set(payload.user_ids)))
     users = db.scalars(query.order_by(User.id)).all()
@@ -177,6 +191,7 @@ def send_admin_sms(
         new_data={
             "recipient_count": len(deliveries),
             "send_to_all": payload.send_to_all,
+            "lga": selected_lga,
             "message_length": len(message) if not payload.template_key else None,
             "template_key": payload.template_key,
         },
