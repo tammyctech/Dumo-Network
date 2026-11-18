@@ -258,6 +258,12 @@ async def confirm(background_tasks: BackgroundTasks, file: UploadFile = File(...
                 phone_number=row["phone_number"], polling_unit_id=row["polling_unit_id"],
                 message=" ".join(row["errors"])[:500]))
             continue
+        if row.get("already_assigned"):
+            existing_user = existing_users.get(row["phone_number"])
+            db.add(AgentImportRow(import_id=history.id, row_number=row["row_number"], status="skipped",
+                phone_number=row["phone_number"], agent_id=existing_user.id if existing_user else None,
+                polling_unit_id=row["polling_unit_id"], message="Already assigned to this polling unit; no change made"))
+            continue
         user = existing_users.get(row["phone_number"])
         created = False
         if user is None:

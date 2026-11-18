@@ -81,7 +81,7 @@ def validate_agents(db: Session, records: list[dict[str, str]]) -> dict:
         .where(User.is_active.is_(True))
         .group_by(AgentAssignment.polling_unit_id)
     ).all())
-    assigned_agent_ids = set(db.scalars(select(AgentAssignment.agent_id)).all())
+    assignments_by_agent = dict(db.execute(select(AgentAssignment.agent_id, AgentAssignment.polling_unit_id)).all())
     existing_users = {u.phone_number: u for u in db.scalars(select(User).where(User.phone_number.is_not(None))).all()}
     seen_phones: set[str] = set()
     planned_unit_counts: dict[int, int] = {}
@@ -116,15 +116,16 @@ def validate_agents(db: Session, records: list[dict[str, str]]) -> dict:
             code = unit.code
         except ValueError as exc:
             errors.append(str(exc))
-        if unit and assignment_counts.get(unit.id, 0) >= polling_unit_capacity(unit):
+        user = existing_users.get(phone) if phone else None
+        already_assigned = bool(user and unit and assignments_by_agent.get(user.id) == unit.id)
+        if unit and not already_assigned and assignment_counts.get(unit.id, 0) >= polling_unit_capacity(unit):
             errors.append("This polling unit already has a permanent agent and has reached its maximum number of agents.")
         elif unit and planned_unit_counts.get(unit.id, 0) >= polling_unit_capacity(unit):
             errors.append("This polling unit is duplicated in this file and has reached its maximum number of agents.")
 
-        user = existing_users.get(phone) if phone else None
         if user and user.role not in {"agent"}:
             errors.append("This phone number belongs to a non-agent account.")
-        elif user and user.id in assigned_agent_ids:
+        elif user and user.id in assignments_by_agent and not already_assigned:
             errors.append("This agent already has a polling-unit assignment.")
         email = row.get("email address", "").lower()
         if email:
@@ -132,8 +133,13 @@ def validate_agents(db: Session, records: list[dict[str, str]]) -> dict:
                 email = validate_email(email, check_deliverability=False).normalized
             except EmailNotValidError:
                 errors.append("Email address is invalid.")
-            if not user and db.scalar(select(User.id).where(User.email == email)):
-                errors.append("Email address is already registered.")
+            if not user:
+                email_owner = db.scalar(select(User).where(User.email == email))
+                if email_owner:
+                    if email_owner.role == "agent":
+                        errors.append("Email address belongs to an existing agent account. Review that account before reuse.")
+                    else:
+                        errors.append("Email address belongs to an existing non-agent account. Review and convert that account in User Management before reuse.")
 
         if unit and not errors:
             planned_unit_counts[unit.id] = planned_unit_counts.get(unit.id, 0) + 1
@@ -143,7 +149,8 @@ def validate_agents(db: Session, records: list[dict[str, str]]) -> dict:
             "lga": lga, "ward": ward, "polling_unit_number": number,
             "polling_unit_code": code, "polling_unit_name": row.get("polling unit name", ""),
             "email": email, "polling_unit_id": unit.id if unit else None,
-            "existing_account": bool(user), "errors": errors, "valid": not errors,
+            "existing_account": bool(user), "already_assigned": already_assigned,
+            "errors": errors, "valid": not errors,
         })
     valid = sum(row["valid"] for row in output)
     return {"total_records": len(output), "valid_records": valid, "invalid_records": len(output) - valid,

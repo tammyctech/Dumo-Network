@@ -46,6 +46,20 @@ class AgentImportServiceTests(unittest.TestCase):
         self.assertEqual(report["rows"][0]["polling_unit_number"], "003")
         self.assertEqual(report["rows"][0]["phone_number"], "+2348012345678")
 
+    def test_prefixed_and_unpadded_polling_unit_number_matches(self):
+        records = parse_agent_file(self.csv("Ada Example,08012345678,Okrika,Ward 09,PU 3,,,\n"), "agents.csv")
+        report = validate_agents(self.db, records)
+        self.assertTrue(report["rows"][0]["valid"])
+        self.assertEqual(report["rows"][0]["polling_unit_number"], "003")
+        self.assertEqual(report["rows"][0]["polling_unit_id"], self.unit.id)
+
+    def test_missing_polling_unit_is_reported_without_creation(self):
+        records = parse_agent_file(self.csv("Ada Example,08012345678,Okrika,Ward 9,999,,,\n"), "agents.csv")
+        report = validate_agents(self.db, records)
+        self.assertFalse(report["rows"][0]["valid"])
+        self.assertIn("was not found", " ".join(report["rows"][0]["errors"]))
+        self.assertEqual(self.db.query(PollingUnit).count(), 1)
+
     def test_equivalent_phone_formats_are_duplicates(self):
         records = parse_agent_file(self.csv(
             "Ada Example,08012345678,Okrika,Ward 9,003,,,\n"
@@ -121,6 +135,35 @@ class AgentImportServiceTests(unittest.TestCase):
         report = validate_agents(self.db, records)
         self.assertFalse(report["rows"][0]["valid"])
         self.assertIn("already has a permanent agent", " ".join(report["rows"][0]["errors"]))
+
+    def test_unassigned_existing_agent_is_reusable_after_preview_confirmation(self):
+        user = User(full_name="Ada Existing", email="ada@example.com", phone_number="+2348012345678",
+                    hashed_password="preserved", role="agent", is_active=True)
+        self.db.add(user); self.db.commit()
+        records = parse_agent_file(self.csv("Ada Existing,08012345678,Okrika,Ward 9,003,,Community School,ada@example.com\n"), "agents.csv")
+        report = validate_agents(self.db, records)
+        self.assertTrue(report["rows"][0]["valid"])
+        self.assertTrue(report["rows"][0]["existing_account"])
+
+    def test_existing_non_agent_email_requires_review_not_duplicate_creation(self):
+        observer = User(full_name="Ada Existing", email="ada@example.com", phone_number=None,
+                        hashed_password="preserved", role="observer", is_active=True)
+        self.db.add(observer); self.db.commit()
+        records = parse_agent_file(self.csv("Ada Existing,08012345678,Okrika,Ward 9,003,,,ada@example.com\n"), "agents.csv")
+        report = validate_agents(self.db, records)
+        self.assertFalse(report["rows"][0]["valid"])
+        self.assertIn("non-agent account", " ".join(report["rows"][0]["errors"]))
+
+    def test_repeated_import_is_an_idempotent_no_op_after_same_assignment(self):
+        user = User(full_name="Ada Existing", email="ada@example.com", phone_number="+2348012345678",
+                    hashed_password="preserved", role="agent", is_active=True)
+        self.db.add(user); self.db.flush()
+        self.db.add(AgentAssignment(polling_unit_id=self.unit.id, agent_id=user.id)); self.db.commit()
+        records = parse_agent_file(self.csv("Ada Existing,08012345678,Okrika,Ward 9,003,,,ada@example.com\n"), "agents.csv")
+        report = validate_agents(self.db, records)
+        self.assertTrue(report["rows"][0]["valid"])
+        self.assertTrue(report["rows"][0]["already_assigned"])
+        self.assertEqual(self.db.query(User).filter(User.phone_number=="+2348012345678").count(), 1)
 
     def test_occupied_unit_can_be_replaced_and_revalidated(self):
         user = User(full_name="Existing Agent", email="existing@example.com", phone_number="+2348011111111",
