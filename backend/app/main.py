@@ -16,6 +16,7 @@ from sqlalchemy.orm import Session
 
 from .database import SessionLocal
 from .models import PollingUnit
+from .services.rate_limit import TokenBucketMiddleware
 
 
 # =====================================================
@@ -79,6 +80,8 @@ app = FastAPI(
     description="Dumo Youth Network Election Monitoring System",
     version="1.0.0",
 )
+
+app.add_middleware(TokenBucketMiddleware)
 
 
 async def _email_campaign_scheduler() -> None:

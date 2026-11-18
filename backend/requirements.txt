@@ -57,6 +57,7 @@ openpyxl==3.1.5
 phonenumbers==9.0.19
 PyYAML==6.0.3
 requests==2.34.2
+redis==7.1.0
 rich==15.0.0
 rich-toolkit==0.20.6
 rignore==0.8.1

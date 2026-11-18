@@ -13,6 +13,14 @@ Start command: ./start.sh
 Required environment variables remain configured in Render; do not commit
 their values. The start script runs `alembic upgrade head` before Uvicorn.
 
+# Redis-backed rate limiting
+
+Set `REDIS_URL` to the internal connection URL of the Render Key Value
+instance. Sensitive endpoints use an atomic Redis token bucket. When the
+variable is absent (local development/tests) or Redis is temporarily
+unavailable, the API uses a process-local bucket so requests remain protected
+without making the service unavailable.
+
 # Approval email
 
 Configure these environment variables on the backend deployment to email an
