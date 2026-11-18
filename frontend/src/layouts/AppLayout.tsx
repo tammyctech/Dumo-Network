@@ -140,6 +140,13 @@ const navigation = [
     available: true,
   },
   {
+    name: "Administrator MFA",
+    path: "/admin/mfa",
+    section: "Administration",
+    icon: ShieldCheck,
+    available: true,
+  },
+  {
     name: "Email Centre",
     path: "/admin/notifications",
     section: "Administration",

@@ -21,6 +21,18 @@ variable is absent (local development/tests) or Redis is temporarily
 unavailable, the API uses a process-local bucket so requests remain protected
 without making the service unavailable.
 
+# Secure sessions and MFA
+
+Set `COOKIE_SECURE=true` in production. Generate a dedicated Fernet key for
+`MFA_ENCRYPTION_KEY` with:
+
+```text
+python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
+```
+
+After deployment, the administrator must open **Administrator MFA**, enroll an
+authenticator, verify one code, and store the one-time recovery codes offline.
+
 # Approval email
 
 Configure these environment variables on the backend deployment to email an

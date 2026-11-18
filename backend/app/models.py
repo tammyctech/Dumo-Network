@@ -122,6 +122,10 @@ class User(Base):
         Integer, default=0, nullable=False
     )
 
+    mfa_enabled: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    mfa_secret_encrypted: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    mfa_recovery_codes: Mapped[list | None] = mapped_column(JSON, nullable=True)
+
 
 # ============================================================
 # AUDIT LOG MODEL

@@ -1,8 +1,9 @@
 import os
 import logging
+import hashlib
 from html import escape
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from fastapi.security import OAuth2PasswordRequestForm
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
@@ -11,7 +12,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from ..database import get_db
-from ..models import AgentApplication, AgentAssignment, PollingUnit, User
+from ..models import AgentApplication, AgentAssignment, AuditLog, PollingUnit, User
 from ..utils.phone import normalize_nigerian_phone
 
 from ..schemas import (
@@ -30,7 +31,10 @@ from ..security import (
     create_password_reset_token,
     decode_password_reset_token,
     get_current_user,
+    create_mfa_challenge,
+    decode_mfa_challenge,
 )
+from ..services.mfa import consume_recovery, verify_totp
 from ..services.email_service import send_system_email
 
 
@@ -43,6 +47,21 @@ router = APIRouter(
     tags=["Authentication"],
 )
 logger = logging.getLogger(__name__)
+
+
+def _cookie_secure() -> bool:
+    return os.getenv("COOKIE_SECURE", "true").strip().lower() not in {"0", "false", "no"}
+
+
+def _set_session_cookies(response: Response, access_token: str, refresh_token: str) -> None:
+    common = {"httponly": True, "secure": _cookie_secure(), "samesite": "strict", "path": "/"}
+    response.set_cookie("dumo_access", access_token, max_age=30 * 60, **common)
+    response.set_cookie("dumo_refresh", refresh_token, max_age=30 * 24 * 60 * 60, **common)
+
+
+def _clear_session_cookies(response: Response) -> None:
+    response.delete_cookie("dumo_access", path="/", secure=_cookie_secure(), httponly=True, samesite="strict")
+    response.delete_cookie("dumo_refresh", path="/", secure=_cookie_secure(), httponly=True, samesite="strict")
 
 
 def _send_first_login_welcome_email(db: Session, user: User) -> None:
@@ -113,6 +132,11 @@ class RefreshTokenRequest(BaseModel):
     refresh_token: str = Field(min_length=20)
     model_config = ConfigDict(extra="forbid")
 
+class MfaVerifyRequest(BaseModel):
+    challenge_token: str = Field(min_length=20)
+    code: str = Field(min_length=6, max_length=20)
+    model_config = ConfigDict(extra="forbid")
+
 
 @router.post("/forgot-password")
 def forgot_password(payload: ForgotPasswordRequest, db: Session = Depends(get_db)):
@@ -155,9 +179,12 @@ def reset_password(payload: ResetPasswordRequest, db: Session = Depends(get_db))
 
 
 @router.post("/refresh", response_model=TokenResponse)
-def refresh_session(payload: RefreshTokenRequest, db: Session = Depends(get_db)):
+def refresh_session(payload: RefreshTokenRequest | None = None, db: Session = Depends(get_db), request: Request = None, response: Response = None):
+    refresh_token = (request.cookies.get("dumo_refresh") if request else None) or (payload.refresh_token if payload else None)
+    if not refresh_token:
+        raise HTTPException(401, "Invalid or expired session")
     try:
-        user_id, version = decode_refresh_token(payload.refresh_token)
+        user_id, version = decode_refresh_token(refresh_token)
     except ValueError as exc:
         raise HTTPException(401, "Invalid or expired session") from exc
     user = db.get(User, user_id)
@@ -168,9 +195,13 @@ def refresh_session(payload: RefreshTokenRequest, db: Session = Depends(get_db))
         or user.session_version != version
     ):
         raise HTTPException(401, "Invalid or expired session")
+    access = create_access_token(user.id, user.session_version)
+    refresh = create_refresh_token(user.id, user.session_version)
+    if response is not None:
+        _set_session_cookies(response, access, refresh)
     return {
-        "access_token": create_access_token(user.id, user.session_version),
-        "refresh_token": create_refresh_token(user.id, user.session_version),
+        "access_token": access,
+        "refresh_token": refresh,
         "token_type": "bearer",
     }
 
@@ -181,11 +212,11 @@ def refresh_session(payload: RefreshTokenRequest, db: Session = Depends(get_db))
 
 @router.post(
     "/login",
-    response_model=TokenResponse,
 )
 def login(
     form_data: OAuth2PasswordRequestForm = Depends(),
     db: Session = Depends(get_db),
+    response: Response = None,
 ):
     """
     Authenticate a user and return an access token.
@@ -214,6 +245,7 @@ def login(
         )
 
     if user is None:
+        logger.warning("SECURITY login_failed reason=unknown_account identifier_hash=%s", hashlib.sha256(identifier.casefold().encode()).hexdigest()[:16])
         if pending_application is not None:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
@@ -228,6 +260,7 @@ def login(
         form_data.password,
         user.hashed_password,
     ):
+        logger.warning("SECURITY login_failed reason=bad_password user_id=%s", user.id)
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid email/phone number or password",
@@ -245,11 +278,47 @@ def login(
             detail="This account type is no longer supported.",
         )
 
+    if user.role == "admin" and user.mfa_enabled:
+        return {"mfa_required": True, "challenge_token": create_mfa_challenge(user.id, user.session_version)}
+
+    access = create_access_token(user.id, user.session_version)
+    refresh = create_refresh_token(user.id, user.session_version)
+    if response is not None:
+        _set_session_cookies(response, access, refresh)
     return {
-        "access_token": create_access_token(user.id, user.session_version),
-        "refresh_token": create_refresh_token(user.id, user.session_version),
+        "access_token": access,
+        "refresh_token": refresh,
         "token_type": "bearer",
     }
+
+
+@router.post("/logout", status_code=204)
+def logout(response: Response):
+    _clear_session_cookies(response)
+
+
+@router.post("/mfa/verify", response_model=TokenResponse)
+def verify_mfa(payload: MfaVerifyRequest, response: Response, db: Session = Depends(get_db)):
+    try:
+        user_id, version = decode_mfa_challenge(payload.challenge_token)
+    except ValueError as exc:
+        raise HTTPException(401, "The MFA challenge has expired. Sign in again.") from exc
+    user = db.get(User, user_id)
+    if not user or user.role != "admin" or not user.is_active or not user.mfa_enabled or user.session_version != version or not user.mfa_secret_encrypted:
+        raise HTTPException(401, "The MFA challenge is invalid.")
+    valid = verify_totp(user.mfa_secret_encrypted, payload.code)
+    if not valid:
+        remaining = consume_recovery(user.mfa_recovery_codes, payload.code)
+        if remaining is None:
+            raise HTTPException(401, "Invalid authenticator or recovery code.")
+        user.mfa_recovery_codes = remaining
+        db.add(AuditLog(user_id=user.id, action="USE_MFA_RECOVERY_CODE", table_name="users",
+                        record_id=user.id, old_data=None, new_data={"remaining": len(remaining)}))
+        db.commit()
+    access = create_access_token(user.id, user.session_version)
+    refresh = create_refresh_token(user.id, user.session_version)
+    _set_session_cookies(response, access, refresh)
+    return {"access_token": access, "refresh_token": refresh, "token_type": "bearer"}
 
 
 # ==========================================

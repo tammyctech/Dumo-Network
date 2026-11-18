@@ -123,6 +123,7 @@ class TokenBucketMiddleware:
         digest = hashlib.sha256(f"{rule.name}:{identity}".encode()).hexdigest()
         allowed, remaining, retry = await self.store.consume(f"dumo:rate:{digest}", rule)
         if not allowed:
+            logger.warning("SECURITY rate_limit_exceeded rule=%s client=%s retry=%s", rule.name, digest[:16], retry)
             response = JSONResponse(
                 {"detail": "Too many requests. Please wait and try again."},
                 status_code=429,

@@ -37,6 +37,10 @@ export class ApiRequestError extends Error {
     this.status = status;
   }
 }
+export class MfaRequiredError extends Error {
+  challengeToken: string;
+  constructor(token:string){super("Enter your administrator verification code.");this.name="MfaRequiredError";this.challengeToken=token}
+}
 
 // ==========================================
 // LOGIN USER
@@ -53,6 +57,7 @@ export async function loginUser(
 
   const response = await fetch(`${API_URL}/api/auth/login`, {
     method: "POST",
+    credentials: "include",
     headers: {
       "Content-Type": "application/x-www-form-urlencoded",
     },
@@ -68,18 +73,26 @@ export async function loginUser(
     throw new Error(message);
   }
 
-  return response.json() as Promise<{
+  const data=await response.json() as {access_token?:string;refresh_token?:string;token_type?:string;mfa_required?:boolean;challenge_token?:string};
+  if(data.mfa_required&&data.challenge_token)throw new MfaRequiredError(data.challenge_token);
+  return data as {
     access_token: string;
     refresh_token: string;
     token_type: string;
-  }>;
+  };
+}
+
+export async function verifyAdministratorMfa(challengeToken:string,code:string){
+ const response=await fetch(`${API_URL}/api/auth/mfa/verify`,{method:"POST",credentials:"include",headers:{"Content-Type":"application/json"},body:JSON.stringify({challenge_token:challengeToken,code})});
+ if(!response.ok){let message="Invalid authenticator or recovery code.";try{const data=await response.json();if(typeof data.detail==="string")message=data.detail}catch{}throw new Error(message)}
 }
 
 export async function refreshSession(refreshToken: string) {
   const response = await fetch(`${API_URL}/api/auth/refresh`, {
     method: "POST",
+    credentials: "include",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ refresh_token: refreshToken }),
+    body: refreshToken ? JSON.stringify({ refresh_token: refreshToken }) : undefined,
   });
   if (!response.ok) {
     throw new ApiRequestError("Your saved session has expired. Please sign in again.", response.status);
@@ -95,8 +108,9 @@ export async function getCurrentUser(
   token: string
 ): Promise<User> {
   const response = await fetch(`${API_URL}/api/auth/me`, {
+    credentials: "include",
     headers: {
-      Authorization: `Bearer ${token}`,
+      ...(token && token !== "cookie-session" ? {Authorization: `Bearer ${token}`} : {}),
     },
   });
 

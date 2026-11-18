@@ -17,6 +17,7 @@ from sqlalchemy.orm import Session
 from .database import SessionLocal
 from .models import PollingUnit
 from .services.rate_limit import TokenBucketMiddleware
+from .services.security_headers import SecurityHeadersMiddleware
 
 
 # =====================================================
@@ -43,6 +44,7 @@ from .routes import (
     organization_settings,
     data_quality,
     phone_validation,
+    admin_mfa,
 )
 
 
@@ -82,6 +84,7 @@ app = FastAPI(
 )
 
 app.add_middleware(TokenBucketMiddleware)
+app.add_middleware(SecurityHeadersMiddleware)
 
 
 async def _email_campaign_scheduler() -> None:
@@ -210,6 +213,7 @@ app.include_router(admin_email.router)
 app.include_router(organization_settings.router)
 app.include_router(data_quality.router)
 app.include_router(phone_validation.router)
+app.include_router(admin_mfa.router)
 
 
 # =====================================================

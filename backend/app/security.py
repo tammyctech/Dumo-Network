@@ -5,7 +5,7 @@ from datetime import datetime, timedelta, timezone
 import jwt
 
 from dotenv import load_dotenv
-from fastapi import Depends, HTTPException, Request, status
+from fastapi import Cookie, Depends, HTTPException, Request, status
 from fastapi.security import OAuth2PasswordBearer
 from jwt.exceptions import InvalidTokenError
 from pwdlib import PasswordHash
@@ -122,13 +122,29 @@ def decode_password_reset_token(token: str) -> tuple[int, int]:
         raise ValueError("Invalid or expired reset link") from exc
 
 
+def create_mfa_challenge(user_id: int, session_version: int) -> str:
+    payload = {"sub": str(user_id), "ver": session_version, "type": "mfa",
+               "exp": datetime.now(timezone.utc) + timedelta(minutes=5)}
+    return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
+
+
+def decode_mfa_challenge(token: str) -> tuple[int, int]:
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        if payload.get("type") != "mfa": raise ValueError("Incorrect token type")
+        return int(payload["sub"]), int(payload.get("ver", 0))
+    except (InvalidTokenError, KeyError, TypeError, ValueError) as exc:
+        raise ValueError("Invalid or expired MFA challenge") from exc
+
+
 # ============================================================
 # GET CURRENT AUTHENTICATED USER
 # ============================================================
 
 def get_current_user(
     request: Request,
-    token: str = Depends(oauth2_scheme),
+    bearer_token: str | None = Depends(OAuth2PasswordBearer(tokenUrl="/api/auth/login", auto_error=False)),
+    access_cookie: str | None = Cookie(default=None, alias="dumo_access"),
     db: Session = Depends(get_db),
 ) -> User:
 
@@ -141,6 +157,9 @@ def get_current_user(
     )
 
     try:
+        token = access_cookie or bearer_token
+        if not token:
+            raise credentials_error
         payload = jwt.decode(
             token,
             SECRET_KEY,

@@ -51,20 +51,14 @@ const AuthContext = createContext<
 // PERSISTENT SESSION STORAGE
 // ==========================================
 
-const TOKEN_KEY = "dumo_auth_token";
-const REFRESH_TOKEN_KEY = "dumo_refresh_token";
-
-function saveSession(accessToken: string, refreshToken: string) {
-  localStorage.setItem(TOKEN_KEY, accessToken);
-  localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken);
-  sessionStorage.removeItem(TOKEN_KEY);
-}
-
 function clearSession() {
-  localStorage.removeItem(TOKEN_KEY);
-  localStorage.removeItem(REFRESH_TOKEN_KEY);
-  sessionStorage.removeItem(TOKEN_KEY);
+  // Remove tokens left by versions deployed before cookie-based sessions.
+  localStorage.removeItem("dumo_auth_token");
+  localStorage.removeItem("dumo_refresh_token");
+  sessionStorage.removeItem("dumo_auth_token");
 }
+
+clearSession();
 
 // ==========================================
 // AUTH PROVIDER
@@ -77,9 +71,7 @@ export function AuthProvider({
 }) {
   const [user, setUser] = useState<User | null>(null);
 
-  const [token, setToken] = useState<string | null>(
-    () => localStorage.getItem(TOKEN_KEY) || sessionStorage.getItem(TOKEN_KEY)
-  );
+  const [token, setToken] = useState<string | null>(null);
 
   const [isLoading, setIsLoading] = useState(true);
   const [authError, setAuthError] = useState<string | null>(null);
@@ -92,31 +84,20 @@ export function AuthProvider({
     let cancelled = false;
 
     async function restoreSession() {
-      let storedToken = localStorage.getItem(TOKEN_KEY) || sessionStorage.getItem(TOKEN_KEY);
-      const storedRefreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);
-
-      if (!storedToken && !storedRefreshToken) {
-        setIsLoading(false);
-        return;
-      }
-
       try {
         setAuthError(null);
         let profile: User;
         try {
-          if (!storedToken) throw new ApiRequestError("Access token unavailable", 401);
-          profile = await getCurrentUser(storedToken);
+          profile = await getCurrentUser("");
         } catch (error) {
-          if (!(error instanceof ApiRequestError) || error.status !== 401 || !storedRefreshToken) throw error;
-          const renewed = await refreshSession(storedRefreshToken);
-          storedToken = renewed.access_token;
-          saveSession(renewed.access_token, renewed.refresh_token);
-          profile = await getCurrentUser(renewed.access_token);
+          if (!(error instanceof ApiRequestError) || error.status !== 401) throw error;
+          await refreshSession("");
+          profile = await getCurrentUser("");
         }
 
         if (cancelled) return;
 
-        setToken(storedToken);
+        setToken("cookie-session");
         setUser(profile);
       } catch (error) {
         if (cancelled) return;
@@ -152,12 +133,9 @@ export function AuthProvider({
   useEffect(() => {
     if (!user || !token) return;
     const timer = window.setInterval(async () => {
-      const storedRefreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);
-      if (!storedRefreshToken) return;
       try {
-        const renewed = await refreshSession(storedRefreshToken);
-        saveSession(renewed.access_token, renewed.refresh_token);
-        setToken(renewed.access_token);
+        await refreshSession("");
+        setToken("cookie-session");
       } catch (error) {
         if (error instanceof ApiRequestError && (error.status === 401 || error.status === 403)) {
           clearSession(); setToken(null); setUser(null);
@@ -175,18 +153,14 @@ export function AuthProvider({
     email: string,
     password: string
   ): Promise<void> {
-    const result = await loginUser(
+    await loginUser(
       email.trim(),
       password
     );
 
-    const profile = await getCurrentUser(
-      result.access_token
-    );
+    const profile = await getCurrentUser("");
 
-    saveSession(result.access_token, result.refresh_token);
-
-    setToken(result.access_token);
+    setToken("cookie-session");
     setUser(profile);
     setAuthError(null);
   }
@@ -220,6 +194,7 @@ export function AuthProvider({
   // ========================================
 
   function logout(): void {
+    void fetch(`${import.meta.env.DEV?(import.meta.env.VITE_API_URL||"http://127.0.0.1:8000").replace(/\/$/,""):""}/api/auth/logout`, {method:"POST"});
     clearSession();
 
     setToken(null);
