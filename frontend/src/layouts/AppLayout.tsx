@@ -31,6 +31,7 @@ import {
   MapPin,
   Link2,
   AlertTriangle,
+  MessageSquareText,
 } from "lucide-react";
 
 import { useAuth } from "../context/AuthContext";
@@ -151,6 +152,13 @@ const navigation = [
     path: "/admin/notifications",
     section: "Administration",
     icon: Bell,
+    available: true,
+  },
+  {
+    name: "SMS Centre",
+    path: "/admin/sms",
+    section: "Administration",
+    icon: MessageSquareText,
     available: true,
   },
   {

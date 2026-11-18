@@ -45,6 +45,7 @@ const MandatoryPasswordChange = lazy(() => import("./pages/MandatoryPasswordChan
 const AdminAgentApplications = lazy(() => import("./pages/AdminAgentApplications"));
 const AgentDataQuality = lazy(() => import("./pages/AgentDataQuality"));
 const AdminMfa = lazy(() => import("./pages/AdminMfa"));
+const AdminSms = lazy(() => import("./pages/AdminSms"));
 
 // Bulk Import Dashboard
 const BulkImport = lazy(() => import("./pages/BulkImport"));
@@ -174,6 +175,7 @@ export default function App() {
                 <Route path="/admin/agent-applications" element={<AdminAgentApplications />} />
                 <Route path="/admin/agent-data-quality" element={<AgentDataQuality />} />
                 <Route path="/admin/mfa" element={<AdminMfa />} />
+                <Route path="/admin/sms" element={<AdminSms />} />
 
                 {/* User Management */}
                 <Route

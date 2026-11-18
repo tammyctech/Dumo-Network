@@ -45,6 +45,7 @@ from .routes import (
     data_quality,
     phone_validation,
     admin_mfa,
+    admin_sms,
 )
 
 
@@ -214,6 +215,7 @@ app.include_router(organization_settings.router)
 app.include_router(data_quality.router)
 app.include_router(phone_validation.router)
 app.include_router(admin_mfa.router)
+app.include_router(admin_sms.router)
 
 
 # =====================================================
