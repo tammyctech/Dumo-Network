@@ -17,6 +17,15 @@ from ..utils.phone import normalize_nigerian_phone
 router = APIRouter(prefix="/api/admin/sms", tags=["Admin SMS"])
 logger = logging.getLogger(__name__)
 
+VOTE_AWARENESS_MESSAGE = """YOUR FUTURE IS WORTH MORE THAN ₦5,000 OR ₦10,000!
+
+Dear Dumo Youth Network Members, as we approach the 2027 elections, remember that selling your vote means risking years of good governance for temporary financial gain. Your vote is your voice, your power, and your future. Say NO to vote buying. Together, let's build a better Rivers State.
+
+Tell someone to tell someone to vote Chief Dumo Lulu-Briggs come February 6, 2027.
+
+Tamunotonye Adokiye Emmanuel
+Coordinator, DYN"""
+
 
 class SmsSendRequest(BaseModel):
     message: str = Field(default="", max_length=1000)
@@ -91,13 +100,15 @@ def send_admin_sms(
     admin: User = Depends(require_admin),
 ):
     message = payload.message.strip()
-    if payload.template_key not in {None, "assignment_login"}:
+    if payload.template_key not in {None, "assignment_login", "vote_awareness"}:
         raise HTTPException(422, "Choose a valid SMS template.")
+    if payload.template_key == "vote_awareness":
+        message = VOTE_AWARENESS_MESSAGE
     if not payload.template_key and not message:
         raise HTTPException(422, "Enter a message to send.")
     if not payload.send_to_all and not payload.user_ids and not payload.phone_numbers:
         raise HTTPException(422, "Select a recipient, enter a phone number, or choose send to all.")
-    if payload.template_key and payload.phone_numbers:
+    if payload.template_key == "assignment_login" and payload.phone_numbers:
         raise HTTPException(422, "The login details template can only be sent to registered users.")
 
     external_phones: list[str] = []
