@@ -106,16 +106,8 @@ def list_sms_history(db: Session = Depends(get_db), _: User = Depends(require_ad
         .order_by(AuditLog.created_at.desc(), AuditLog.id.desc())
         .limit(200)
     ).all()
-    history: list[dict] = []
-    seen_campaigns: set[str] = set()
-    for log in logs:
-        data = log.new_data or {}
-        campaign_id = data.get("campaign_id")
-        if campaign_id and campaign_id in seen_campaigns:
-            continue
-        if campaign_id:
-            seen_campaigns.add(campaign_id)
-        history.append({
+    def history_item(log: AuditLog, data: dict, status: str) -> dict:
+        return {
             "id": log.id,
             "created_at": log.created_at,
             "lga": data.get("lga"),
@@ -125,10 +117,56 @@ def list_sms_history(db: Session = Depends(get_db), _: User = Depends(require_ad
             "failed": data.get("failed"),
             "template_key": data.get("template_key"),
             "external_recipient_count": data.get("external_recipient_count", 0),
-            "status": "completed" if log.action == "COMPLETE_BULK_SMS" else "queued",
-        })
-        if len(history) == 50:
-            break
+            "status": status,
+        }
+
+    history: list[dict] = []
+    seen_campaigns: set[str] = set()
+    legacy_queues: list[AuditLog] = []
+    legacy_completions: list[AuditLog] = []
+    for log in logs:
+        data = log.new_data or {}
+        campaign_id = data.get("campaign_id")
+        if not campaign_id:
+            if log.action == "QUEUE_BULK_SMS":
+                legacy_queues.append(log)
+            else:
+                legacy_completions.append(log)
+            continue
+        if campaign_id in seen_campaigns:
+            continue
+        seen_campaigns.add(campaign_id)
+        status = "completed" if log.action == "COMPLETE_BULK_SMS" else "queued"
+        history.append(history_item(log, data, status))
+
+    # Campaign IDs were added after SMS auditing was already in use. Pair the
+    # older queue and completion rows by administrator, recipient count and
+    # timing so one actual send does not appear twice in history.
+    used_completion_ids: set[int] = set()
+    for queued in legacy_queues:
+        queued_data = queued.new_data or {}
+        candidates = [
+            completed for completed in legacy_completions
+            if completed.id not in used_completion_ids
+            and completed.user_id == queued.user_id
+            and (completed.new_data or {}).get("recipient_count") == queued_data.get("recipient_count")
+            and completed.created_at >= queued.created_at
+            and (completed.created_at - queued.created_at).total_seconds() <= 21600
+        ]
+        if candidates:
+            completed = min(candidates, key=lambda item: item.created_at - queued.created_at)
+            used_completion_ids.add(completed.id)
+            merged_data = {**queued_data, **(completed.new_data or {})}
+            history.append(history_item(queued, merged_data, "completed"))
+        else:
+            history.append(history_item(queued, queued_data, "queued"))
+
+    for completed in legacy_completions:
+        if completed.id not in used_completion_ids:
+            history.append(history_item(completed, completed.new_data or {}, "completed"))
+
+    history.sort(key=lambda item: (item["created_at"], item["id"]), reverse=True)
+    history = history[:50]
     return {"history": history, "count": len(history)}
 
 
