@@ -471,7 +471,7 @@ export default function PollingUnits() {
 
     const endpoint = isEditing
       ? `${API_URL}/api/polling-units/${editingId}`
-      : `${API_URL}/api/polling-units/`;
+      : `${API_URL}/api/polling-units`;
 
     try {
       const response = await fetch(endpoint, {

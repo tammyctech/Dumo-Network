@@ -100,7 +100,7 @@ export default function Analytics() {
               headers,
             }),
 
-            fetch(`${API_BASE_URL}/api/polling-units/`, {
+            fetch(`${API_BASE_URL}/api/polling-units`, {
               signal: controller.signal,
               headers,
             }),
