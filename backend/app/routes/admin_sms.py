@@ -1,5 +1,6 @@
 import logging
 import os
+from uuid import uuid4
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from pydantic import BaseModel, ConfigDict, Field
@@ -46,7 +47,12 @@ def _valid_phone(phone_number: str | None) -> str | None:
         return None
 
 
-def _deliver_sms(deliveries: list[tuple[str, str]], sender: str | None, admin_id: int) -> None:
+def _deliver_sms(
+    deliveries: list[tuple[str, str]],
+    sender: str | None,
+    admin_id: int,
+    audit_data: dict,
+) -> None:
     sent = failed = 0
     for phone_number, message in deliveries:
         try:
@@ -63,7 +69,7 @@ def _deliver_sms(deliveries: list[tuple[str, str]], sender: str | None, admin_id
             table_name="users",
             record_id=admin_id,
             old_data=None,
-            new_data={"recipient_count": len(deliveries), "sent": sent, "failed": failed},
+            new_data={**audit_data, "sent": sent, "failed": failed},
         ))
         db.commit()
 
@@ -90,6 +96,40 @@ def list_sms_recipients(db: Session = Depends(get_db), _: User = Depends(require
                 "lga": lga_by_user.get(user.id),
             })
     return {"recipients": recipients, "count": len(recipients)}
+
+
+@router.get("/history")
+def list_sms_history(db: Session = Depends(get_db), _: User = Depends(require_admin)):
+    logs = db.scalars(
+        select(AuditLog)
+        .where(AuditLog.action.in_(["QUEUE_BULK_SMS", "COMPLETE_BULK_SMS"]))
+        .order_by(AuditLog.created_at.desc(), AuditLog.id.desc())
+        .limit(200)
+    ).all()
+    history: list[dict] = []
+    seen_campaigns: set[str] = set()
+    for log in logs:
+        data = log.new_data or {}
+        campaign_id = data.get("campaign_id")
+        if campaign_id and campaign_id in seen_campaigns:
+            continue
+        if campaign_id:
+            seen_campaigns.add(campaign_id)
+        history.append({
+            "id": log.id,
+            "created_at": log.created_at,
+            "lga": data.get("lga"),
+            "send_to_all": bool(data.get("send_to_all")),
+            "recipient_count": data.get("recipient_count", 0),
+            "sent": data.get("sent"),
+            "failed": data.get("failed"),
+            "template_key": data.get("template_key"),
+            "external_recipient_count": data.get("external_recipient_count", 0),
+            "status": "completed" if log.action == "COMPLETE_BULK_SMS" else "queued",
+        })
+        if len(history) == 50:
+            break
+    return {"history": history, "count": len(history)}
 
 
 @router.post("/send", status_code=202)
@@ -173,6 +213,15 @@ def send_admin_sms(
         deliveries = [(phone, message) for phone in recipient_phones]
 
     sender = sms_sender_name(db)
+    audit_data = {
+        "campaign_id": str(uuid4()),
+        "recipient_count": len(deliveries),
+        "send_to_all": payload.send_to_all,
+        "lga": selected_lga,
+        "message_length": len(message) if not payload.template_key else None,
+        "template_key": payload.template_key,
+        "external_recipient_count": len(set(external_phones)),
+    }
 
     # Deliver small sends in the request so the administrator gets Termii's
     # actual result instead of a misleading "queued" response. Large batches
@@ -200,7 +249,7 @@ def send_admin_sms(
             table_name="users",
             record_id=admin.id,
             old_data=None,
-            new_data={"recipient_count": len(deliveries), "sent": sent, "failed": failed},
+            new_data={**audit_data, "sent": sent, "failed": failed},
         ))
         db.commit()
         if not sent:
@@ -216,15 +265,8 @@ def send_admin_sms(
         table_name="users",
         record_id=admin.id,
         old_data=None,
-        new_data={
-            "recipient_count": len(deliveries),
-            "send_to_all": payload.send_to_all,
-            "lga": selected_lga,
-            "message_length": len(message) if not payload.template_key else None,
-            "template_key": payload.template_key,
-            "external_recipient_count": len(set(external_phones)),
-        },
+        new_data=audit_data,
     ))
     db.commit()
-    background_tasks.add_task(_deliver_sms, deliveries, sender, admin.id)
+    background_tasks.add_task(_deliver_sms, deliveries, sender, admin.id, audit_data)
     return {"queued": len(deliveries), "message": f"SMS queued for {len(deliveries)} recipient(s)."}
