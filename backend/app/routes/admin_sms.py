@@ -24,6 +24,7 @@ class SmsSendRequest(BaseModel):
     send_to_all: bool = False
     lga: str | None = Field(default=None, max_length=100)
     user_ids: list[int] = Field(default_factory=list, max_length=5000)
+    phone_numbers: list[str] = Field(default_factory=list, max_length=100)
     model_config = ConfigDict(extra="forbid")
 
 
@@ -94,8 +95,21 @@ def send_admin_sms(
         raise HTTPException(422, "Choose a valid SMS template.")
     if not payload.template_key and not message:
         raise HTTPException(422, "Enter a message to send.")
-    if not payload.send_to_all and not payload.user_ids:
-        raise HTTPException(422, "Select at least one recipient or choose send to all.")
+    if not payload.send_to_all and not payload.user_ids and not payload.phone_numbers:
+        raise HTTPException(422, "Select a recipient, enter a phone number, or choose send to all.")
+    if payload.template_key and payload.phone_numbers:
+        raise HTTPException(422, "The login details template can only be sent to registered users.")
+
+    external_phones: list[str] = []
+    invalid_phones: list[str] = []
+    for raw_phone in payload.phone_numbers:
+        phone = _valid_phone(raw_phone)
+        if phone:
+            external_phones.append(phone)
+        else:
+            invalid_phones.append(raw_phone)
+    if invalid_phones:
+        raise HTTPException(422, "Enter a valid Nigerian mobile phone number.")
 
     query = select(User).where(User.is_active.is_(True))
     selected_lga = payload.lga.strip() if payload.lga else None
@@ -111,7 +125,7 @@ def send_admin_sms(
     users_by_phone = {
         phone: user for user in users if (phone := _valid_phone(user.phone_number))
     }
-    if not users_by_phone:
+    if not users_by_phone and not external_phones:
         raise HTTPException(422, "None of the selected active users has a valid phone number.")
 
     deliveries: list[tuple[str, str]] = []
@@ -142,7 +156,10 @@ def send_admin_sms(
             )
             deliveries.append((phone, personalized))
     else:
-        deliveries = [(phone, message) for phone in users_by_phone]
+        # A number may have been entered manually while also belonging to a
+        # selected user. Dict keys keep each normalized number to one delivery.
+        recipient_phones = dict.fromkeys([*users_by_phone, *external_phones])
+        deliveries = [(phone, message) for phone in recipient_phones]
 
     sender = sms_sender_name(db)
 
@@ -194,6 +211,7 @@ def send_admin_sms(
             "lga": selected_lga,
             "message_length": len(message) if not payload.template_key else None,
             "template_key": payload.template_key,
+            "external_recipient_count": len(set(external_phones)),
         },
     ))
     db.commit()
