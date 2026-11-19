@@ -45,14 +45,25 @@ interface PollingUnit {
   name: string;
 }
 
+interface VisitAnalytics {
+  period_days: number;
+  total_views: number;
+  unique_visitors: number;
+  views_today: number;
+  daily: { date: string; views: number }[];
+  locations: { country: string; region?: string | null; city?: string | null; views: number }[];
+  pages: { path: string; views: number }[];
+}
+
 const API_BASE_URL = import.meta.env.DEV
   ? (import.meta.env.VITE_API_URL || "http://127.0.0.1:8000").replace(/\/$/, "")
   : "";
 
 export default function Analytics() {
-  const { token } = useAuth();
+  const { token, user } = useAuth();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [pollingUnits, setPollingUnits] = useState<PollingUnit[]>([]);
+  const [visits, setVisits] = useState<VisitAnalytics | null>(null);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -148,6 +159,22 @@ export default function Analytics() {
 
     return () => controller.abort();
   }, [refreshKey, token]);
+
+  useEffect(() => {
+    if (user?.role !== "admin") return;
+    const controller = new AbortController();
+    void fetch(`${API_BASE_URL}/api/site-analytics/summary?days=30`, {
+      signal: controller.signal,
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      credentials: "include",
+    }).then(async response => {
+      if (!response.ok) throw new Error("Unable to retrieve visitor analytics");
+      setVisits(await response.json());
+    }).catch(reason => {
+      if (!controller.signal.aborted) console.error("Visitor analytics error:", reason);
+    });
+    return () => controller.abort();
+  }, [refreshKey, token, user?.role]);
 
   const lgaCounts = pollingUnits.reduce<Record<string, number>>(
     (acc, unit) => {
@@ -273,6 +300,22 @@ export default function Analytics() {
         />
 
       </section>
+
+      {user?.role === "admin" && (
+        <section className="space-y-5 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <div><h2 className="text-lg font-bold text-slate-900">Website visitors</h2><p className="mt-1 text-sm text-slate-500">Anonymous public-page traffic during the last 30 days. Locations are approximate and depend on hosting data.</p></div>
+          <div className="grid gap-4 sm:grid-cols-3">
+            <StatCard title="Page views" value={visits?.total_views.toLocaleString() ?? "—"} subtitle="Public-page visits in 30 days" icon={Activity}/>
+            <StatCard title="Unique visitors" value={visits?.unique_visitors.toLocaleString() ?? "—"} subtitle="Anonymous browser identifiers" icon={ShieldCheck}/>
+            <StatCard title="Views today" value={visits?.views_today.toLocaleString() ?? "—"} subtitle="Since midnight UTC" icon={BarChart3}/>
+          </div>
+          <div className="grid gap-5 lg:grid-cols-2">
+            <div className="rounded-xl border border-slate-200 p-4"><h3 className="font-bold">Daily visits</h3><div className="mt-4 h-64">{visits?.daily.length?<ResponsiveContainer width="100%" height="100%"><BarChart data={visits.daily}><CartesianGrid strokeDasharray="3 3" vertical={false}/><XAxis dataKey="date" tick={{fontSize:10}}/><YAxis allowDecimals={false}/><Tooltip/><Bar dataKey="views" fill="#059669" radius={[5,5,0,0]}/></BarChart></ResponsiveContainer>:<div className="flex h-full items-center justify-center text-sm text-slate-500">No visit data yet.</div>}</div></div>
+            <div className="overflow-hidden rounded-xl border border-slate-200"><div className="border-b px-4 py-3"><h3 className="font-bold">Visitor locations</h3></div>{visits?.locations.length?<div className="max-h-72 overflow-auto">{visits.locations.map((item,index)=><div key={`${item.country}-${item.region}-${item.city}-${index}`} className="flex items-center justify-between border-b px-4 py-3 last:border-0"><span><strong className="block text-sm">{[item.city,item.region,item.country].filter(Boolean).join(", ")}</strong><span className="text-xs text-slate-500">Approximate location</span></span><span className="font-bold text-emerald-700">{item.views.toLocaleString()}</span></div>)}</div>:<p className="p-5 text-sm text-slate-500">No location data yet.</p>}</div>
+          </div>
+          {visits?.pages.length?<div><h3 className="font-bold">Top public pages</h3><div className="mt-3 flex flex-wrap gap-2">{visits.pages.map(page=><span key={page.path} className="rounded-full bg-slate-100 px-3 py-1.5 text-sm"><strong>{page.path}</strong> · {page.views}</span>)}</div></div>:null}
+        </section>
+      )}
 
       {/* CHART */}
 

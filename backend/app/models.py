@@ -178,6 +178,25 @@ class AuditLog(Base):
     )
 
 
+class SiteVisit(Base):
+    __tablename__ = "site_visits"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    visitor_hash: Mapped[str] = mapped_column(String(64), nullable=False, index=True)
+    path: Mapped[str] = mapped_column(String(300), nullable=False, index=True)
+    referrer_domain: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    country: Mapped[str | None] = mapped_column(String(100), nullable=True, index=True)
+    region: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    city: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    timezone: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
+        nullable=False,
+        index=True,
+    )
+
+
 # ============================================================
 # ELECTION MODEL
 # ============================================================
