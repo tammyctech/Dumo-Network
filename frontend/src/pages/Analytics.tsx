@@ -89,7 +89,7 @@ export default function Analytics() {
         setLoading(true);
         setError(null);
 
-        const headers: HeadersInit = token
+        const headers: HeadersInit = token && token !== "cookie-session"
           ? { Authorization: `Bearer ${token}` }
           : {};
 
@@ -98,11 +98,13 @@ export default function Analytics() {
             fetch(`${API_BASE_URL}/api/dashboard/statistics`, {
               signal: controller.signal,
               headers,
+              credentials: "include",
             }),
 
             fetch(`${API_BASE_URL}/api/polling-units`, {
               signal: controller.signal,
               headers,
+              credentials: "include",
             }),
           ]);
 
@@ -178,7 +180,7 @@ export default function Analytics() {
     const controller = new AbortController();
     void fetch(`${API_BASE_URL}/api/site-analytics/summary?days=30`, {
       signal: controller.signal,
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      headers: token && token !== "cookie-session" ? { Authorization: `Bearer ${token}` } : {},
       credentials: "include",
     }).then(async response => {
       if (!response.ok) throw new Error("Unable to retrieve visitor analytics");
