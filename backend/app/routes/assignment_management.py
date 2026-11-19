@@ -78,14 +78,18 @@ Your new assignment applies to all current and future elections. Sign in to view
 def _send_reassignment_sms(db: Session, agent: User, old_unit: PollingUnit, new_unit: PollingUnit) -> tuple[bool, str | None]:
     if not agent.phone_number:
         return False, "The agent does not have a phone number."
-    return send_sms(
-        recipient=agent.phone_number,
-        message=(
-            f"Hello {agent.full_name}, your Dumo polling-unit assignment changed from "
-            f"{old_unit.lga}, {old_unit.ward}, {old_unit.code} to "
-            f"{new_unit.lga}, {new_unit.ward}, {new_unit.code}. This applies to all elections."
-        ), sender_name=sms_sender_name(db),
-    )
+    try:
+        return send_sms(
+            recipient=agent.phone_number,
+            message=(
+                f"Hello {agent.full_name}, your Dumo polling-unit assignment changed from "
+                f"{old_unit.lga}, {old_unit.ward}, {old_unit.code} to "
+                f"{new_unit.lga}, {new_unit.ward}, {new_unit.code}. This applies to all elections."
+            ), sender_name=sms_sender_name(db),
+        )
+    except Exception as exc:
+        logger.exception("Unexpected reassignment SMS failure for agent %s", agent.id)
+        return False, f"SMS delivery error: {type(exc).__name__}."
 
 
 # ==========================================

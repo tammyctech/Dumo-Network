@@ -8,7 +8,12 @@ from sqlalchemy.pool import StaticPool
 
 from app.database import Base
 from app.models import AgentAssignment, PollingUnit, User
-from app.routes.assignment_management import ReassignRequest, _send_reassignment_email, reassign_agent
+from app.routes.assignment_management import (
+    ReassignRequest,
+    _send_reassignment_email,
+    _send_reassignment_sms,
+    reassign_agent,
+)
 
 
 class AssignmentReassignmentTests(unittest.TestCase):
@@ -19,8 +24,9 @@ class AssignmentReassignmentTests(unittest.TestCase):
     def tearDown(self):
         self.engine.dispose()
 
+    @patch("app.routes.assignment_management._send_reassignment_sms", return_value=(True, None))
     @patch("app.routes.assignment_management._send_reassignment_email", return_value=(True, None))
-    def test_admin_can_reassign_agent_to_available_unit(self, send_email):
+    def test_admin_can_reassign_agent_to_available_unit(self, send_email, send_sms):
         with Session(self.engine) as db:
             admin = User(full_name="Admin", email="admin@example.com", hashed_password="unused", role="admin", is_active=True)
             agent = User(full_name="Agent", email="agent@example.com", hashed_password="unused", role="agent", is_active=True)
@@ -36,6 +42,9 @@ class AssignmentReassignmentTests(unittest.TestCase):
             self.assertEqual(db.get(AgentAssignment, assignment_id).polling_unit_id, new_id)
             self.assertEqual(send_email.call_args.args[1].name, "Old Unit")
             self.assertEqual(send_email.call_args.args[2].name, "New Unit")
+            self.assertTrue(result["sms_sent"])
+            self.assertEqual(send_sms.call_args.args[2].name, "Old Unit")
+            self.assertEqual(send_sms.call_args.args[3].name, "New Unit")
 
     @patch("app.routes.assignment_management.send_system_email", return_value=(True, None))
     def test_reassignment_email_shows_old_and_new_units(self, send_email):
@@ -51,6 +60,39 @@ class AssignmentReassignmentTests(unittest.TestCase):
         self.assertIn("New assignment", content)
         self.assertIn("32/02/03/004 - New Unit", content)
         self.assertIn("Ahoada East", content)
+
+    @patch("app.routes.assignment_management.sms_sender_name", return_value="Dumo")
+    @patch("app.routes.assignment_management.send_sms", return_value=(True, None))
+    def test_reassignment_sms_goes_to_agent_with_old_and_new_units(self, send_sms, _sender_name):
+        agent = User(id=8, full_name="Ada Agent", email="ada@example.com", phone_number="08012345678",
+                     hashed_password="unused", role="agent", is_active=True)
+        old = PollingUnit(code="32/01/01/001", name="Old Unit", state="Rivers", lga="Abua/Odual", ward="Ward 1")
+        new = PollingUnit(code="32/01/01/002", name="New Unit", state="Rivers", lga="Abua/Odual", ward="Ward 2")
+
+        sent, error = _send_reassignment_sms(None, agent, old, new)
+
+        self.assertTrue(sent)
+        self.assertIsNone(error)
+        self.assertEqual(send_sms.call_args.kwargs["recipient"], "08012345678")
+        self.assertEqual(send_sms.call_args.kwargs["sender_name"], "Dumo")
+        message = send_sms.call_args.kwargs["message"]
+        self.assertIn("32/01/01/001", message)
+        self.assertIn("32/01/01/002", message)
+        self.assertIn("Ward 2", message)
+
+    @patch("app.routes.assignment_management.sms_sender_name", return_value="Dumo")
+    @patch("app.routes.assignment_management.send_sms", side_effect=RuntimeError("provider unavailable"))
+    def test_reassignment_sms_failure_does_not_fail_reassignment(self, _send_sms, _sender_name):
+        agent = User(id=8, full_name="Ada Agent", email="ada@example.com", phone_number="08012345678",
+                     hashed_password="unused", role="agent", is_active=True)
+        old = PollingUnit(code="32/01/01/001", name="Old Unit", state="Rivers", lga="Abua/Odual", ward="Ward 1")
+        new = PollingUnit(code="32/01/01/002", name="New Unit", state="Rivers", lga="Abua/Odual", ward="Ward 2")
+
+        with self.assertLogs("app.routes.assignment_management", level="ERROR"):
+            sent, error = _send_reassignment_sms(None, agent, old, new)
+
+        self.assertFalse(sent)
+        self.assertEqual(error, "SMS delivery error: RuntimeError.")
 
     def test_reassignment_rejects_occupied_unit(self):
         with Session(self.engine) as db:
