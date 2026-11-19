@@ -59,6 +59,18 @@ const API_BASE_URL = import.meta.env.DEV
   ? (import.meta.env.VITE_API_URL || "http://127.0.0.1:8000").replace(/\/$/, "")
   : "";
 
+async function readJson<T>(response: Response, label: string): Promise<T> {
+  const contentType = response.headers.get("content-type") || "";
+  if (!contentType.toLowerCase().includes("application/json")) {
+    throw new Error(`${label} returned a non-JSON response (${response.status}). Please try again.`);
+  }
+  try {
+    return JSON.parse(await response.text()) as T;
+  } catch {
+    throw new Error(`${label} returned invalid JSON (${response.status}). Please try again.`);
+  }
+}
+
 export default function Analytics() {
   const { token, user } = useAuth();
   const [stats, setStats] = useState<DashboardStats | null>(null);
@@ -104,8 +116,10 @@ export default function Analytics() {
           );
         }
 
-        const dashboardResponseData: DashboardStatisticsResponse =
-          await dashboardResponse.json();
+        const dashboardResponseData = await readJson<DashboardStatisticsResponse>(
+          dashboardResponse,
+          "Dashboard statistics",
+        );
 
         const verification =
           dashboardResponseData.verification_summary;
@@ -127,8 +141,7 @@ export default function Analytics() {
             "Live election monitoring statistics",
         };
 
-        const pollingData: PollingUnit[] =
-          await pollingResponse.json();
+        const pollingData = await readJson<PollingUnit[]>(pollingResponse, "Polling units");
 
         if (!Array.isArray(pollingData)) {
           throw new Error("Unexpected polling-unit response");
@@ -169,7 +182,7 @@ export default function Analytics() {
       credentials: "include",
     }).then(async response => {
       if (!response.ok) throw new Error("Unable to retrieve visitor analytics");
-      setVisits(await response.json());
+      setVisits(await readJson<VisitAnalytics>(response, "Visitor analytics"));
     }).catch(reason => {
       if (!controller.signal.aborted) console.error("Visitor analytics error:", reason);
     });
