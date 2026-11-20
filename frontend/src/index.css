@@ -447,6 +447,10 @@ header h3 {
   color: #94a9c9 !important;
 }
 
+:root.dark .landing-page h1 .text-sky-700 {
+  color: #94a9c9 !important;
+}
+
 :root.dark :is(.border, .border-t, .border-b, .border-r, .border-l, .divide-y > :not(:last-child)),
 :root.dark :is(.border-slate-100, .border-slate-200, .border-slate-300) {
   border-color: var(--dark-border) !important;
