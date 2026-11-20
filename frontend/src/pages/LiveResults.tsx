@@ -13,7 +13,7 @@ const GOVERNORSHIP_candidates = [
   ["Chinda Kingsley Ogundu", "APC"], ["Idoniboye-Obu Omangima", "APGA"],
   ["Whyte Churchill Dagogo", "APM"], ["Atata Okechukwu Kenneth", "APP"],
   ["Benjamin Abednego Oli", "BP"], ["Warigbani Ezekiel Zebulun", "DLA"],
-  ["Boms Chima Ernest", "LP"], ["Lilu-Briggs Dumo Owukori", "NDC"],
+  ["Boms Chima Ernest", "LP"], ["Dumo Lulu-Briggs Owukori", "NDC"],
   ["Opusunju Silva", "NDP"], ["Pepple Wari Dienye", "NNPP"],
   ["Minaibim Harry", "NRM"], ["Ejekwu Samuel Soni", "PDP"],
   ["Kieghe Nature Dumale", "PRP"], ["Ben-Gurion J. Peter", "SDP"],
