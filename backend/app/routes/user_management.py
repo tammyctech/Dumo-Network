@@ -1,4 +1,7 @@
 from datetime import datetime, timezone
+from html import escape
+import logging
+import os
 import secrets
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -14,6 +17,7 @@ from app.models import (
     ResultReview, ResultSubmission, User,
 )
 from app.security import get_current_user, hash_password
+from app.services.email_service import send_system_email
 from app.utils.phone import normalize_nigerian_phone
 from app.utils.names import normalize_person_name
 
@@ -22,6 +26,11 @@ router = APIRouter(
     prefix="/api/admin/users",
     tags=["User Management"],
 )
+
+logger = logging.getLogger(__name__)
+ADMIN_CREATION_ALERT_EMAIL = os.getenv(
+    "ADMIN_CREATION_ALERT_EMAIL", "dumoyouthnetwork@gmail.com"
+).strip()
 
 
 # ==========================================
@@ -88,6 +97,55 @@ def serialize_user(user: User):
         "role": user.role,
         "is_active": user.is_active,
     }
+
+
+def notify_administrator_created(new_admin: User, created_by: User) -> tuple[bool, str | None]:
+    created_at = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
+    subject = "Security alert: administrator account created"
+    plain_text = f"""A new administrator account was created.
+
+New administrator:
+Name: {new_admin.full_name}
+Email: {new_admin.email}
+Phone: {new_admin.phone_number or 'Not provided'}
+User ID: {new_admin.id}
+
+Created by:
+Name: {created_by.full_name}
+Email: {created_by.email}
+User ID: {created_by.id}
+
+Created at: {created_at}
+
+The temporary password is intentionally excluded from this notification.
+"""
+    html = f"""<p>A new administrator account was created.</p>
+<div style="background:#f8fafc;border:1px solid #cbd5e1;border-radius:12px;padding:18px;margin:16px 0">
+<strong>New administrator</strong><br>
+Name: {escape(new_admin.full_name)}<br>
+Email: {escape(new_admin.email)}<br>
+Phone: {escape(new_admin.phone_number or 'Not provided')}<br>
+User ID: {new_admin.id}
+</div>
+<div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:12px;padding:18px;margin:16px 0">
+<strong>Created by</strong><br>
+Name: {escape(created_by.full_name)}<br>
+Email: {escape(created_by.email)}<br>
+User ID: {created_by.id}
+</div>
+<p><strong>Created at:</strong> {created_at}</p>
+<p>The temporary password is intentionally excluded from this notification.</p>"""
+    try:
+        return send_system_email(
+            recipient=ADMIN_CREATION_ALERT_EMAIL,
+            subject=subject,
+            plain_text=plain_text,
+            html=html,
+            sender_name="Dumo Youth Network Security",
+        )
+    except Exception as exc:
+        logger.exception("Administrator creation notification failed for user %s", new_admin.id)
+        return False, f"Notification failed: {type(exc).__name__}."
 
 
 def delete_users_and_dependencies(db: Session, user_ids: list[int]) -> int:
@@ -194,10 +252,14 @@ def create_administrator(
         db.rollback()
         raise
 
+    email_sent, email_error = notify_administrator_created(new_admin, admin)
     return {
         **serialize_user(new_admin),
         "temporary_password": temporary_password,
         "must_change_password": True,
+        "notification_email": ADMIN_CREATION_ALERT_EMAIL,
+        "notification_sent": email_sent,
+        "notification_error": email_error,
     }
 
 
