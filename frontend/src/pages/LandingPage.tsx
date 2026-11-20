@@ -444,7 +444,7 @@ export default function LandingPage() {
     );
 
   return (
-    <div className="landing-page min-h-screen bg-slate-100 pb-52 text-slate-950 sm:pb-28">
+    <div className="landing-page min-h-screen bg-slate-100 text-slate-950">
       <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/95 text-slate-950 shadow-sm backdrop-blur-xl">
         <div className="mx-auto flex h-[4.5rem] max-w-7xl items-center justify-between px-5 lg:px-8">
           <Link to="/" className="flex items-center gap-3 text-slate-950">
@@ -861,16 +861,6 @@ export default function LandingPage() {
         </section>
       </main>
 
-      <footer className="fixed inset-x-0 bottom-0 z-50 border-t border-sky-900 bg-sky-950/98 py-4 shadow-2xl shadow-black/30 backdrop-blur">
-        <div className="mx-auto flex max-w-7xl flex-col gap-3 px-5 text-sm text-sky-100 sm:flex-row sm:items-center sm:justify-between lg:px-8">
-          <div className="flex items-center gap-3">
-            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-sky-800 text-sky-50"><Activity size={18} /></span>
-            <div><strong className="block text-white">{branding.logo_title}</strong><span className="text-sky-200">{branding.logo_subtitle}</span></div>
-          </div>
-          <p className="text-sky-200">{lt("footer_notice").text}</p>
-          <a href="https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer" target="_blank" rel="noreferrer" className="text-sky-100 hover:text-white">Map boundary source <ArrowRight size={13} className="inline" /></a>
-        </div>
-      </footer>
     </div>
   );
 }

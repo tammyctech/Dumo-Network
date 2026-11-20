@@ -3,6 +3,19 @@
 @theme {
   --font-sans: "Plus Jakarta Sans", Inter, ui-sans-serif, system-ui, Arial, sans-serif;
 
+  /* The dashboard sidebar navy is the product-wide primary palette. */
+  --color-sky-50: #f1f5f7;
+  --color-sky-100: #dfe8ec;
+  --color-sky-200: #c3d1d8;
+  --color-sky-300: #95acb8;
+  --color-sky-400: #5f8293;
+  --color-sky-500: #365f72;
+  --color-sky-600: #1d4659;
+  --color-sky-700: #123447;
+  --color-sky-800: #0b2736;
+  --color-sky-900: #071d2a;
+  --color-sky-950: #071722;
+
   --color-brand-50: #f0fdf4;
   --color-brand-100: #dcfce7;
   --color-brand-600: #059669;
@@ -15,7 +28,7 @@
 ========================================== */
 
 :root {
-  --brand-primary: #047857;
+  --brand-primary: #071722;
   --brand-background: #f6f8f7;
   --brand-text: #0f172a;
   --brand-font-size: 16px;
