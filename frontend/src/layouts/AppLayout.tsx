@@ -32,10 +32,13 @@ import {
   Link2,
   AlertTriangle,
   MessageSquareText,
+  Moon,
+  Sun,
 } from "lucide-react";
 
 import { useAuth } from "../context/AuthContext";
 import { useBranding } from "../context/branding";
+import { setTheme, type ThemeMode } from "../context/theme";
 
 // =====================================================
 // NAVIGATION MENU
@@ -180,6 +183,7 @@ export default function AppLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [themeMode,setThemeMode]=useState<ThemeMode>(()=>document.documentElement.classList.contains("dark")?"dark":"light");
   const notificationsRef = useRef<HTMLDivElement>(null);
   const profileRef = useRef<HTMLDivElement>(null);
 
@@ -188,6 +192,8 @@ export default function AppLayout() {
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const isDashboardPage = pathname === "/dashboard";
+
+  function toggleTheme(){const next=themeMode==="dark"?"light":"dark";setTheme(next);window.localStorage.setItem("dumo-theme-user-set","true");setThemeMode(next)}
 
   useEffect(() => {
     function closeMenusOutside(event: PointerEvent) {
@@ -525,6 +531,8 @@ export default function AppLayout() {
 
             <div className="flex flex-col items-end">
             </div>
+
+            <button type="button" onClick={toggleTheme} className="grid h-10 w-10 place-items-center rounded-xl border border-slate-200 bg-white text-sky-950 transition hover:border-sky-950 hover:bg-sky-50" aria-label={`Turn ${themeMode==="dark"?"on light":"on dark"} mode`} title={themeMode==="dark"?"Switch to light mode":"Switch to dark mode"}>{themeMode==="dark"?<Sun size={18}/>:<Moon size={18}/>}</button>
 
             {/* NOTIFICATIONS */}
 

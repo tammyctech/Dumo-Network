@@ -13,9 +13,11 @@ import {
   Map as MapIcon,
   MapPin,
   Menu,
+  Moon,
   Radio,
   RefreshCw,
   ShieldCheck,
+  Sun,
   UploadCloud,
   X,
 } from "lucide-react";
@@ -23,6 +25,7 @@ import { partyColor } from "../constants/partyColors";
 import { useBranding } from "../context/branding";
 import { PartyLogo } from "../constants/partyLogos";
 import { useAuth } from "../context/AuthContext";
+import { setTheme, type ThemeMode } from "../context/theme";
 
 const API_URL = import.meta.env.DEV
   ? (import.meta.env.VITE_API_URL || "http://127.0.0.1:8000").replace(/\/$/, "")
@@ -380,6 +383,8 @@ export default function LandingPage() {
   const [mapError, setMapError] = useState("");
   const [error, setError] = useState("");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [themeMode,setThemeMode]=useState<ThemeMode>(()=>document.documentElement.classList.contains("dark")?"dark":"light");
+  function toggleTheme(){const next=themeMode==="dark"?"light":"dark";setTheme(next);window.localStorage.setItem("dumo-theme-user-set","true");setThemeMode(next)}
   const [refreshKey, setRefreshKey] = useState(0);
   useEffect(() => {
     const controller = new AbortController();
@@ -492,6 +497,7 @@ export default function LandingPage() {
               <span>{lt("nav_methodology").text}</span>
             </a>
             <a href="#report-incident" className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm font-bold text-red-700 hover:bg-red-100">Report incident</a>
+            <button type="button" onClick={toggleTheme} className="grid h-11 w-11 place-items-center rounded-xl border border-slate-200 bg-white text-sky-950 transition hover:border-sky-950 hover:bg-sky-50" aria-label={`Turn ${themeMode==="dark"?"on light":"on dark"} mode`}>{themeMode==="dark"?<Sun size={19}/>:<Moon size={19}/>}</button>
             <Link
               to={accountPath}
               className="group inline-flex min-h-11 items-center gap-2 rounded-xl bg-sky-700 px-4 text-sm font-bold text-white shadow-md transition hover:bg-sky-800"
@@ -534,6 +540,7 @@ export default function LandingPage() {
                 <span style={{color:lt("nav_methodology").color}}>{lt("nav_methodology").text}</span>
               </a>
               <a href="#report-incident" onClick={() => setMobileMenuOpen(false)} className="rounded-lg px-3 py-3 font-bold text-red-700 hover:bg-red-50">Report incident</a>
+              <button type="button" onClick={toggleTheme} className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 font-bold text-sky-950"><span>{themeMode==="dark"?<Sun size={18}/>:<Moon size={18}/>}</span>{themeMode==="dark"?"Light mode":"Dark mode"}</button>
               <Link
                 to={accountPath}
                 className="mt-2 inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-sky-700 px-5 font-bold text-white shadow-md transition hover:bg-sky-800"
@@ -879,7 +886,7 @@ export default function LandingPage() {
       <footer className="border-t border-white/10 bg-sky-950 py-8 text-sky-100">
         <div className="mx-auto flex max-w-7xl flex-col gap-5 px-5 text-sm sm:flex-row sm:items-center sm:justify-between lg:px-8">
           <div className="flex items-center gap-3">
-            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/10 text-white"><Activity size={18}/></span>
+            {branding.logo_data_url ? <img src={branding.logo_data_url} alt={`${branding.logo_title} logo`} className="h-11 w-11 rounded-xl bg-white object-contain p-1"/> : <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-white/10 text-white"><Activity size={20}/></span>}
             <div><strong className="block text-white">{branding.logo_title}</strong><span className="text-sky-200">{branding.logo_subtitle}</span></div>
           </div>
           <p className="text-sky-200"><strong className="text-white">Transparent by design.</strong> Figures remain unofficial until declared by the authorized electoral body.</p>
