@@ -1,4 +1,5 @@
 from datetime import datetime, timezone
+import secrets
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
@@ -12,7 +13,7 @@ from app.models import (
     Incident, PartyResult, PushSubscription, ResultEvidence, ResultFlag,
     ResultReview, ResultSubmission, User,
 )
-from app.security import get_current_user
+from app.security import get_current_user, hash_password
 from app.utils.phone import normalize_nigerian_phone
 from app.utils.names import normalize_person_name
 
@@ -42,6 +43,13 @@ class UserUpdate(BaseModel):
 
 class DeleteAllAgentsRequest(BaseModel):
     confirmation: str
+    model_config = ConfigDict(extra="forbid")
+
+
+class AdministratorCreate(BaseModel):
+    full_name: str = Field(min_length=2, max_length=150)
+    email: EmailStr
+    phone_number: str | None = Field(default=None, max_length=30)
     model_config = ConfigDict(extra="forbid")
 
 
@@ -128,6 +136,68 @@ def list_users(
             serialize_user(user)
             for user in users
         ],
+    }
+
+
+@router.post("/admins", status_code=201)
+def create_administrator(
+    payload: AdministratorCreate,
+    db: Session = Depends(get_db),
+    admin: User = Depends(require_admin),
+):
+    full_name = normalize_person_name(payload.full_name)
+    email = str(payload.email).strip().lower()
+    phone = None
+    if payload.phone_number and payload.phone_number.strip():
+        try:
+            phone = normalize_nigerian_phone(payload.phone_number)
+        except ValueError as exc:
+            raise HTTPException(422, str(exc)) from exc
+
+    if db.scalar(select(User.id).where(User.email == email)) is not None:
+        raise HTTPException(409, "An account with this email already exists.")
+    if phone and db.scalar(select(User.id).where(User.phone_number == phone)) is not None:
+        raise HTTPException(409, "An account with this phone number already exists.")
+
+    temporary_password = secrets.token_urlsafe(12)
+    new_admin = User(
+        full_name=full_name,
+        email=email,
+        phone_number=phone,
+        hashed_password=hash_password(temporary_password),
+        role="admin",
+        is_active=True,
+        must_change_password=True,
+    )
+    db.add(new_admin)
+    try:
+        db.flush()
+        db.add(AuditLog(
+            user_id=admin.id,
+            action="CREATE_ADMIN",
+            table_name="users",
+            record_id=new_admin.id,
+            old_data=None,
+            new_data={
+                "full_name": new_admin.full_name,
+                "email": new_admin.email,
+                "phone_number": new_admin.phone_number,
+                "role": "admin",
+            },
+        ))
+        db.commit()
+        db.refresh(new_admin)
+    except IntegrityError as exc:
+        db.rollback()
+        raise HTTPException(409, "An account with this email or phone number already exists.") from exc
+    except Exception:
+        db.rollback()
+        raise
+
+    return {
+        **serialize_user(new_admin),
+        "temporary_password": temporary_password,
+        "must_change_password": True,
     }
 
 
