@@ -444,52 +444,47 @@ export default function LandingPage() {
     );
 
   return (
-    <div className="landing-page min-h-screen bg-[#f5f7f6] pb-52 text-slate-950 sm:pb-28">
-      <header className="sticky top-0 z-40 border-b border-slate-200/80 bg-white/95 shadow-sm shadow-slate-900/[0.03] backdrop-blur-xl">
+    <div className="landing-page min-h-screen bg-slate-100 pb-52 text-slate-950 sm:pb-28">
+      <header className="sticky top-0 z-40 border-b border-emerald-800 bg-emerald-950/95 text-white shadow-lg shadow-emerald-950/15 backdrop-blur-xl">
         <div className="mx-auto flex h-[4.5rem] max-w-7xl items-center justify-between px-5 lg:px-8">
-          <Link to="/" className="flex items-center gap-3 text-slate-950">
-            {branding.logo_data_url ? <img src={branding.logo_data_url} alt="" className="h-10 w-10 rounded-xl object-contain"/> : <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-700 text-white shadow-md shadow-emerald-950/15"><Activity size={20} strokeWidth={2.5} /></span>}
+          <Link to="/" className="flex items-center gap-3 text-white">
+            {branding.logo_data_url ? <img src={branding.logo_data_url} alt="" className="h-10 w-10 rounded-xl bg-white object-contain p-1"/> : <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-emerald-600 bg-emerald-800 text-white"><Activity size={20} strokeWidth={2.5} /></span>}
             <span>
               <span className="block text-sm font-black tracking-[0.12em]">
                 {branding.logo_title.toUpperCase()}
               </span>
-              <span className="mt-0.5 block text-[9px] uppercase tracking-[0.2em] text-slate-500">
+              <span className="mt-0.5 block text-[10px] uppercase tracking-[0.2em] text-emerald-200">
                 {branding.logo_subtitle}
               </span>
             </span>
           </Link>
 
-          <nav className="hidden items-center gap-8 md:flex">
+          <nav className="hidden items-center gap-7 md:flex">
             <a
               href="#results"
-              className="relative py-2 text-sm font-semibold text-slate-600 transition-colors duration-200 after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:origin-left after:scale-x-0 after:rounded-full after:bg-emerald-700 after:transition-transform after:duration-200 after:content-[''] hover:text-emerald-800 hover:after:scale-x-100"
+              className="relative py-2 text-sm font-semibold text-emerald-100 transition hover:text-white"
             >
-              <span style={{color:lt("nav_results").color}}>{lt("nav_results").text}</span>
+              <span>{lt("nav_results").text}</span>
             </a>
             <a
               href="#updates"
-              className="relative py-2 text-sm font-semibold text-slate-600 transition-colors duration-200 after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:origin-left after:scale-x-0 after:rounded-full after:bg-emerald-700 after:transition-transform after:duration-200 after:content-[''] hover:text-emerald-800 hover:after:scale-x-100"
+              className="relative py-2 text-sm font-semibold text-emerald-100 transition hover:text-white"
             >
-              <span style={{color:lt("nav_updates").color}}>{lt("nav_updates").text}</span>
+              <span>{lt("nav_updates").text}</span>
             </a>
             <a
               href="#methodology"
-              className="relative py-2 text-sm font-semibold text-slate-600 transition-colors duration-200 after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:origin-left after:scale-x-0 after:rounded-full after:bg-emerald-700 after:transition-transform after:duration-200 after:content-[''] hover:text-emerald-800 hover:after:scale-x-100"
+              className="relative py-2 text-sm font-semibold text-emerald-100 transition hover:text-white"
             >
-              <span style={{color:lt("nav_methodology").color}}>{lt("nav_methodology").text}</span>
+              <span>{lt("nav_methodology").text}</span>
             </a>
-            <a href="#report-incident" className="text-sm font-bold text-red-700 hover:text-red-800">Report incident</a>
+            <a href="#report-incident" className="rounded-lg border border-red-300/30 bg-red-500/10 px-3 py-2 text-sm font-bold text-red-100 hover:bg-red-500/20">Report incident</a>
             <Link
               to="/login"
-              className="group inline-flex min-h-11 items-center gap-2 rounded-xl bg-emerald-700 px-4 text-sm font-bold text-white shadow-md shadow-emerald-950/15 transition duration-200 hover:-translate-y-0.5 hover:bg-emerald-800 active:translate-y-0"
+              className="group inline-flex min-h-11 items-center gap-2 rounded-xl bg-white px-4 text-sm font-bold text-emerald-950 shadow-md transition hover:bg-emerald-50"
             >
               <LogIn size={17} aria-hidden="true" />
-              <span style={{color:lt("nav_login").color}}>{lt("nav_login").text}</span>
-              <ArrowRight
-                size={15}
-                aria-hidden="true"
-                className="transition-transform group-hover:translate-x-0.5"
-              />
+              <span>{lt("nav_login").text}</span>
             </Link>
           </nav>
 
@@ -499,7 +494,7 @@ export default function LandingPage() {
             aria-expanded={mobileMenuOpen}
             aria-controls="mobile-navigation"
             onClick={() => setMobileMenuOpen((value) => !value)}
-            className="flex h-11 w-11 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-700 transition hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-800 md:hidden"
+            className="flex h-11 w-11 items-center justify-center rounded-xl border border-emerald-700 bg-emerald-900 text-white transition hover:bg-emerald-800 md:hidden"
           >
             {mobileMenuOpen ? <X /> : <Menu />}
           </button>
@@ -534,7 +529,7 @@ export default function LandingPage() {
                 className="mt-2 inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-emerald-700 px-5 font-bold text-white shadow-md transition hover:bg-emerald-800"
               >
                 <LogIn size={18} aria-hidden="true" />
-                <span style={{color:lt("nav_login").color}}>{lt("nav_login").text}</span>
+                <span>{lt("nav_login").text}</span>
                 <ArrowRight size={16} aria-hidden="true" />
               </Link>
             </div>
@@ -543,54 +538,49 @@ export default function LandingPage() {
       </header>
 
       <main>
-        <section className="relative isolate overflow-hidden border-b border-emerald-950/5 bg-[#f7f8f5] pb-16 pt-14 text-slate-950 sm:pb-20 sm:pt-20">
-          <div className="pointer-events-none absolute -right-36 -top-40 h-[34rem] w-[34rem] rounded-full border border-emerald-900/[0.06]" />
-          <div className="pointer-events-none absolute -right-16 -top-20 h-[25rem] w-[25rem] rounded-full border border-emerald-900/[0.06]" />
-          <div className="pointer-events-none absolute right-[8%] top-12 h-80 w-80 rounded-full bg-emerald-200/30 blur-3xl" />
+        <section className="relative isolate overflow-hidden border-b border-emerald-900 bg-emerald-950 pb-12 pt-12 text-white sm:pb-16 sm:pt-16">
+          <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(16,185,129,0.12),transparent_42%),radial-gradient(circle_at_82%_12%,rgba(52,211,153,0.16),transparent_30%)]" />
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-emerald-500 to-transparent" />
           <div className="relative mx-auto grid max-w-7xl gap-12 px-5 lg:grid-cols-[1.02fr_0.98fr] lg:items-center lg:gap-16 lg:px-8">
             <div>
-              <div className="inline-flex items-center gap-2.5 rounded-full border border-slate-200 bg-white/80 px-3.5 py-2 text-[10px] font-bold uppercase tracking-[0.15em] text-slate-600 shadow-sm">
+              <div className="inline-flex items-center gap-2.5 rounded-lg border border-emerald-700 bg-emerald-900/70 px-3.5 py-2 text-[11px] font-bold uppercase tracking-[0.15em] text-emerald-100">
                 <span className={`relative flex h-2 w-2 ${loading ? "animate-pulse" : ""}`}>
                   <span className="absolute inline-flex h-full w-full rounded-full bg-emerald-600 opacity-40" />
                   <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-600" />
                 </span>
                 {loading ? "Loading public results · Rivers State" : "Public results · Rivers State"}
               </div>
-              <h1 className="mt-7 max-w-2xl text-[2.8rem] font-semibold leading-[1.04] tracking-[-0.055em] text-slate-950 sm:text-6xl lg:text-[4.4rem]">
-                <span className="block" style={{color:lt("hero_line_1").color}}>{lt("hero_line_1").text}</span>
-                <span className="block" style={{color:lt("hero_line_2").color}}>{lt("hero_line_2").text}</span>
-                <span className="block" style={{color:lt("hero_line_3").color}}>{lt("hero_line_3").text}</span>
+              <h1 className="mt-7 max-w-2xl text-[2.8rem] font-semibold leading-[1.04] tracking-[-0.055em] text-white sm:text-6xl lg:text-[4.2rem]">
+                <span className="block text-white">{lt("hero_line_1").text}</span>
+                <span className="block text-emerald-300">{lt("hero_line_2").text}</span>
+                <span className="block text-white">{lt("hero_line_3").text}</span>
               </h1>
-              <p className="mt-6 max-w-xl text-base leading-7 sm:text-lg sm:leading-8" style={{color:lt("hero_description").color}}>
+              <p className="mt-6 max-w-xl text-base leading-7 text-emerald-100 sm:text-lg sm:leading-8">
                 {lt("hero_description").text}
               </p>
               <div className="mt-8 flex flex-wrap gap-3">
                 <a
                   href="#results"
-                  className="group inline-flex min-h-12 items-center gap-2 rounded-lg bg-emerald-800 px-5 py-3 text-sm font-semibold text-white shadow-md shadow-emerald-950/10 transition duration-200 hover:-translate-y-0.5 hover:bg-emerald-900 active:translate-y-0"
+                  className="group inline-flex min-h-12 items-center gap-2 rounded-lg bg-white px-5 py-3 text-sm font-bold text-emerald-950 shadow-md transition hover:bg-emerald-50"
                 >
-                  <span style={{color:lt("hero_results_button").color}}>{lt("hero_results_button").text}</span> <ArrowRight size={18} className="transition-transform group-hover:translate-x-1" />
+                  <span>{lt("hero_results_button").text}</span>
                 </a>
                 <Link
                   to="/login"
-                  className="group inline-flex min-h-12 items-center gap-2 rounded-lg border border-slate-300 bg-white/70 px-5 py-3 text-sm font-semibold text-slate-800 transition duration-200 hover:-translate-y-0.5 hover:border-emerald-700/40 hover:bg-white active:translate-y-0"
+                  className="group inline-flex min-h-12 items-center gap-2 rounded-lg border border-emerald-700 bg-emerald-900/70 px-5 py-3 text-sm font-semibold text-white transition hover:bg-emerald-900"
                 >
                   <LogIn size={18} aria-hidden="true" />
-                  <span style={{color:lt("hero_login_button").color}}>{lt("hero_login_button").text}</span>
-                  <ArrowRight
-                    size={17}
-                    aria-hidden="true"
-                    className="transition-transform group-hover:translate-x-1"
-                  />
+                  <span>{lt("hero_login_button").text}</span>
                 </Link>
               </div>
-              <div className="mt-8 flex max-w-xl items-start gap-3 border-l-2 border-amber-500 pl-4 text-sm leading-6 text-slate-600">
-                <ShieldCheck size={18} className="mt-0.5 shrink-0 text-amber-700" aria-hidden="true" />
-                <p style={{color:lt("hero_disclaimer").color}}>{lt("hero_disclaimer").text}</p>
+              <div className="mt-8 flex max-w-xl items-start gap-3 border-l-2 border-amber-400 pl-4 text-sm leading-6 text-emerald-100">
+                <ShieldCheck size={18} className="mt-0.5 shrink-0 text-amber-300" aria-hidden="true" />
+                <p>{lt("hero_disclaimer").text}</p>
               </div>
             </div>
 
-            <div className="relative rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_24px_70px_-35px_rgba(15,23,42,0.24)] sm:p-7">
+            <div className="relative rounded-2xl border border-emerald-800/70 bg-white p-5 shadow-[0_32px_90px_-35px_rgba(0,0,0,0.65)] sm:p-7">
+              <div className="absolute inset-x-0 top-0 h-1 rounded-t-2xl bg-gradient-to-r from-emerald-600 via-emerald-400 to-amber-400" />
               <div className="relative flex items-start justify-between gap-4">
                 <div>
                   <p className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.18em] text-emerald-800">
@@ -649,7 +639,7 @@ export default function LandingPage() {
               </p>
             </div>
           </div>
-          <div className="relative mx-auto mt-14 grid max-w-7xl grid-cols-1 gap-3 px-5 sm:grid-cols-3 lg:px-8">
+          <div className="relative mx-auto mt-12 grid max-w-7xl grid-cols-1 gap-3 px-5 sm:grid-cols-3 lg:px-8">
             {[
               { label: "Geographic coverage", value: "23 local government areas", icon: MapPin },
               { label: "Reporting model", value: "Polling-unit submissions", icon: Radio },
@@ -657,13 +647,13 @@ export default function LandingPage() {
             ].map((item) => {
               const Icon = item.icon;
               return (
-                <div key={item.label} className="flex items-center gap-3 rounded-xl border border-slate-200/80 bg-white/75 px-4 py-3 shadow-sm shadow-slate-900/[0.02]">
-                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-50 text-emerald-800">
+                <div key={item.label} className="flex items-center gap-3 rounded-xl border border-emerald-800 bg-emerald-900/60 px-4 py-3">
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-800 text-emerald-100">
                     <Icon size={17} aria-hidden="true" />
                   </span>
                   <span>
-                    <span className="block text-[10px] font-semibold uppercase tracking-[0.13em] text-slate-500">{item.label}</span>
-                    <span className="mt-0.5 block text-sm font-semibold text-slate-800">{item.value}</span>
+                    <span className="block text-[10px] font-semibold uppercase tracking-[0.13em] text-emerald-300">{item.label}</span>
+                    <span className="mt-0.5 block text-sm font-semibold text-white">{item.value}</span>
                   </span>
                 </div>
               );
@@ -671,7 +661,7 @@ export default function LandingPage() {
           </div>
         </section>
 
-        <section id="results" className="scroll-mt-24 bg-[#f5f7f6] py-16 sm:py-24">
+        <section id="results" className="scroll-mt-24 bg-slate-100 py-16 sm:py-24">
           <div className="mx-auto max-w-7xl px-2 sm:px-5 lg:px-8">
             <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
               <div>
@@ -696,7 +686,7 @@ export default function LandingPage() {
               </div>
             )}
 
-            <div className="mt-8 -mx-1 rounded-2xl border border-slate-200/80 bg-white p-1 shadow-xl shadow-slate-900/[0.04] sm:mx-0 sm:mt-10 sm:rounded-[1.75rem] sm:p-5">
+            <div className="mt-8 -mx-1 rounded-2xl border border-slate-200 bg-white p-1 shadow-[0_20px_60px_-30px_rgba(15,23,42,0.25)] sm:mx-0 sm:mt-10 sm:rounded-[1.75rem] sm:p-5">
               <MapPanel
                 geoJson={geoJson}
                 lgaResults={displayOverview.lga_results}
