@@ -877,14 +877,14 @@ export default function LandingPage() {
         </section>
       </main>
 
-      <footer className="border-t border-slate-200 bg-white py-10">
-        <div className="mx-auto flex max-w-7xl flex-col gap-6 px-5 text-sm text-slate-500 sm:flex-row sm:items-center sm:justify-between lg:px-8">
+      <footer className="border-t border-emerald-900 bg-emerald-950 py-10">
+        <div className="mx-auto flex max-w-7xl flex-col gap-6 px-5 text-sm text-emerald-100 sm:flex-row sm:items-center sm:justify-between lg:px-8">
           <div className="flex items-center gap-3">
-            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-50 text-emerald-700"><Activity size={18} /></span>
-            <div><strong className="block text-slate-900">{branding.logo_title}</strong><span>{branding.logo_subtitle}</span></div>
+            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-800 text-emerald-50"><Activity size={18} /></span>
+            <div><strong className="block text-white">{branding.logo_title}</strong><span className="text-emerald-200">{branding.logo_subtitle}</span></div>
           </div>
-          <p style={{color:lt("footer_notice").color}}>{lt("footer_notice").text}</p>
-          <a href="https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer" target="_blank" rel="noreferrer" className="hover:text-emerald-700">Map boundary source <ArrowRight size={13} className="inline" /></a>
+          <p className="text-emerald-200">{lt("footer_notice").text}</p>
+          <a href="https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer" target="_blank" rel="noreferrer" className="text-emerald-100 hover:text-white">Map boundary source <ArrowRight size={13} className="inline" /></a>
         </div>
       </footer>
     </div>
