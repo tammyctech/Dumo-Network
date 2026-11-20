@@ -8,6 +8,7 @@ import {
   Clock3,
   Database,
   Info,
+  LayoutDashboard,
   LogIn,
   Map as MapIcon,
   MapPin,
@@ -21,6 +22,7 @@ import {
 import { partyColor } from "../constants/partyColors";
 import { useBranding } from "../context/branding";
 import { PartyLogo } from "../constants/partyLogos";
+import { useAuth } from "../context/AuthContext";
 
 const API_URL = import.meta.env.DEV
   ? (import.meta.env.VITE_API_URL || "http://127.0.0.1:8000").replace(/\/$/, "")
@@ -368,6 +370,9 @@ function MapPanel({
 
 export default function LandingPage() {
   const branding = useBranding();
+  const {user}=useAuth();
+  const accountPath=user?"/dashboard":"/login";
+  const accountLabel=user?"Go to dashboard":"Sign in";
   const lt = (key: string) => branding.landing_text[key];
   const [overview, setOverview] = useState<PublicOverview | null>(null);
   const [geoJson, setGeoJson] = useState<GeoJson | null>(null);
@@ -478,11 +483,11 @@ export default function LandingPage() {
             </a>
             <a href="#report-incident" className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm font-bold text-red-700 hover:bg-red-100">Report incident</a>
             <Link
-              to="/login"
+              to={accountPath}
               className="group inline-flex min-h-11 items-center gap-2 rounded-xl bg-sky-700 px-4 text-sm font-bold text-white shadow-md transition hover:bg-sky-800"
             >
-              <LogIn size={17} aria-hidden="true" />
-              <span>{lt("nav_login").text}</span>
+              {user?<LayoutDashboard size={17} aria-hidden="true"/>:<LogIn size={17} aria-hidden="true"/>}
+              <span>{accountLabel}</span>
             </Link>
           </nav>
 
@@ -520,11 +525,11 @@ export default function LandingPage() {
               </a>
               <a href="#report-incident" onClick={() => setMobileMenuOpen(false)} className="rounded-lg px-3 py-3 font-bold text-red-700 hover:bg-red-50">Report incident</a>
               <Link
-                to="/login"
+                to={accountPath}
                 className="mt-2 inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-sky-700 px-5 font-bold text-white shadow-md transition hover:bg-sky-800"
               >
-                <LogIn size={18} aria-hidden="true" />
-                <span>{lt("nav_login").text}</span>
+                {user?<LayoutDashboard size={18} aria-hidden="true"/>:<LogIn size={18} aria-hidden="true"/>}
+                <span>{accountLabel}</span>
                 <ArrowRight size={16} aria-hidden="true" />
               </Link>
             </div>
@@ -560,11 +565,11 @@ export default function LandingPage() {
                   <span>{lt("hero_results_button").text}</span>
                 </a>
                 <Link
-                  to="/login"
+                  to={accountPath}
                   className="group inline-flex min-h-12 items-center gap-2 rounded-lg border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-800 transition hover:border-sky-300 hover:text-sky-800"
                 >
-                  <LogIn size={18} aria-hidden="true" />
-                  <span>{lt("hero_login_button").text}</span>
+                  {user?<LayoutDashboard size={18} aria-hidden="true"/>:<LogIn size={18} aria-hidden="true"/>}
+                  <span>{user?accountLabel:lt("hero_login_button").text}</span>
                 </Link>
               </div>
               <div className="mt-8 flex max-w-xl items-start gap-3 border-l-2 border-amber-500 pl-4 text-sm leading-6 text-slate-600">
@@ -845,11 +850,11 @@ export default function LandingPage() {
                 <h3 className="command-center-title mt-2 text-3xl font-black" style={{color:lt("cta_heading").color}}>{lt("cta_heading").text}</h3>
               </div>
               <Link
-                to="/login"
+                to={accountPath}
                 className="group inline-flex min-h-13 shrink-0 items-center justify-center gap-2 rounded-full bg-sky-800 px-6 py-3.5 font-black text-white shadow-xl shadow-sky-950/20 transition duration-200 hover:-translate-y-0.5 hover:bg-sky-700 hover:shadow-sky-950/30 active:translate-y-0"
               >
-                <LogIn size={18} aria-hidden="true" />
-                <span style={{color:lt("cta_button").color}}>{lt("cta_button").text}</span>
+                {user?<LayoutDashboard size={18} aria-hidden="true"/>:<LogIn size={18} aria-hidden="true"/>}
+                <span style={{color:lt("cta_button").color}}>{user?accountLabel:lt("cta_button").text}</span>
                 <ChevronRight
                   size={18}
                   aria-hidden="true"
@@ -860,6 +865,17 @@ export default function LandingPage() {
           </div>
         </section>
       </main>
+
+      <footer className="border-t border-white/10 bg-sky-950 py-8 text-sky-100">
+        <div className="mx-auto flex max-w-7xl flex-col gap-5 px-5 text-sm sm:flex-row sm:items-center sm:justify-between lg:px-8">
+          <div className="flex items-center gap-3">
+            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/10 text-white"><Activity size={18}/></span>
+            <div><strong className="block text-white">{branding.logo_title}</strong><span className="text-sky-200">{branding.logo_subtitle}</span></div>
+          </div>
+          <p className="text-sky-200">{lt("footer_notice").text}</p>
+          <a href="https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer" target="_blank" rel="noreferrer" className="text-sky-100 hover:text-white">Map boundary source <ArrowRight size={13} className="inline"/></a>
+        </div>
+      </footer>
 
     </div>
   );
