@@ -31,7 +31,9 @@ const PRESIDENTIAL_candidates = [
   ["Adebayo Adewole Ebenezer", "SDP"], ["Agada Peter Ada", "YPP"],
   ["Nwanyanwu Daniel Daberechukwu", "ZLP"],
 ] as const;
-const ELECTION_DAY = new Date("2027-01-16T08:30:00+01:00");
+const PRESIDENTIAL_ELECTION_DAY = new Date("2027-01-16T08:30:00+01:00");
+const GOVERNORSHIP_ELECTION_DAY = new Date("2027-02-06T08:30:00+01:00");
+const RIVERS_REGISTERED_VOTERS = 3_537_190;
 
 const NIGERIA_MAP_URL = "https://media.githubusercontent.com/media/wmgeolab/geoBoundaries/main/releaseData/gbOpen/NGA/ADM2/geoBoundaries-NGA-ADM2.geojson";
 type MapFeature = { properties: { shapeName: string }; geometry: { type: "Polygon" | "MultiPolygon"; coordinates: number[][][] | number[][][][] } };
@@ -64,9 +66,12 @@ export default function LiveResults() {
   const lgaByName=useMemo(()=>new Map(overview.lga_results.map(row=>[normalize(row.lga),row])),[overview.lga_results]);
   const activeLga=lgaByName.get(normalize(selectedState));
   const totalVotes=overview.party_totals.reduce((sum,row)=>sum+row.votes,0);
-  const candidates = race==="governorship"?GOVERNORSHIP_candidates:PRESIDENTIAL_candidates;
+  const candidatePriority:Record<string,number>={NDC:0,ADC:1,APC:2};
+  const candidates=[...(race==="governorship"?GOVERNORSHIP_candidates:PRESIDENTIAL_candidates)]
+    .sort((left,right)=>(candidatePriority[left[1]]??99)-(candidatePriority[right[1]]??99));
   const visibleCandidates = candidates;
-  const remaining=Math.max(0,ELECTION_DAY.getTime()-now.getTime());
+  const electionDay=race==="governorship"?GOVERNORSHIP_ELECTION_DAY:PRESIDENTIAL_ELECTION_DAY;
+  const remaining=Math.max(0,electionDay.getTime()-now.getTime());
   const countdown={days:Math.floor(remaining/86400000),hours:Math.floor(remaining/3600000)%24,mins:Math.floor(remaining/60000)%60,secs:Math.floor(remaining/1000)%60};
 
   return <div className="min-h-screen bg-[#f4f6f8] text-slate-950">
@@ -92,7 +97,7 @@ export default function LiveResults() {
 
       <section className="border-b border-slate-200 bg-white py-10 sm:py-14">
         <div className="mx-auto max-w-7xl px-5 lg:px-8">
-          <div className="flex flex-wrap items-center justify-between gap-4"><p className="text-sm font-black uppercase tracking-[.18em] text-sky-700">Election desk</p><div className="flex flex-wrap gap-2 text-xs font-bold"><span className="rounded-full bg-slate-100 px-3 py-2">Election day <strong className="ml-1">16 Jan 2027</strong></span><span className="rounded-full bg-sky-50 px-3 py-2 text-sky-800">Candidate lists <strong className="ml-1">Published</strong></span><span className="rounded-full bg-slate-100 px-3 py-2">Registered voters <strong className="ml-1">93,755,885</strong></span></div></div>
+          <div className="flex flex-wrap items-center justify-between gap-4"><p className="text-sm font-black uppercase tracking-[.18em] text-sky-700">Election desk</p><div className="flex flex-wrap gap-2 text-xs font-bold"><span className="rounded-full bg-slate-100 px-3 py-2">Election day <strong className="ml-1">{race==="governorship"?"6 Feb 2027":"16 Jan 2027"}</strong></span><span className="rounded-full bg-sky-50 px-3 py-2 text-sky-800">Candidate lists <strong className="ml-1">Published</strong></span><span className="rounded-full bg-slate-100 px-3 py-2">Registered voters <strong className="ml-1">{RIVERS_REGISTERED_VOTERS.toLocaleString()}</strong></span></div></div>
           <div className="mt-8 grid gap-8 xl:grid-cols-[1.15fr_.85fr]">
             <div><span className="text-xs font-black uppercase tracking-[.18em] text-slate-500">South South</span><h1 className="mt-2 text-5xl font-black tracking-[-.055em] sm:text-7xl">Rivers State</h1><p className="mt-2 text-xl font-semibold text-slate-500">{race==="governorship"?"Governorship election":"Presidential election · Rivers State result"}</p><div className="mt-7 grid grid-cols-2 gap-3 sm:grid-cols-4"><Stat value="23" label="LGAs"/><Stat value={String(overview.lga_results.reduce((sum,row)=>sum+row.total_wards,0))} label="Wards"/><Stat value={overview.total_polling_units.toLocaleString()} label="Polling units"/><Stat value={`${overview.submission_coverage_percent??0}%`} label="Reporting"/></div><div className="mt-7 flex flex-wrap items-center gap-3"><span className="rounded-full bg-sky-50 px-4 py-2 text-sm font-black text-sky-800">Live collation</span><span className="text-sm text-slate-500">Unofficial agent-submitted results</span></div></div>
             <div className="overflow-hidden rounded-3xl border border-slate-200 bg-[#f7f9fb] shadow-xl shadow-slate-950/5"><div className="border-b border-slate-200 bg-white px-6 py-4"><p className="font-black">Rivers election centre</p></div><div className="grid grid-cols-2 gap-px bg-slate-200"><DeskMetric label="Current stage" value="Collation" note="Live field reports" icon={<ShieldCheck size={17}/>}/><DeskMetric label="LGAs covered" value={`${overview.lga_results.filter(row=>row.submitted_polling_units>0).length} / 23`} note="Local governments" icon={<MapPin size={17}/>}/><DeskMetric label="Units reporting" value={overview.submitted_polling_units.toLocaleString()} note="Polling units" icon={<Radio size={17}/>}/><DeskMetric label="Last update" value={overview.last_updated?new Date(overview.last_updated).toLocaleTimeString("en-NG",{timeZone:"Africa/Lagos",hour:"2-digit",minute:"2-digit"}):"—"} note="West Africa Time" icon={<CalendarDays size={17}/>}/></div></div>
@@ -105,7 +110,7 @@ export default function LiveResults() {
       </section>
 
       <section className="border-b border-slate-200 bg-white py-14">
-        <div className="mx-auto max-w-7xl px-5 lg:px-8"><div className="grid gap-8 lg:grid-cols-[.7fr_1.3fr]"><div><p className="text-xs font-black uppercase tracking-[.18em] text-sky-700">Election readiness</p><h2 className="mt-2 text-3xl font-black">Official preparation milestones</h2></div><div className="space-y-3"><Readiness ready label="Official candidate lists" status="Published"/><Readiness label="Registered voters" status="Awaiting official data"/><Readiness label="PVC figures" status="Awaiting official update"/><Readiness label="Live collation" status="Activates after polls close"/></div></div></div>
+        <div className="mx-auto max-w-7xl px-5 lg:px-8"><div className="grid gap-8 lg:grid-cols-[.7fr_1.3fr]"><div><p className="text-xs font-black uppercase tracking-[.18em] text-sky-700">Election readiness</p><h2 className="mt-2 text-3xl font-black">Official preparation milestones</h2></div><div className="space-y-3"><Readiness ready label="Official candidate lists" status="Published"/><Readiness ready label="Registered voters" status="3,537,190 · INEC official figure"/><Readiness label="PVC figures" status="Awaiting official update"/><Readiness label="Live collation" status="Activates after polls close"/></div></div></div>
       </section>
 
       <section className="border-b border-slate-200 bg-[#f4f6f8] py-14">
