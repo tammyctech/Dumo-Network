@@ -24,12 +24,12 @@ export type Branding = {
 
 export const defaultLandingText: Record<string, { text: string; color: string }> = {
   nav_results:{text:"Live results",color:"#475569"}, nav_updates:{text:"Updates",color:"#475569"}, nav_methodology:{text:"Methodology",color:"#475569"}, nav_login:{text:"Monitor login",color:"#ffffff"},
-  hero_line_1:{text:"See what’s",color:"#0f172a"}, hero_line_2:{text:"happening at",color:"#065f46"}, hero_line_3:{text:"the polling unit.",color:"#0f172a"}, hero_description:{text:"Follow unofficial reports submitted by assigned monitors across all 23 local government areas.",color:"#475569"}, hero_results_button:{text:"Explore the results",color:"#ffffff"}, hero_login_button:{text:"Monitor sign in",color:"#1e293b"}, hero_disclaimer:{text:"Unofficial — Agent-Submitted Data. Dumo Youth Network Election Monitoring System does not declare election winners; only authorized electoral bodies do.",color:"#475569"},
-  map_eyebrow:{text:"Rivers State · LGA overview",color:"#047857"}, map_heading:{text:"See where submitted results currently lead.",color:"#0f172a"}, map_description:{text:"Map colors show the party currently leading from reports received in each LGA. Always check the reporting coverage percentage before interpreting the result.",color:"#1e293b"},
-  totals_eyebrow:{text:"Statewide totals",color:"#047857"}, totals_heading:{text:"Reported vote position",color:"#0f172a"}, totals_description:{text:"Totals update as monitors submit polling-unit records. These figures remain provisional and unofficial.",color:"#475569"},
-  updates_eyebrow:{text:"Election updates",color:"#065f46"}, updates_heading:{text:"Latest field reports",color:"#0f172a"}, updates_description:{text:"A privacy-safe stream of the newest polling-unit submissions. Agent identities are not published.",color:"#475569"},
-  method_eyebrow:{text:"How it works",color:"#065f46"}, method_heading:{text:"Transparent from field report to public view.",color:"#064e3b"}, method_description:{text:"Follow each result through a clear, structured process—from an assigned monitor's submission to the public dashboard.",color:"#064e3b"},
-  cta_label:{text:"Part of the monitoring network?",color:"#d1fae5"}, cta_heading:{text:"Sign in to your command center.",color:"#ffffff"}, cta_button:{text:"Open monitoring workspace",color:"#ffffff"}, footer_notice:{text:"Unofficial — Agent-Submitted Data",color:"#64748b"},
+  hero_line_1:{text:"See what’s",color:"#0f172a"}, hero_line_2:{text:"happening at",color:"#0369a1"}, hero_line_3:{text:"the polling unit.",color:"#0f172a"}, hero_description:{text:"Follow unofficial reports submitted by assigned monitors across all 23 local government areas.",color:"#475569"}, hero_results_button:{text:"Explore the results",color:"#ffffff"}, hero_login_button:{text:"Monitor sign in",color:"#1e293b"}, hero_disclaimer:{text:"Unofficial — Agent-Submitted Data. Dumo Youth Network Election Monitoring System does not declare election winners; only authorized electoral bodies do.",color:"#475569"},
+  map_eyebrow:{text:"Rivers State · LGA overview",color:"#0284c7"}, map_heading:{text:"See where submitted results currently lead.",color:"#0f172a"}, map_description:{text:"Map colors show the party currently leading from reports received in each LGA. Always check the reporting coverage percentage before interpreting the result.",color:"#1e293b"},
+  totals_eyebrow:{text:"Statewide totals",color:"#0284c7"}, totals_heading:{text:"Reported vote position",color:"#0f172a"}, totals_description:{text:"Totals update as monitors submit polling-unit records. These figures remain provisional and unofficial.",color:"#475569"},
+  updates_eyebrow:{text:"Election updates",color:"#0369a1"}, updates_heading:{text:"Latest field reports",color:"#0f172a"}, updates_description:{text:"A privacy-safe stream of the newest polling-unit submissions. Agent identities are not published.",color:"#475569"},
+  method_eyebrow:{text:"How it works",color:"#0369a1"}, method_heading:{text:"Transparent from field report to public view.",color:"#0c4a6e"}, method_description:{text:"Follow each result through a clear, structured process—from an assigned monitor's submission to the public dashboard.",color:"#0c4a6e"},
+  cta_label:{text:"Part of the monitoring network?",color:"#e0f2fe"}, cta_heading:{text:"Sign in to your command center.",color:"#ffffff"}, cta_button:{text:"Open monitoring workspace",color:"#ffffff"}, footer_notice:{text:"Unofficial — Agent-Submitted Data",color:"#64748b"},
 };
 
 export const defaultBranding: Branding = {
@@ -39,7 +39,7 @@ export const defaultBranding: Branding = {
   logo_subtitle: "Election Monitoring System",
   login_heading: "Welcome back.",
   login_description: "Enter your registered email or phone number to continue to your monitoring dashboard.",
-  primary_color: "#047857",
+  primary_color: "#0284c7",
   background_color: "#f6f8f7",
   text_color: "#0f172a",
   font_family: "Inter",

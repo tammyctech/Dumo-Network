@@ -113,7 +113,7 @@ function PublicIncidentSection() {
     } catch (caught) { setError(caught instanceof Error ? caught.message : "Could not submit the incident report."); }
     finally { setBusy(false); }
   }
-  return <section id="report-incident" className="scroll-mt-20 border-y border-emerald-100 bg-emerald-50 py-20 text-slate-950"><div className="mx-auto grid max-w-7xl gap-10 px-5 lg:grid-cols-[0.75fr_1.25fr] lg:px-8"><div><p className="text-sm font-black uppercase tracking-[0.2em] text-emerald-700">Community incident reporting</p><h2 className="mt-4 text-4xl font-black tracking-tight text-emerald-950 sm:text-5xl">Witnessed something at a polling unit?</h2><p className="mt-5 max-w-xl leading-7 text-slate-600">Send a report with video evidence directly to the election monitoring team. Reports are reviewed privately and are not published automatically.</p><div className="mt-7 flex gap-3 rounded-2xl border border-emerald-200 bg-white p-4 text-sm text-emerald-950 shadow-sm"><ShieldCheck className="shrink-0 text-emerald-700"/><p>Only authorized administrators can access visitor-submitted videos. For immediate danger, contact emergency services first.</p></div></div><form onSubmit={submit} className="grid gap-4 rounded-3xl border border-emerald-200 bg-white p-6 text-slate-900 shadow-xl shadow-emerald-950/5 sm:grid-cols-2 sm:p-8"><h3 className="text-xl font-black text-emerald-950 sm:col-span-2">Report a polling-unit incident</h3>{error&&<p className="rounded-xl bg-red-50 p-3 text-sm text-red-700 sm:col-span-2">{error}</p>}{message&&<p className="rounded-xl bg-emerald-50 p-3 text-sm text-emerald-800 sm:col-span-2">{message}</p>}<label className="text-sm font-bold">Your name<input name="reporter_name" required minLength={2} maxLength={150} className="input mt-2"/></label><label className="text-sm font-bold">Phone number<input name="reporter_phone" required type="tel" className="input mt-2"/></label><label className="text-sm font-bold sm:col-span-2">Election<select name="election_id" required className="input mt-2"><option value="">Select election</option>{elections.map(item=><option key={item.id} value={item.id}>{item.name}</option>)}</select></label><label className="text-sm font-bold">LGA<select required value={selectedLga} onChange={event=>{setSelectedLga(event.target.value);setSelectedWard("");setSelectedUnit("");}} className="input mt-2"><option value="">Select LGA</option>{lgas.map(lga=><option key={lga} value={lga}>{lga}</option>)}</select></label><label className="text-sm font-bold">Ward<select required disabled={!selectedLga} value={selectedWard} onChange={event=>{setSelectedWard(event.target.value);setSelectedUnit("");}} className="input mt-2"><option value="">Select ward</option>{wards.map(ward=><option key={ward} value={ward}>{ward}</option>)}</select></label><label className="text-sm font-bold sm:col-span-2">Polling unit<select name="polling_unit_id" required disabled={!selectedWard} value={selectedUnit} onChange={event=>setSelectedUnit(event.target.value)} className="input mt-2"><option value="">Select polling unit</option>{pollingUnits.map(item=><option key={item.id} value={item.id}>{item.code} · {item.name}</option>)}</select></label><label className="text-sm font-bold">Category<select name="category" required className="input mt-2"><option value="">Select category</option>{["Violence or intimidation","Vote buying","Equipment failure","Missing or late materials","Access restriction","Result-sheet problem","Other"].map(item=><option key={item}>{item}</option>)}</select></label><label className="text-sm font-bold">Severity<select name="severity" defaultValue="medium" className="input mt-2"><option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option><option value="critical">Critical</option></select></label><label className="text-sm font-bold sm:col-span-2">What happened?<textarea name="description" required minLength={5} maxLength={3000} rows={4} className="input mt-2" placeholder="Describe what happened, when it happened, and who may be at risk."/></label><label className="rounded-2xl border-2 border-dashed border-emerald-300 bg-emerald-50/50 p-5 text-sm font-bold sm:col-span-2"><span className="flex items-center gap-2"><UploadCloud className="text-emerald-700"/>Video evidence</span><span className="mt-1 block text-xs font-normal text-slate-500">Upload 1–3 MP4, WebM, or MOV videos. Maximum 100 MB each, suitable for many 5–10 minute phone recordings.</span><input name="files" required type="file" multiple accept="video/mp4,video/webm,video/quicktime" className="mt-3 block w-full text-sm"/></label><button disabled={busy} className="rounded-xl bg-emerald-700 px-5 py-3 font-black text-white hover:bg-emerald-800 disabled:opacity-50 sm:col-span-2">{busy ? "Submitting report…" : "Submit incident report"}</button></form></div></section>;
+  return <section id="report-incident" className="scroll-mt-20 border-y border-sky-100 bg-sky-50 py-20 text-slate-950"><div className="mx-auto grid max-w-7xl gap-10 px-5 lg:grid-cols-[0.75fr_1.25fr] lg:px-8"><div><p className="text-sm font-black uppercase tracking-[0.2em] text-sky-700">Community incident reporting</p><h2 className="mt-4 text-4xl font-black tracking-tight text-sky-950 sm:text-5xl">Witnessed something at a polling unit?</h2><p className="mt-5 max-w-xl leading-7 text-slate-600">Send a report with video evidence directly to the election monitoring team. Reports are reviewed privately and are not published automatically.</p><div className="mt-7 flex gap-3 rounded-2xl border border-sky-200 bg-white p-4 text-sm text-sky-950 shadow-sm"><ShieldCheck className="shrink-0 text-sky-700"/><p>Only authorized administrators can access visitor-submitted videos. For immediate danger, contact emergency services first.</p></div></div><form onSubmit={submit} className="grid gap-4 rounded-3xl border border-sky-200 bg-white p-6 text-slate-900 shadow-xl shadow-sky-950/5 sm:grid-cols-2 sm:p-8"><h3 className="text-xl font-black text-sky-950 sm:col-span-2">Report a polling-unit incident</h3>{error&&<p className="rounded-xl bg-red-50 p-3 text-sm text-red-700 sm:col-span-2">{error}</p>}{message&&<p className="rounded-xl bg-sky-50 p-3 text-sm text-sky-800 sm:col-span-2">{message}</p>}<label className="text-sm font-bold">Your name<input name="reporter_name" required minLength={2} maxLength={150} className="input mt-2"/></label><label className="text-sm font-bold">Phone number<input name="reporter_phone" required type="tel" className="input mt-2"/></label><label className="text-sm font-bold sm:col-span-2">Election<select name="election_id" required className="input mt-2"><option value="">Select election</option>{elections.map(item=><option key={item.id} value={item.id}>{item.name}</option>)}</select></label><label className="text-sm font-bold">LGA<select required value={selectedLga} onChange={event=>{setSelectedLga(event.target.value);setSelectedWard("");setSelectedUnit("");}} className="input mt-2"><option value="">Select LGA</option>{lgas.map(lga=><option key={lga} value={lga}>{lga}</option>)}</select></label><label className="text-sm font-bold">Ward<select required disabled={!selectedLga} value={selectedWard} onChange={event=>{setSelectedWard(event.target.value);setSelectedUnit("");}} className="input mt-2"><option value="">Select ward</option>{wards.map(ward=><option key={ward} value={ward}>{ward}</option>)}</select></label><label className="text-sm font-bold sm:col-span-2">Polling unit<select name="polling_unit_id" required disabled={!selectedWard} value={selectedUnit} onChange={event=>setSelectedUnit(event.target.value)} className="input mt-2"><option value="">Select polling unit</option>{pollingUnits.map(item=><option key={item.id} value={item.id}>{item.code} · {item.name}</option>)}</select></label><label className="text-sm font-bold">Category<select name="category" required className="input mt-2"><option value="">Select category</option>{["Violence or intimidation","Vote buying","Equipment failure","Missing or late materials","Access restriction","Result-sheet problem","Other"].map(item=><option key={item}>{item}</option>)}</select></label><label className="text-sm font-bold">Severity<select name="severity" defaultValue="medium" className="input mt-2"><option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option><option value="critical">Critical</option></select></label><label className="text-sm font-bold sm:col-span-2">What happened?<textarea name="description" required minLength={5} maxLength={3000} rows={4} className="input mt-2" placeholder="Describe what happened, when it happened, and who may be at risk."/></label><label className="rounded-2xl border-2 border-dashed border-sky-300 bg-sky-50/50 p-5 text-sm font-bold sm:col-span-2"><span className="flex items-center gap-2"><UploadCloud className="text-sky-700"/>Video evidence</span><span className="mt-1 block text-xs font-normal text-slate-500">Upload 1–3 MP4, WebM, or MOV videos. Maximum 100 MB each, suitable for many 5–10 minute phone recordings.</span><input name="files" required type="file" multiple accept="video/mp4,video/webm,video/quicktime" className="mt-3 block w-full text-sm"/></label><button disabled={busy} className="rounded-xl bg-sky-700 px-5 py-3 font-black text-white hover:bg-sky-800 disabled:opacity-50 sm:col-span-2">{busy ? "Submitting report…" : "Submit incident report"}</button></form></div></section>;
 }
 
 function normalizeLga(value: string): string {
@@ -231,7 +231,7 @@ function MapPanel({
   return (
     <div className="grid gap-6 xl:grid-cols-[minmax(0,1.45fr)_minmax(260px,0.55fr)]">
       <div className="relative min-h-[420px] overflow-hidden rounded-2xl border border-slate-200 bg-white p-1 shadow-sm sm:rounded-3xl sm:p-6">
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_30%,rgba(16,185,129,0.08),transparent_55%)]" />
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_30%,rgba(14,165,233,0.10),transparent_55%)]" />
         {geoJson && projection ? (
           <svg
             viewBox={`0 0 ${projection.width} ${projection.height}`}
@@ -247,13 +247,13 @@ function MapPanel({
                 <path
                   key={name}
                   d={featurePath(feature)}
-                  fill={result?.leader ? partyColor(result.leader.party) : "#e8f3ed"}
+                  fill={result?.leader ? partyColor(result.leader.party) : "#e0f2fe"}
                   fillOpacity={
                     result?.leader ? 0.5 + leaderVoteShare(result) * 0.5 : 1
                   }
-                  stroke={active ? "#047857" : "#86a995"}
+                  stroke={active ? "#0369a1" : "#7dd3fc"}
                   strokeWidth={active ? 3 : 1.5}
-                  className="cursor-pointer outline-none transition hover:brightness-125 focus-visible:stroke-emerald-900 focus-visible:[stroke-width:3]"
+                  className="cursor-pointer outline-none transition hover:brightness-125 focus-visible:stroke-sky-900 focus-visible:[stroke-width:3]"
                   onMouseEnter={() => setSelected(name)}
                   onFocus={() => setSelected(name)}
                   onClick={() => setSelected(name)}
@@ -264,12 +264,12 @@ function MapPanel({
             })}
           </svg>
         ) : mapLoading ? (
-          <div className="flex min-h-[390px] items-center justify-center text-emerald-700">
+          <div className="flex min-h-[390px] items-center justify-center text-sky-700">
             <RefreshCw size={24} className="mr-3 animate-spin" />
             Loading Rivers State map…
           </div>
         ) : (
-          <div className="flex min-h-[390px] flex-col items-center justify-center px-6 text-center text-emerald-700">
+          <div className="flex min-h-[390px] flex-col items-center justify-center px-6 text-center text-sky-700">
             <MapIcon size={30} />
             <p className="mt-3 font-semibold text-slate-900">
               {mapError || "Map boundaries are temporarily unavailable"}
@@ -280,7 +280,7 @@ function MapPanel({
             <button
               type="button"
               onClick={onRetry}
-              className="mt-4 inline-flex min-h-10 items-center gap-2 rounded-lg border border-emerald-200 bg-white px-3 text-sm font-semibold text-emerald-800 hover:bg-emerald-50"
+              className="mt-4 inline-flex min-h-10 items-center gap-2 rounded-lg border border-sky-200 bg-white px-3 text-sm font-semibold text-sky-800 hover:bg-sky-50"
             >
               <RefreshCw size={15} />
               Retry map
@@ -290,7 +290,7 @@ function MapPanel({
       </div>
 
       <aside className="rounded-3xl border border-slate-200 bg-white p-6 shadow-xl shadow-slate-900/5">
-        <p className="text-xs font-bold uppercase tracking-[0.18em] text-emerald-700">
+        <p className="text-xs font-bold uppercase tracking-[0.18em] text-sky-700">
           LGA snapshot
         </p>
         {selectedResult ? (
@@ -298,7 +298,7 @@ function MapPanel({
             <h3 className="text-2xl font-black text-slate-950">
               {selectedResult.lga}
             </h3>
-            <div className="mt-5 rounded-2xl border border-emerald-100 bg-emerald-50/70 p-5">
+            <div className="mt-5 rounded-2xl border border-sky-100 bg-sky-50/70 p-5">
               <p className="text-xs uppercase tracking-widest text-slate-500">
                 Current leader
               </p>
@@ -334,7 +334,7 @@ function MapPanel({
               </div>
               <div className="mt-2 h-2 overflow-hidden rounded-full bg-slate-100">
                 <div
-                  className="h-full rounded-full bg-emerald-500"
+                  className="h-full rounded-full bg-sky-500"
                   style={{
                     width: `${Math.min(
                       selectedResult.coverage_percent || 0,
@@ -347,7 +347,7 @@ function MapPanel({
           </div>
         ) : (
           <div className="mt-6 rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-6 text-center">
-            <MapPin className="mx-auto text-emerald-600" />
+            <MapPin className="mx-auto text-sky-600" />
             <p className="mt-3 font-semibold text-slate-800">
               Explore the map
             </p>
@@ -445,15 +445,15 @@ export default function LandingPage() {
 
   return (
     <div className="landing-page min-h-screen bg-slate-100 pb-52 text-slate-950 sm:pb-28">
-      <header className="sticky top-0 z-40 border-b border-emerald-800 bg-emerald-950/95 text-white shadow-lg shadow-emerald-950/15 backdrop-blur-xl">
+      <header className="sticky top-0 z-40 border-b border-sky-800 bg-sky-950/95 text-white shadow-lg shadow-sky-950/15 backdrop-blur-xl">
         <div className="mx-auto flex h-[4.5rem] max-w-7xl items-center justify-between px-5 lg:px-8">
           <Link to="/" className="flex items-center gap-3 text-white">
-            {branding.logo_data_url ? <img src={branding.logo_data_url} alt="" className="h-10 w-10 rounded-xl bg-white object-contain p-1"/> : <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-emerald-600 bg-emerald-800 text-white"><Activity size={20} strokeWidth={2.5} /></span>}
+            {branding.logo_data_url ? <img src={branding.logo_data_url} alt="" className="h-10 w-10 rounded-xl bg-white object-contain p-1"/> : <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-sky-600 bg-sky-800 text-white"><Activity size={20} strokeWidth={2.5} /></span>}
             <span>
               <span className="block text-sm font-black tracking-[0.12em]">
                 {branding.logo_title.toUpperCase()}
               </span>
-              <span className="mt-0.5 block text-[10px] uppercase tracking-[0.2em] text-emerald-200">
+              <span className="mt-0.5 block text-[10px] uppercase tracking-[0.2em] text-sky-200">
                 {branding.logo_subtitle}
               </span>
             </span>
@@ -462,26 +462,26 @@ export default function LandingPage() {
           <nav className="hidden items-center gap-7 md:flex">
             <a
               href="#results"
-              className="relative py-2 text-sm font-semibold text-emerald-100 transition hover:text-white"
+              className="relative py-2 text-sm font-semibold text-sky-100 transition hover:text-white"
             >
               <span>{lt("nav_results").text}</span>
             </a>
             <a
               href="#updates"
-              className="relative py-2 text-sm font-semibold text-emerald-100 transition hover:text-white"
+              className="relative py-2 text-sm font-semibold text-sky-100 transition hover:text-white"
             >
               <span>{lt("nav_updates").text}</span>
             </a>
             <a
               href="#methodology"
-              className="relative py-2 text-sm font-semibold text-emerald-100 transition hover:text-white"
+              className="relative py-2 text-sm font-semibold text-sky-100 transition hover:text-white"
             >
               <span>{lt("nav_methodology").text}</span>
             </a>
             <a href="#report-incident" className="rounded-lg border border-red-300/30 bg-red-500/10 px-3 py-2 text-sm font-bold text-red-100 hover:bg-red-500/20">Report incident</a>
             <Link
               to="/login"
-              className="group inline-flex min-h-11 items-center gap-2 rounded-xl bg-white px-4 text-sm font-bold text-emerald-950 shadow-md transition hover:bg-emerald-50"
+              className="group inline-flex min-h-11 items-center gap-2 rounded-xl bg-white px-4 text-sm font-bold text-sky-950 shadow-md transition hover:bg-sky-50"
             >
               <LogIn size={17} aria-hidden="true" />
               <span>{lt("nav_login").text}</span>
@@ -494,7 +494,7 @@ export default function LandingPage() {
             aria-expanded={mobileMenuOpen}
             aria-controls="mobile-navigation"
             onClick={() => setMobileMenuOpen((value) => !value)}
-            className="flex h-11 w-11 items-center justify-center rounded-xl border border-emerald-700 bg-emerald-900 text-white transition hover:bg-emerald-800 md:hidden"
+            className="flex h-11 w-11 items-center justify-center rounded-xl border border-sky-700 bg-sky-900 text-white transition hover:bg-sky-800 md:hidden"
           >
             {mobileMenuOpen ? <X /> : <Menu />}
           </button>
@@ -505,28 +505,28 @@ export default function LandingPage() {
               <a
                 href="#results"
                 onClick={() => setMobileMenuOpen(false)}
-                className="rounded-lg px-3 py-3 transition hover:bg-emerald-50 hover:text-emerald-800"
+                className="rounded-lg px-3 py-3 transition hover:bg-sky-50 hover:text-sky-800"
               >
                 <span style={{color:lt("nav_results").color}}>{lt("nav_results").text}</span>
               </a>
               <a
                 href="#updates"
                 onClick={() => setMobileMenuOpen(false)}
-                className="rounded-lg px-3 py-3 transition hover:bg-emerald-50 hover:text-emerald-800"
+                className="rounded-lg px-3 py-3 transition hover:bg-sky-50 hover:text-sky-800"
               >
                 <span style={{color:lt("nav_updates").color}}>{lt("nav_updates").text}</span>
               </a>
               <a
                 href="#methodology"
                 onClick={() => setMobileMenuOpen(false)}
-                className="rounded-lg px-3 py-3 transition hover:bg-emerald-50 hover:text-emerald-800"
+                className="rounded-lg px-3 py-3 transition hover:bg-sky-50 hover:text-sky-800"
               >
                 <span style={{color:lt("nav_methodology").color}}>{lt("nav_methodology").text}</span>
               </a>
               <a href="#report-incident" onClick={() => setMobileMenuOpen(false)} className="rounded-lg px-3 py-3 font-bold text-red-700 hover:bg-red-50">Report incident</a>
               <Link
                 to="/login"
-                className="mt-2 inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-emerald-700 px-5 font-bold text-white shadow-md transition hover:bg-emerald-800"
+                className="mt-2 inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-sky-700 px-5 font-bold text-white shadow-md transition hover:bg-sky-800"
               >
                 <LogIn size={18} aria-hidden="true" />
                 <span>{lt("nav_login").text}</span>
@@ -538,53 +538,53 @@ export default function LandingPage() {
       </header>
 
       <main>
-        <section className="relative isolate overflow-hidden border-b border-emerald-900 bg-emerald-950 pb-12 pt-12 text-white sm:pb-16 sm:pt-16">
-          <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(16,185,129,0.12),transparent_42%),radial-gradient(circle_at_82%_12%,rgba(52,211,153,0.16),transparent_30%)]" />
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-emerald-500 to-transparent" />
+        <section className="relative isolate overflow-hidden border-b border-sky-900 bg-sky-950 pb-12 pt-12 text-white sm:pb-16 sm:pt-16">
+          <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(14,165,233,0.14),transparent_42%),radial-gradient(circle_at_82%_12%,rgba(125,211,252,0.18),transparent_30%)]" />
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-sky-500 to-transparent" />
           <div className="relative mx-auto grid max-w-7xl gap-12 px-5 lg:grid-cols-[1.02fr_0.98fr] lg:items-center lg:gap-16 lg:px-8">
             <div>
-              <div className="inline-flex items-center gap-2.5 rounded-lg border border-emerald-700 bg-emerald-900/70 px-3.5 py-2 text-[11px] font-bold uppercase tracking-[0.15em] text-emerald-100">
+              <div className="inline-flex items-center gap-2.5 rounded-lg border border-sky-700 bg-sky-900/70 px-3.5 py-2 text-[11px] font-bold uppercase tracking-[0.15em] text-sky-100">
                 <span className={`relative flex h-2 w-2 ${loading ? "animate-pulse" : ""}`}>
-                  <span className="absolute inline-flex h-full w-full rounded-full bg-emerald-600 opacity-40" />
-                  <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-600" />
+                  <span className="absolute inline-flex h-full w-full rounded-full bg-sky-600 opacity-40" />
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-sky-600" />
                 </span>
                 {loading ? "Loading public results · Rivers State" : "Public results · Rivers State"}
               </div>
               <h1 className="mt-7 max-w-2xl text-[2.8rem] font-semibold leading-[1.04] tracking-[-0.055em] text-white sm:text-6xl lg:text-[4.2rem]">
                 <span className="block text-white">{lt("hero_line_1").text}</span>
-                <span className="block text-emerald-300">{lt("hero_line_2").text}</span>
+                <span className="block text-sky-300">{lt("hero_line_2").text}</span>
                 <span className="block text-white">{lt("hero_line_3").text}</span>
               </h1>
-              <p className="mt-6 max-w-xl text-base leading-7 text-emerald-100 sm:text-lg sm:leading-8">
+              <p className="mt-6 max-w-xl text-base leading-7 text-sky-100 sm:text-lg sm:leading-8">
                 {lt("hero_description").text}
               </p>
               <div className="mt-8 flex flex-wrap gap-3">
                 <a
                   href="#results"
-                  className="group inline-flex min-h-12 items-center gap-2 rounded-lg bg-white px-5 py-3 text-sm font-bold text-emerald-950 shadow-md transition hover:bg-emerald-50"
+                  className="group inline-flex min-h-12 items-center gap-2 rounded-lg bg-white px-5 py-3 text-sm font-bold text-sky-950 shadow-md transition hover:bg-sky-50"
                 >
                   <span>{lt("hero_results_button").text}</span>
                 </a>
                 <Link
                   to="/login"
-                  className="group inline-flex min-h-12 items-center gap-2 rounded-lg border border-emerald-700 bg-emerald-900/70 px-5 py-3 text-sm font-semibold text-white transition hover:bg-emerald-900"
+                  className="group inline-flex min-h-12 items-center gap-2 rounded-lg border border-sky-700 bg-sky-900/70 px-5 py-3 text-sm font-semibold text-white transition hover:bg-sky-900"
                 >
                   <LogIn size={18} aria-hidden="true" />
                   <span>{lt("hero_login_button").text}</span>
                 </Link>
               </div>
-              <div className="mt-8 flex max-w-xl items-start gap-3 border-l-2 border-amber-400 pl-4 text-sm leading-6 text-emerald-100">
+              <div className="mt-8 flex max-w-xl items-start gap-3 border-l-2 border-amber-400 pl-4 text-sm leading-6 text-sky-100">
                 <ShieldCheck size={18} className="mt-0.5 shrink-0 text-amber-300" aria-hidden="true" />
                 <p>{lt("hero_disclaimer").text}</p>
               </div>
             </div>
 
-            <div className="relative rounded-2xl border border-emerald-800/70 bg-white p-5 shadow-[0_32px_90px_-35px_rgba(0,0,0,0.65)] sm:p-7">
-              <div className="absolute inset-x-0 top-0 h-1 rounded-t-2xl bg-gradient-to-r from-emerald-600 via-emerald-400 to-amber-400" />
+            <div className="relative rounded-2xl border border-sky-800/70 bg-white p-5 shadow-[0_32px_90px_-35px_rgba(0,0,0,0.65)] sm:p-7">
+              <div className="absolute inset-x-0 top-0 h-1 rounded-t-2xl bg-gradient-to-r from-sky-600 via-sky-400 to-amber-400" />
               <div className="relative flex items-start justify-between gap-4">
                 <div>
-                  <p className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.18em] text-emerald-800">
-                    <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-50"><Activity size={14} aria-hidden="true" /></span>
+                  <p className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.18em] text-sky-800">
+                    <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-sky-50"><Activity size={14} aria-hidden="true" /></span>
                     {displayOverview.election ? "Current election" : "Election status"}
                   </p>
                   <h2 className="mt-3 max-w-sm text-lg font-bold leading-snug text-slate-950 sm:text-xl">
@@ -597,13 +597,13 @@ export default function LandingPage() {
                   aria-label="Refresh election data"
                   title="Refresh election data"
                   disabled={loading}
-                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 transition hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-800 disabled:cursor-wait disabled:opacity-60"
+                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 transition hover:border-sky-300 hover:bg-sky-50 hover:text-sky-800 disabled:cursor-wait disabled:opacity-60"
                 >
                   <RefreshCw size={18} className={loading ? "animate-spin" : ""} />
                 </button>
               </div>
               <div className="relative mt-6 grid grid-cols-2 gap-3">
-                <div className="rounded-xl border border-slate-200/80 bg-[#f8faf8] p-4 transition hover:border-emerald-200">
+                <div className="rounded-xl border border-slate-200/80 bg-[#f8faf8] p-4 transition hover:border-sky-200">
                   <p className="text-[11px] font-medium text-slate-500">
                     Reports received
                   </p>
@@ -613,7 +613,7 @@ export default function LandingPage() {
                       : "—"}
                   </p>
                 </div>
-                <div className="rounded-xl border border-slate-200/80 bg-[#f8faf8] p-4 transition hover:border-emerald-200">
+                <div className="rounded-xl border border-slate-200/80 bg-[#f8faf8] p-4 transition hover:border-sky-200">
                   <p className="text-[11px] font-medium text-slate-500">
                     State coverage
                   </p>
@@ -623,13 +623,13 @@ export default function LandingPage() {
                       : `${displayOverview.submission_coverage_percent.toFixed(1)}%`}
                   </p>
                 </div>
-                <div className="rounded-xl border border-slate-200/80 bg-[#f8faf8] p-4 transition hover:border-emerald-200">
+                <div className="rounded-xl border border-slate-200/80 bg-[#f8faf8] p-4 transition hover:border-sky-200">
                   <p className="text-[11px] font-medium text-slate-500">Reported votes</p>
                   <p className="mt-2 text-2xl font-bold tabular-nums tracking-tight text-slate-950 sm:text-3xl">
                     {hasUploadedResults ? formatNumber(totalVotes) : "—"}
                   </p>
                 </div>
-                <div className="rounded-xl border border-slate-200/80 bg-[#f8faf8] p-4 transition hover:border-emerald-200">
+                <div className="rounded-xl border border-slate-200/80 bg-[#f8faf8] p-4 transition hover:border-sky-200">
                   <p className="text-[11px] font-medium text-slate-500">Current statewide lead</p>
                   {hasUploadedResults && leadingParty ? <p className="mt-2 flex items-center gap-2 text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl"><PartyLogo party={leadingParty.party} className="h-9 w-9"/><span className="truncate">{leadingParty.party}</span></p> : <p className="mt-2 text-2xl font-bold text-slate-950 sm:text-3xl">—</p>}
                 </div>
@@ -647,12 +647,12 @@ export default function LandingPage() {
             ].map((item) => {
               const Icon = item.icon;
               return (
-                <div key={item.label} className="flex items-center gap-3 rounded-xl border border-emerald-800 bg-emerald-900/60 px-4 py-3">
-                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-800 text-emerald-100">
+                <div key={item.label} className="flex items-center gap-3 rounded-xl border border-sky-800 bg-sky-900/60 px-4 py-3">
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-sky-800 text-sky-100">
                     <Icon size={17} aria-hidden="true" />
                   </span>
                   <span>
-                    <span className="block text-[10px] font-semibold uppercase tracking-[0.13em] text-emerald-300">{item.label}</span>
+                    <span className="block text-[10px] font-semibold uppercase tracking-[0.13em] text-sky-300">{item.label}</span>
                     <span className="mt-0.5 block text-sm font-semibold text-white">{item.value}</span>
                   </span>
                 </div>
@@ -672,8 +672,8 @@ export default function LandingPage() {
                   {lt("map_heading").text}
                 </h2>
               </div>
-              <div className="flex max-w-xl items-start gap-3 rounded-2xl border border-emerald-200 bg-white p-4 text-base leading-7 text-slate-800 shadow-sm">
-                <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-800">
+              <div className="flex max-w-xl items-start gap-3 rounded-2xl border border-sky-200 bg-white p-4 text-base leading-7 text-slate-800 shadow-sm">
+                <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-sky-100 text-sky-800">
                   <Info size={18} aria-hidden="true" />
                 </span>
                 <p style={{color:lt("map_description").color}}>{lt("map_description").text}</p>
@@ -717,8 +717,8 @@ export default function LandingPage() {
                 <p className="mt-5 max-w-md text-sm leading-7" style={{color:lt("totals_description").color}}>
                   {lt("totals_description").text}
                 </p>
-                <div className="mt-6 flex items-start gap-3 rounded-xl border border-emerald-100 bg-emerald-50/70 p-4 text-sm leading-6 text-emerald-950">
-                  <Info size={17} className="mt-0.5 shrink-0 text-emerald-700" aria-hidden="true" />
+                <div className="mt-6 flex items-start gap-3 rounded-xl border border-sky-100 bg-sky-50/70 p-4 text-sm leading-6 text-sky-950">
+                  <Info size={17} className="mt-0.5 shrink-0 text-sky-700" aria-hidden="true" />
                   <p>Bars compare each party's reported votes with the current highest total. They are not a projection or declaration.</p>
                 </div>
               </div>
@@ -784,9 +784,9 @@ export default function LandingPage() {
             </div>
             <div className="mt-10 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
               {displayOverview.updates.slice(0, 9).map((update) => (
-                <article key={update.id} className="group rounded-xl border border-slate-200 bg-white p-5 shadow-sm shadow-slate-900/[0.03] transition duration-200 hover:-translate-y-1 hover:border-emerald-300 hover:shadow-lg hover:shadow-emerald-950/[0.06]">
+                <article key={update.id} className="group rounded-xl border border-slate-200 bg-white p-5 shadow-sm shadow-slate-900/[0.03] transition duration-200 hover:-translate-y-1 hover:border-sky-300 hover:shadow-lg hover:shadow-sky-950/[0.06]">
                   <div className="flex items-center justify-between gap-3 text-xs text-slate-500">
-                    <span className="rounded-full bg-emerald-50 px-2.5 py-1 font-bold text-emerald-800">{update.lga}</span>
+                    <span className="rounded-full bg-sky-50 px-2.5 py-1 font-bold text-sky-800">{update.lga}</span>
                     <time>{formatDate(update.submitted_at)}</time>
                   </div>
                   <h3 className="mt-5 text-lg font-bold leading-snug text-slate-900">Result received from {update.polling_unit_name}</h3>
@@ -815,9 +815,9 @@ export default function LandingPage() {
 
         <section
           id="methodology"
-          className="relative scroll-mt-20 overflow-hidden border-y border-emerald-100 bg-emerald-50 py-24"
+          className="relative scroll-mt-20 overflow-hidden border-y border-sky-100 bg-sky-50 py-24"
         >
-          <div className="pointer-events-none absolute -right-24 -top-24 h-80 w-80 rounded-full bg-emerald-200/50 blur-3xl" />
+          <div className="pointer-events-none absolute -right-24 -top-24 h-80 w-80 rounded-full bg-sky-200/50 blur-3xl" />
           <div className="relative mx-auto max-w-7xl px-5 lg:px-8">
             <div className="grid gap-10 lg:grid-cols-[0.8fr_1.2fr]">
               <div>
@@ -836,8 +836,8 @@ export default function LandingPage() {
                 ].map((item) => {
                   const Icon = item.icon;
                   return (
-                    <div key={item.title} className="rounded-2xl border border-emerald-200 bg-white p-6 shadow-md shadow-emerald-950/5">
-                      <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700"><Icon size={21} /></div>
+                    <div key={item.title} className="rounded-2xl border border-sky-200 bg-white p-6 shadow-md shadow-sky-950/5">
+                      <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-sky-100 text-sky-700"><Icon size={21} /></div>
                       <h3 className="mt-5 font-black text-slate-950">{item.title}</h3>
                       <p className="mt-2 text-sm leading-6 text-slate-600">{item.text}</p>
                     </div>
@@ -845,14 +845,14 @@ export default function LandingPage() {
                 })}
               </div>
             </div>
-            <div className="mt-14 flex flex-col gap-6 rounded-3xl bg-emerald-900 p-7 text-white sm:flex-row sm:items-center sm:justify-between sm:p-10">
+            <div className="mt-14 flex flex-col gap-6 rounded-3xl bg-sky-900 p-7 text-white sm:flex-row sm:items-center sm:justify-between sm:p-10">
               <div>
                 <p className="text-sm font-bold" style={{color:lt("cta_label").color}}>{lt("cta_label").text}</p>
                 <h3 className="command-center-title mt-2 text-3xl font-black" style={{color:lt("cta_heading").color}}>{lt("cta_heading").text}</h3>
               </div>
               <Link
                 to="/login"
-                className="group inline-flex min-h-13 shrink-0 items-center justify-center gap-2 rounded-full bg-emerald-800 px-6 py-3.5 font-black text-white shadow-xl shadow-emerald-950/20 transition duration-200 hover:-translate-y-0.5 hover:bg-emerald-700 hover:shadow-emerald-950/30 active:translate-y-0"
+                className="group inline-flex min-h-13 shrink-0 items-center justify-center gap-2 rounded-full bg-sky-800 px-6 py-3.5 font-black text-white shadow-xl shadow-sky-950/20 transition duration-200 hover:-translate-y-0.5 hover:bg-sky-700 hover:shadow-sky-950/30 active:translate-y-0"
               >
                 <LogIn size={18} aria-hidden="true" />
                 <span style={{color:lt("cta_button").color}}>{lt("cta_button").text}</span>
@@ -867,14 +867,14 @@ export default function LandingPage() {
         </section>
       </main>
 
-      <footer className="fixed inset-x-0 bottom-0 z-50 border-t border-emerald-900 bg-emerald-950/98 py-4 shadow-2xl shadow-black/30 backdrop-blur">
-        <div className="mx-auto flex max-w-7xl flex-col gap-3 px-5 text-sm text-emerald-100 sm:flex-row sm:items-center sm:justify-between lg:px-8">
+      <footer className="fixed inset-x-0 bottom-0 z-50 border-t border-sky-900 bg-sky-950/98 py-4 shadow-2xl shadow-black/30 backdrop-blur">
+        <div className="mx-auto flex max-w-7xl flex-col gap-3 px-5 text-sm text-sky-100 sm:flex-row sm:items-center sm:justify-between lg:px-8">
           <div className="flex items-center gap-3">
-            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-800 text-emerald-50"><Activity size={18} /></span>
-            <div><strong className="block text-white">{branding.logo_title}</strong><span className="text-emerald-200">{branding.logo_subtitle}</span></div>
+            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-sky-800 text-sky-50"><Activity size={18} /></span>
+            <div><strong className="block text-white">{branding.logo_title}</strong><span className="text-sky-200">{branding.logo_subtitle}</span></div>
           </div>
-          <p className="text-emerald-200">{lt("footer_notice").text}</p>
-          <a href="https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer" target="_blank" rel="noreferrer" className="text-emerald-100 hover:text-white">Map boundary source <ArrowRight size={13} className="inline" /></a>
+          <p className="text-sky-200">{lt("footer_notice").text}</p>
+          <a href="https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer" target="_blank" rel="noreferrer" className="text-sky-100 hover:text-white">Map boundary source <ArrowRight size={13} className="inline" /></a>
         </div>
       </footer>
     </div>

@@ -24,25 +24,25 @@ DEFAULT_LANDING_TEXT = {
     "nav_methodology": {"text": "Methodology", "color": "#475569"},
     "nav_login": {"text": "Monitor login", "color": "#ffffff"},
     "hero_line_1": {"text": "See what’s", "color": "#0f172a"},
-    "hero_line_2": {"text": "happening at", "color": "#065f46"},
+    "hero_line_2": {"text": "happening at", "color": "#0369a1"},
     "hero_line_3": {"text": "the polling unit.", "color": "#0f172a"},
     "hero_description": {"text": "Follow unofficial reports submitted by assigned monitors across all 23 local government areas.", "color": "#475569"},
     "hero_results_button": {"text": "Explore the results", "color": "#ffffff"},
     "hero_login_button": {"text": "Monitor sign in", "color": "#1e293b"},
     "hero_disclaimer": {"text": "Unofficial — Agent-Submitted Data. Dumo Youth Network Election Monitoring System does not declare election winners; only authorized electoral bodies do.", "color": "#475569"},
-    "map_eyebrow": {"text": "Rivers State · LGA overview", "color": "#047857"},
+    "map_eyebrow": {"text": "Rivers State · LGA overview", "color": "#0284c7"},
     "map_heading": {"text": "See where submitted results currently lead.", "color": "#0f172a"},
     "map_description": {"text": "Map colors show the party currently leading from reports received in each LGA. Always check the reporting coverage percentage before interpreting the result.", "color": "#1e293b"},
-    "totals_eyebrow": {"text": "Statewide totals", "color": "#047857"},
+    "totals_eyebrow": {"text": "Statewide totals", "color": "#0284c7"},
     "totals_heading": {"text": "Reported vote position", "color": "#0f172a"},
     "totals_description": {"text": "Totals update as monitors submit polling-unit records. These figures remain provisional and unofficial.", "color": "#475569"},
-    "updates_eyebrow": {"text": "Election updates", "color": "#065f46"},
+    "updates_eyebrow": {"text": "Election updates", "color": "#0369a1"},
     "updates_heading": {"text": "Latest field reports", "color": "#0f172a"},
     "updates_description": {"text": "A privacy-safe stream of the newest polling-unit submissions. Agent identities are not published.", "color": "#475569"},
-    "method_eyebrow": {"text": "How it works", "color": "#065f46"},
-    "method_heading": {"text": "Transparent from field report to public view.", "color": "#064e3b"},
-    "method_description": {"text": "Follow each result through a clear, structured process—from an assigned monitor's submission to the public dashboard.", "color": "#064e3b"},
-    "cta_label": {"text": "Part of the monitoring network?", "color": "#d1fae5"},
+    "method_eyebrow": {"text": "How it works", "color": "#0369a1"},
+    "method_heading": {"text": "Transparent from field report to public view.", "color": "#0c4a6e"},
+    "method_description": {"text": "Follow each result through a clear, structured process—from an assigned monitor's submission to the public dashboard.", "color": "#0c4a6e"},
+    "cta_label": {"text": "Part of the monitoring network?", "color": "#e0f2fe"},
     "cta_heading": {"text": "Sign in to your command center.", "color": "#ffffff"},
     "cta_button": {"text": "Open monitoring workspace", "color": "#ffffff"},
     "footer_notice": {"text": "Unofficial — Agent-Submitted Data", "color": "#64748b"},
@@ -72,7 +72,7 @@ class OrganizationSettingsPayload(BaseModel):
     logo_subtitle: str = Field(default="Election Monitoring System", min_length=2, max_length=200)
     login_heading: str = Field(default="Welcome back.", min_length=2, max_length=200)
     login_description: str = Field(default="Enter your registered email or phone number to continue to your monitoring dashboard.", min_length=2, max_length=500)
-    primary_color: str = "#047857"
+    primary_color: str = "#0284c7"
     background_color: str = "#f6f8f7"
     text_color: str = "#0f172a"
     font_family: str = "Inter"
@@ -126,7 +126,7 @@ class OrganizationSettingsPayload(BaseModel):
     @classmethod
     def validate_color(cls, value: str):
         if not HEX_COLOR_PATTERN.fullmatch(value):
-            raise ValueError("Use a six-digit hex color such as #047857.")
+            raise ValueError("Use a six-digit hex color such as #0284c7.")
         return value.lower()
 
     @field_validator("font_family")
@@ -185,7 +185,7 @@ def serialize(item: OrganizationSettings | None) -> dict:
         "logo_subtitle": item.logo_subtitle if item else "Election Monitoring System",
         "login_heading": item.login_heading if item else "Welcome back.",
         "login_description": item.login_description if item else "Enter your registered email or phone number to continue to your monitoring dashboard.",
-        "primary_color": item.primary_color if item else "#047857",
+        "primary_color": item.primary_color if item else "#0284c7",
         "background_color": item.background_color if item else "#f6f8f7",
         "text_color": item.text_color if item else "#0f172a",
         "font_family": item.font_family if item else "Inter",
