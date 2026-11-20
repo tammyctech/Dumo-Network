@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { Link } from "react-router-dom";
 import {
   Activity,
@@ -15,6 +15,7 @@ import {
   Radio,
   RefreshCw,
   ShieldCheck,
+  UploadCloud,
   X,
 } from "lucide-react";
 import { partyColor } from "../constants/partyColors";
@@ -84,6 +85,30 @@ type GeoFeature = {
   };
 };
 type GeoJson = { type: "FeatureCollection"; features: GeoFeature[] };
+type IncidentOption = { id: number; name: string };
+type IncidentUnit = IncidentOption & { code: string; lga: string; ward: string };
+
+function PublicIncidentSection() {
+  const [elections, setElections] = useState<IncidentOption[]>([]);
+  const [units, setUnits] = useState<IncidentUnit[]>([]);
+  const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
+  useEffect(() => { void fetch(`${API_URL}/api/operations/public/incidents/options`).then(r => r.ok ? r.json() : Promise.reject()).then(data => { setElections(data.elections || []); setUnits(data.polling_units || []); }).catch(() => setError("Incident reporting options are temporarily unavailable.")); }, []);
+  async function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault(); setBusy(true); setError(""); setMessage("");
+    const data = new FormData(event.currentTarget);
+    const files = data.getAll("files") as File[];
+    if (files.length > 3 || files.some(file => file.size > 25 * 1024 * 1024)) { setError("Choose up to 3 videos, no more than 25 MB each."); setBusy(false); return; }
+    try {
+      const response = await fetch(`${API_URL}/api/operations/public/incidents`, { method: "POST", body: data });
+      if (!response.ok) { const body = await response.json().catch(() => ({})); throw new Error(typeof body.detail === "string" ? body.detail : "Could not submit the incident report."); }
+      event.currentTarget.reset(); setMessage("Thank you. Your incident and video evidence were sent to the monitoring team.");
+    } catch (caught) { setError(caught instanceof Error ? caught.message : "Could not submit the incident report."); }
+    finally { setBusy(false); }
+  }
+  return <section id="report-incident" className="scroll-mt-20 bg-slate-950 py-20 text-white"><div className="mx-auto grid max-w-7xl gap-10 px-5 lg:grid-cols-[0.75fr_1.25fr] lg:px-8"><div><p className="text-sm font-black uppercase tracking-[0.2em] text-red-400">Community incident reporting</p><h2 className="mt-4 text-4xl font-black tracking-tight sm:text-5xl">Witnessed something at a polling unit?</h2><p className="mt-5 max-w-xl leading-7 text-slate-300">Send a report with video evidence directly to the election monitoring team. Reports are reviewed privately and are not published automatically.</p><div className="mt-7 flex gap-3 rounded-2xl border border-slate-700 bg-slate-900 p-4 text-sm text-slate-300"><ShieldCheck className="shrink-0 text-emerald-400"/><p>Only authorized administrators can access visitor-submitted videos. For immediate danger, contact emergency services first.</p></div></div><form onSubmit={submit} className="grid gap-4 rounded-3xl bg-white p-6 text-slate-900 shadow-2xl sm:grid-cols-2 sm:p-8"><h3 className="text-xl font-black sm:col-span-2">Report a polling-unit incident</h3>{error&&<p className="rounded-xl bg-red-50 p-3 text-sm text-red-700 sm:col-span-2">{error}</p>}{message&&<p className="rounded-xl bg-emerald-50 p-3 text-sm text-emerald-800 sm:col-span-2">{message}</p>}<label className="text-sm font-bold">Your name<input name="reporter_name" required minLength={2} maxLength={150} className="input mt-2"/></label><label className="text-sm font-bold">Phone number<input name="reporter_phone" required type="tel" className="input mt-2"/></label><label className="text-sm font-bold">Election<select name="election_id" required className="input mt-2"><option value="">Select election</option>{elections.map(item=><option key={item.id} value={item.id}>{item.name}</option>)}</select></label><label className="text-sm font-bold">Polling unit<select name="polling_unit_id" required className="input mt-2"><option value="">Select polling unit</option>{units.map(item=><option key={item.id} value={item.id}>{item.lga} · {item.ward} · {item.code}</option>)}</select></label><label className="text-sm font-bold">Category<select name="category" required className="input mt-2"><option value="">Select category</option>{["Violence or intimidation","Vote buying","Equipment failure","Missing or late materials","Access restriction","Result-sheet problem","Other"].map(item=><option key={item}>{item}</option>)}</select></label><label className="text-sm font-bold">Severity<select name="severity" defaultValue="medium" className="input mt-2"><option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option><option value="critical">Critical</option></select></label><label className="text-sm font-bold sm:col-span-2">What happened?<textarea name="description" required minLength={5} maxLength={3000} rows={4} className="input mt-2" placeholder="Describe what happened, when it happened, and who may be at risk."/></label><label className="rounded-2xl border-2 border-dashed border-slate-300 p-5 text-sm font-bold sm:col-span-2"><span className="flex items-center gap-2"><UploadCloud className="text-red-700"/>Video evidence</span><span className="mt-1 block text-xs font-normal text-slate-500">Upload 1–3 MP4, WebM, or MOV videos. Maximum 25 MB each.</span><input name="files" required type="file" multiple accept="video/mp4,video/webm,video/quicktime" className="mt-3 block w-full text-sm"/></label><button disabled={busy} className="rounded-xl bg-red-700 px-5 py-3 font-black text-white disabled:opacity-50 sm:col-span-2">{busy ? "Submitting report…" : "Submit incident report"}</button></form></div></section>;
+}
 
 function normalizeLga(value: string): string {
   const normalized = value
@@ -447,6 +472,7 @@ export default function LandingPage() {
             >
               <span style={{color:lt("nav_methodology").color}}>{lt("nav_methodology").text}</span>
             </a>
+            <a href="#report-incident" className="text-sm font-bold text-red-700 hover:text-red-800">Report incident</a>
             <Link
               to="/login"
               className="group inline-flex min-h-11 items-center gap-2 rounded-xl bg-emerald-700 px-4 text-sm font-bold text-white shadow-md shadow-emerald-950/15 transition duration-200 hover:-translate-y-0.5 hover:bg-emerald-800 active:translate-y-0"
@@ -496,6 +522,7 @@ export default function LandingPage() {
               >
                 <span style={{color:lt("nav_methodology").color}}>{lt("nav_methodology").text}</span>
               </a>
+              <a href="#report-incident" onClick={() => setMobileMenuOpen(false)} className="rounded-lg px-3 py-3 font-bold text-red-700 hover:bg-red-50">Report incident</a>
               <Link
                 to="/login"
                 className="mt-2 inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-emerald-700 px-5 font-bold text-white shadow-md transition hover:bg-emerald-800"
@@ -787,6 +814,8 @@ export default function LandingPage() {
             </div>
           </div>
         </section>
+
+        <PublicIncidentSection />
 
         <section
           id="methodology"

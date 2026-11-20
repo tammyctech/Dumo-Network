@@ -1,15 +1,19 @@
 from datetime import datetime, timezone
 import logging
+import os
+from pathlib import Path
 from typing import Literal
+from uuid import uuid4
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
+from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from ..database import get_db
 from ..models import (
-    AgentAssignment, AuditLog, Election, Incident, PollingUnit, ResultFlag,
+    AgentAssignment, AuditLog, Election, Incident, IncidentVideo, PollingUnit, ResultFlag,
     ResultReview, ResultSubmission, User,
 )
 from ..security import get_current_user
@@ -22,6 +26,9 @@ logger = logging.getLogger(__name__)
 ReviewStatus = Literal["under_review", "verified", "disputed", "correction_requested"]
 IncidentSeverity = Literal["low", "medium", "high", "critical"]
 IncidentStatus = Literal["open", "investigating", "resolved", "closed"]
+INCIDENT_VIDEO_DIR = Path("uploads/incident_videos").resolve()
+MAX_INCIDENT_VIDEO_SIZE = 25 * 1024 * 1024
+ALLOWED_VIDEO_TYPES = {"video/mp4": ".mp4", "video/webm": ".webm", "video/quicktime": ".mov"}
 
 
 class ReviewInput(BaseModel):
@@ -46,10 +53,12 @@ class IncidentUpdate(BaseModel):
 def _notify_admins_of_incident(
     db: Session,
     *,
-    reporter: User,
     election: Election,
     unit: PollingUnit | None,
     incident: Incident,
+    reporter: User | None = None,
+    reporter_name: str | None = None,
+    reporter_phone: str | None = None,
 ) -> None:
     recipients = admin_notification_recipients(db)
     if not recipients:
@@ -58,10 +67,12 @@ def _notify_admins_of_incident(
         f"LGA: {unit.lga}\nWard: {unit.ward}\nPolling unit: {unit.code} - {unit.name}"
         if unit else "Polling unit: Not specified"
     )
+    resolved_reporter_name = reporter_name or (reporter.full_name if reporter else "Site visitor")
+    resolved_reporter_phone = reporter_phone or (reporter.phone_number if reporter else None)
     body = (
         "A new incident report has been submitted.\n\n"
-        f"Reported by: {reporter.full_name}\n"
-        f"Reporter phone: {reporter.phone_number or 'Not provided'}\n"
+        f"Reported by: {resolved_reporter_name}\n"
+        f"Reporter phone: {resolved_reporter_phone or 'Not provided'}\n"
         f"Election: {election.name}\n"
         f"{location}\n"
         f"Category: {incident.category}\n"
@@ -84,6 +95,55 @@ def _notify_admins_of_incident(
             )
     except Exception:
         logger.exception("Unexpected incident notification failure for incident %s", incident.id)
+
+
+async def _save_incident_videos(db: Session, incident: Incident, files: list[UploadFile]) -> list[IncidentVideo]:
+    if len(files) > 3:
+        raise HTTPException(422, "Upload no more than 3 videos per incident.")
+    saved: list[IncidentVideo] = []
+    created_paths: list[Path] = []
+    try:
+        for file in files:
+            if not file.filename:
+                continue
+            if file.content_type not in ALLOWED_VIDEO_TYPES:
+                raise HTTPException(400, "Videos must be MP4, WebM, or MOV files.")
+            content = await file.read(MAX_INCIDENT_VIDEO_SIZE + 1)
+            if not content:
+                raise HTTPException(400, "An uploaded video is empty.")
+            if len(content) > MAX_INCIDENT_VIDEO_SIZE:
+                raise HTTPException(413, "Each video must not exceed 25 MB.")
+            valid = (
+                (file.content_type in {"video/mp4", "video/quicktime"} and len(content) > 11 and content[4:8] == b"ftyp")
+                or (file.content_type == "video/webm" and content.startswith(b"\x1aE\xdf\xa3"))
+            )
+            if not valid:
+                raise HTTPException(400, "File contents do not match the selected video type.")
+            INCIDENT_VIDEO_DIR.mkdir(parents=True, exist_ok=True, mode=0o700)
+            destination = INCIDENT_VIDEO_DIR / f"{uuid4().hex}{ALLOWED_VIDEO_TYPES[file.content_type]}"
+            with open(destination, "xb") as output:
+                output.write(content)
+            os.chmod(destination, 0o600)
+            created_paths.append(destination)
+            video = IncidentVideo(
+                incident_id=incident.id, file_path=str(destination),
+                original_filename=Path(file.filename).name[:255], content_type=file.content_type,
+                file_size=len(content),
+            )
+            db.add(video)
+            saved.append(video)
+        db.commit()
+        for video in saved:
+            db.refresh(video)
+        return saved
+    except Exception:
+        db.rollback()
+        for path in created_paths:
+            path.unlink(missing_ok=True)
+        raise
+    finally:
+        for file in files:
+            await file.close()
 
 
 def require_admin(user: User = Depends(get_current_user)) -> User:
@@ -186,12 +246,95 @@ def create_incident(payload: IncidentCreate, db: Session = Depends(get_db),
     db.refresh(incident)
     _notify_admins_of_incident(
         db,
-        reporter=user,
+        reporter_name=user.full_name,
+        reporter_phone=user.phone_number,
         election=election,
         unit=unit,
         incident=incident,
     )
     return {"message": "Incident reported.", "incident_id": incident.id}
+
+
+@router.post("/incidents/{incident_id}/videos", status_code=status.HTTP_201_CREATED)
+async def upload_incident_videos(
+    incident_id: int, files: list[UploadFile] = File(...), db: Session = Depends(get_db),
+    user: User = Depends(require_operations_user),
+):
+    incident = db.get(Incident, incident_id)
+    if incident is None:
+        raise HTTPException(404, "Incident not found.")
+    if user.role != "admin" and incident.reported_by != user.id:
+        raise HTTPException(403, "You cannot add video to this incident.")
+    videos = await _save_incident_videos(db, incident, files)
+    return {"message": "Incident video uploaded.", "video_ids": [item.id for item in videos]}
+
+
+@router.get("/incidents/{incident_id}/videos/{video_id}")
+def view_incident_video(
+    incident_id: int, video_id: int, db: Session = Depends(get_db),
+    user: User = Depends(require_operations_user),
+):
+    incident = db.get(Incident, incident_id)
+    video = db.get(IncidentVideo, video_id)
+    if incident is None or video is None or video.incident_id != incident.id:
+        raise HTTPException(404, "Incident video not found.")
+    if user.role != "admin" and incident.reported_by != user.id:
+        raise HTTPException(403, "You cannot view this incident video.")
+    path = Path(video.file_path).resolve()
+    if INCIDENT_VIDEO_DIR not in path.parents or not path.is_file():
+        raise HTTPException(404, "Incident video file not found.")
+    return FileResponse(path, media_type=video.content_type, filename=video.original_filename)
+
+
+@router.get("/public/incidents/options")
+def public_incident_options(db: Session = Depends(get_db)):
+    elections = db.scalars(
+        select(Election).where(Election.state == "Rivers").order_by(Election.election_date.desc())
+    ).all()
+    units = db.scalars(
+        select(PollingUnit).where(PollingUnit.state == "Rivers").order_by(PollingUnit.lga, PollingUnit.ward, PollingUnit.code)
+    ).all()
+    return {
+        "elections": [{"id": item.id, "name": item.name} for item in elections],
+        "polling_units": [{"id": item.id, "name": item.name, "code": item.code, "lga": item.lga, "ward": item.ward} for item in units],
+    }
+
+
+@router.post("/public/incidents", status_code=status.HTTP_201_CREATED)
+async def create_public_incident(
+    election_id: int = Form(...), polling_unit_id: int = Form(...),
+    reporter_name: str = Form(..., min_length=2, max_length=150),
+    reporter_phone: str = Form(..., min_length=7, max_length=30),
+    category: str = Form(..., min_length=2, max_length=80),
+    severity: IncidentSeverity = Form("medium"),
+    description: str = Form(..., min_length=5, max_length=3000),
+    files: list[UploadFile] = File(...), db: Session = Depends(get_db),
+):
+    election = db.get(Election, election_id)
+    unit = db.get(PollingUnit, polling_unit_id)
+    if election is None or (election.state or "").casefold() != "rivers":
+        raise HTTPException(404, "Rivers State election not found.")
+    if unit is None or (unit.state or "").casefold() != "rivers":
+        raise HTTPException(404, "Rivers State polling unit not found.")
+    incident = Incident(
+        election_id=election.id, polling_unit_id=unit.id, reported_by=None,
+        reporter_name=reporter_name.strip(), reporter_phone=reporter_phone.strip(),
+        category=category.strip(), severity=severity, description=description.strip(),
+    )
+    db.add(incident)
+    db.commit()
+    db.refresh(incident)
+    try:
+        videos = await _save_incident_videos(db, incident, files)
+    except Exception:
+        db.delete(incident)
+        db.commit()
+        raise
+    _notify_admins_of_incident(
+        db, reporter_name=incident.reporter_name or "Site visitor",
+        reporter_phone=incident.reporter_phone, election=election, unit=unit, incident=incident,
+    )
+    return {"message": "Incident report submitted.", "incident_id": incident.id, "videos_uploaded": len(videos)}
 
 
 @router.get("/incidents")
@@ -203,11 +346,20 @@ def list_incidents(election_id: int | None = None, db: Session = Depends(get_db)
     if user.role == "agent":
         query = query.where(Incident.reported_by == user.id)
     rows = db.scalars(query.limit(200)).all()
+    video_rows = db.execute(
+        select(IncidentVideo.incident_id, IncidentVideo.id, IncidentVideo.original_filename)
+        .where(IncidentVideo.incident_id.in_([row.id for row in rows]))
+    ).all() if rows else []
+    videos_by_incident: dict[int, list[dict]] = {}
+    for incident_id, video_id, filename in video_rows:
+        videos_by_incident.setdefault(incident_id, []).append({"id": video_id, "filename": filename})
     return {"incidents": [{"id": row.id, "election_id": row.election_id,
                             "polling_unit_id": row.polling_unit_id,
                             "category": row.category, "severity": row.severity,
                             "status": row.status, "description": row.description,
                             "resolution_notes": row.resolution_notes,
+                            "reporter_name": row.reporter_name,
+                            "videos": videos_by_incident.get(row.id, []),
                             "assigned_to": row.assigned_to,
                             "created_at": row.created_at, "updated_at": row.updated_at}
                            for row in rows]}

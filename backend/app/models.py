@@ -497,9 +497,11 @@ class Incident(Base):
     polling_unit_id: Mapped[int | None] = mapped_column(
         ForeignKey("polling_units.id"), nullable=True
     )
-    reported_by: Mapped[int] = mapped_column(
-        ForeignKey("users.id"), nullable=False
+    reported_by: Mapped[int | None] = mapped_column(
+        ForeignKey("users.id"), nullable=True
     )
+    reporter_name: Mapped[str | None] = mapped_column(String(150), nullable=True)
+    reporter_phone: Mapped[str | None] = mapped_column(String(30), nullable=True)
     category: Mapped[str] = mapped_column(String(80), nullable=False)
     severity: Mapped[str] = mapped_column(String(20), nullable=False)
     status: Mapped[str] = mapped_column(
@@ -521,6 +523,22 @@ class Incident(Base):
         DateTime(timezone=True),
         default=lambda: datetime.now(timezone.utc),
         nullable=False,
+    )
+
+
+class IncidentVideo(Base):
+    __tablename__ = "incident_videos"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    incident_id: Mapped[int] = mapped_column(
+        ForeignKey("incidents.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    file_path: Mapped[str] = mapped_column(String(500), nullable=False)
+    original_filename: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    content_type: Mapped[str] = mapped_column(String(80), nullable=False)
+    file_size: Mapped[int] = mapped_column(Integer, nullable=False)
+    uploaded_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False
     )
 
 
