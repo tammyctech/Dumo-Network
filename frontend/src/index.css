@@ -607,6 +607,23 @@ html.dark body #root :is(main, header, section, article, aside, dialog, [role="d
   box-shadow: 0 1px 0 rgb(255 255 255 / 0.03), 0 12px 32px rgb(0 0 0 / 0.2) !important;
 }
 
+:root.dark .landing-page .command-center-card {
+  border: 1px solid var(--landing-border);
+  background: var(--landing-bg) !important;
+}
+
+:root.dark .landing-page .nav-sign-in,
+:root.dark .landing-page .nav-sign-in:hover {
+  border: 1px solid #94a9c9;
+  background: #94a9c9 !important;
+  color: #020b18 !important;
+}
+
+:root.dark .landing-page .nav-sign-in:hover {
+  background: #a5b7d2 !important;
+  transform: translateY(-1px);
+}
+
 :root.dark .landing-page main > section {
   border-color: var(--landing-border) !important;
   background-color: var(--landing-bg) !important;
@@ -702,4 +719,90 @@ html.dark body #root :is(main, header, section, article, aside, dialog, [role="d
 
 :root.dark .landing-page footer strong {
   color: var(--landing-heading) !important;
+}
+
+/* Landing-page motion system. */
+@keyframes landing-word-in {
+  from { opacity: 0; transform: translateY(1.15rem); filter: blur(5px); }
+  to { opacity: 1; transform: translateY(0); filter: blur(0); }
+}
+
+@keyframes landing-fade-up {
+  from { opacity: 0; transform: translateY(1rem); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes landing-soft-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-0.35rem); }
+}
+
+.landing-page main > section:first-of-type h1 > span {
+  opacity: 0;
+  animation: landing-word-in 700ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.landing-page main > section:first-of-type h1 > span:nth-child(2) { animation-delay: 110ms; }
+.landing-page main > section:first-of-type h1 > span:nth-child(3) { animation-delay: 220ms; }
+
+.landing-page main > section:first-of-type h1 + p,
+.landing-page main > section:first-of-type h1 + p + div {
+  opacity: 0;
+  animation: landing-fade-up 650ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.landing-page main > section:first-of-type h1 + p { animation-delay: 300ms; }
+.landing-page main > section:first-of-type h1 + p + div { animation-delay: 400ms; }
+
+.landing-page .motion-reveal {
+  opacity: 0;
+  transform: translateY(2rem);
+  transition: opacity 700ms ease, transform 700ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.landing-page .motion-reveal.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.landing-page article.motion-reveal:nth-child(2) { transition-delay: 70ms; }
+.landing-page article.motion-reveal:nth-child(3) { transition-delay: 140ms; }
+.landing-page article.motion-reveal:nth-child(4) { transition-delay: 210ms; }
+.landing-page article.motion-reveal:nth-child(5) { transition-delay: 280ms; }
+.landing-page article.motion-reveal:nth-child(6) { transition-delay: 350ms; }
+
+.landing-page main article,
+.landing-page main [class*="rounded-2xl"],
+.landing-page main [class*="rounded-3xl"] {
+  transition-property: transform, border-color, background-color, box-shadow;
+  transition-duration: 240ms;
+  transition-timing-function: ease;
+}
+
+.landing-page main article:hover {
+  transform: translateY(-0.3rem);
+}
+
+.landing-page .command-center-card > div:first-child {
+  animation: landing-soft-float 5s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing-page *,
+  .landing-page *::before,
+  .landing-page *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .landing-page .motion-reveal,
+  .landing-page main > section:first-of-type h1 > span,
+  .landing-page main > section:first-of-type h1 + p,
+  .landing-page main > section:first-of-type h1 + p + div {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
 }

@@ -387,6 +387,28 @@ export default function LandingPage() {
   function toggleTheme(){const next=themeMode==="dark"?"light":"dark";setTheme(next);window.localStorage.setItem("dumo-theme-user-set","true");setThemeMode(next)}
   const [refreshKey, setRefreshKey] = useState(0);
   useEffect(() => {
+    const elements = document.querySelectorAll<HTMLElement>(
+      ".landing-page main > section:not(:first-child), .landing-page main article"
+    );
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      elements.forEach((element) => element.classList.add("is-visible"));
+      return;
+    }
+    elements.forEach((element) => element.classList.add("motion-reveal"));
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+          entry.target.classList.add("is-visible");
+          observer.unobserve(entry.target);
+        });
+      },
+      { rootMargin: "0px 0px -8%", threshold: 0.08 }
+    );
+    elements.forEach((element) => observer.observe(element));
+    return () => observer.disconnect();
+  }, [overview]);
+  useEffect(() => {
     const controller = new AbortController();
     async function load() {
       setLoading(true);
@@ -500,7 +522,7 @@ export default function LandingPage() {
             <button type="button" onClick={toggleTheme} className="grid h-11 w-11 place-items-center rounded-xl border border-slate-200 bg-white text-sky-950 transition hover:border-sky-950 hover:bg-sky-50" aria-label={`Turn ${themeMode==="dark"?"on light":"on dark"} mode`}>{themeMode==="dark"?<Sun size={19}/>:<Moon size={19}/>}</button>
             <Link
               to={accountPath}
-              className="group inline-flex min-h-11 items-center gap-2 rounded-xl bg-sky-700 px-4 text-sm font-bold text-white shadow-md transition hover:bg-sky-800"
+              className="nav-sign-in group inline-flex min-h-11 items-center gap-2 rounded-xl bg-sky-700 px-4 text-sm font-bold text-white shadow-md transition hover:bg-sky-800"
             >
               {user?<LayoutDashboard size={17} aria-hidden="true"/>:<LogIn size={17} aria-hidden="true"/>}
               <span>{accountLabel}</span>
@@ -543,7 +565,7 @@ export default function LandingPage() {
               <button type="button" onClick={toggleTheme} className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 font-bold text-sky-950"><span>{themeMode==="dark"?<Sun size={18}/>:<Moon size={18}/>}</span>{themeMode==="dark"?"Light mode":"Dark mode"}</button>
               <Link
                 to={accountPath}
-                className="mt-2 inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-sky-700 px-5 font-bold text-white shadow-md transition hover:bg-sky-800"
+                className="nav-sign-in mt-2 inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-sky-700 px-5 font-bold text-white shadow-md transition hover:bg-sky-800"
               >
                 {user?<LayoutDashboard size={18} aria-hidden="true"/>:<LogIn size={18} aria-hidden="true"/>}
                 <span>{accountLabel}</span>
@@ -861,7 +883,7 @@ export default function LandingPage() {
                 })}
               </div>
             </div>
-            <div className="mt-14 flex flex-col gap-6 rounded-3xl bg-sky-900 p-7 text-white sm:flex-row sm:items-center sm:justify-between sm:p-10">
+            <div className="command-center-card mt-14 flex flex-col gap-6 rounded-3xl bg-sky-900 p-7 text-white sm:flex-row sm:items-center sm:justify-between sm:p-10">
               <div>
                 <p className="text-sm font-bold" style={{color:lt("cta_label").color}}>{lt("cta_label").text}</p>
                 <h3 className="command-center-title mt-2 text-3xl font-black" style={{color:lt("cta_heading").color}}>{lt("cta_heading").text}</h3>
