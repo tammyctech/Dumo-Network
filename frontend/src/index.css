@@ -354,13 +354,13 @@ header h3 {
 ========================================== */
 
 :root.dark {
-  --brand-background: #000000;
+  --brand-background: #020b18;
   --brand-text: #e0e0e0;
-  --dark-surface-base: #000000;
-  --dark-surface-card: #071426;
-  --dark-surface-raised: #0b1d33;
-  --dark-surface-overlay: #102743;
-  --dark-border: #1e3a5f;
+  --dark-surface-base: #020b18;
+  --dark-surface-card: #07172b;
+  --dark-surface-raised: #0c213a;
+  --dark-surface-overlay: #122b49;
+  --dark-border: #234568;
   --dark-text-primary: #e0e0e0;
   --dark-text-secondary: #b8b8b8;
   --dark-text-muted: #969696;
@@ -445,8 +445,8 @@ header h3 {
 }
 
 :root.dark :is(input, select, textarea, .input) {
-  border-color: #454545 !important;
-  background-color: #181818 !important;
+  border-color: var(--dark-border) !important;
+  background-color: var(--dark-surface-raised) !important;
   color: var(--dark-text-primary) !important;
 }
 
@@ -501,7 +501,7 @@ header h3 {
 
 :root.dark :is([role="dialog"], dialog) {
   background-color: var(--dark-surface-overlay) !important;
-  border-color: #494949 !important;
+  border-color: var(--dark-border) !important;
 }
 
 :root.dark .app-sidebar {
