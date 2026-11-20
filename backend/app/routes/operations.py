@@ -27,7 +27,7 @@ ReviewStatus = Literal["under_review", "verified", "disputed", "correction_reque
 IncidentSeverity = Literal["low", "medium", "high", "critical"]
 IncidentStatus = Literal["open", "investigating", "resolved", "closed"]
 INCIDENT_VIDEO_DIR = Path("uploads/incident_videos").resolve()
-MAX_INCIDENT_VIDEO_SIZE = 25 * 1024 * 1024
+MAX_INCIDENT_VIDEO_SIZE = 100 * 1024 * 1024
 ALLOWED_VIDEO_TYPES = {"video/mp4": ".mp4", "video/webm": ".webm", "video/quicktime": ".mov"}
 
 
@@ -112,7 +112,7 @@ async def _save_incident_videos(db: Session, incident: Incident, files: list[Upl
             if not content:
                 raise HTTPException(400, "An uploaded video is empty.")
             if len(content) > MAX_INCIDENT_VIDEO_SIZE:
-                raise HTTPException(413, "Each video must not exceed 25 MB.")
+                raise HTTPException(413, "Each video must not exceed 100 MB.")
             valid = (
                 (file.content_type in {"video/mp4", "video/quicktime"} and len(content) > 11 and content[4:8] == b"ftyp")
                 or (file.content_type == "video/webm" and content.startswith(b"\x1aE\xdf\xa3"))
