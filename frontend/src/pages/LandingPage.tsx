@@ -29,10 +29,9 @@ const API_URL = import.meta.env.DEV
   : "";
 
 const RIVERS_GEOJSON_URL =
-  "https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/" +
-  "LGAs_Boundaries/FeatureServer/2/query?" +
-  "where=ADM1_EN%3D%27Rivers%27&outFields=ADM2_EN%2CADM1_EN&" +
-  "returnGeometry=true&f=geojson&outSR=4326";
+  "https://media.githubusercontent.com/media/wmgeolab/geoBoundaries/main/" +
+  "releaseData/gbOpen/NGA/ADM2/geoBoundaries-NGA-ADM2.geojson";
+const RIVERS_LGAS = ["Abua/Odual", "Ahoada East", "Ahoada West", "Akuku-Toru", "Andoni", "Asari-Toru", "Bonny", "Degema", "Eleme", "Emohua", "Etche", "Gokana", "Ikwerre", "Khana", "Obio/Akpor", "Ogba/Egbema/Ndoni", "Ogu/Bolo", "Okrika", "Omuma", "Opobo/Nkoro", "Oyigbo", "Port Harcourt", "Tai"];
 
 type PartyTotal = { party: string; votes: number };
 type Election = { id: number; name: string; election_date: string };
@@ -80,7 +79,7 @@ const EMPTY_OVERVIEW: PublicOverview = {
 };
 type GeoFeature = {
   type: "Feature";
-  properties: { ADM2_EN?: string };
+  properties: { shapeName?: string; ADM2_EN?: string };
   geometry: {
     type: "Polygon" | "MultiPolygon";
     coordinates: number[][][] | number[][][][];
@@ -242,7 +241,7 @@ function MapPanel({
             className="relative block h-[400px] w-full drop-shadow-2xl sm:h-[500px] xl:h-[620px]"
           >
             {geoJson.features.map((feature) => {
-              const name = feature.properties.ADM2_EN || "Unknown LGA";
+              const name = feature.properties.shapeName || feature.properties.ADM2_EN || "Unknown LGA";
               const result = results.get(normalizeLga(name));
               const active = selected === name;
               return (
@@ -398,7 +397,18 @@ export default function LandingPage() {
           if (!Array.isArray(boundaries.features) || boundaries.features.length === 0) {
             throw new Error("The map service returned no Rivers State boundaries.");
           }
-          if (!controller.signal.aborted) setGeoJson(boundaries);
+          const riversNames = new Set(RIVERS_LGAS.map(normalizeLga));
+          const riversBoundaries = {
+            ...boundaries,
+            features: boundaries.features.filter((feature) => {
+              const name = feature.properties.shapeName || feature.properties.ADM2_EN || "";
+              return riversNames.has(normalizeLga(name));
+            }),
+          };
+          if (riversBoundaries.features.length === 0) {
+            throw new Error("The map source returned no Rivers State LGA boundaries.");
+          }
+          if (!controller.signal.aborted) setGeoJson(riversBoundaries);
         })
         .catch((caught: unknown) => {
           if (controller.signal.aborted) return;
@@ -465,7 +475,7 @@ export default function LandingPage() {
           </Link>
 
           <nav className="hidden items-center gap-7 md:flex">
-            <Link to="/live-results" className="inline-flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-3.5 py-2 text-sm font-bold text-emerald-800 shadow-sm transition hover:border-emerald-300 hover:bg-emerald-100">
+            <Link to="/live-results" className="inline-flex items-center gap-2 rounded-xl border border-sky-950/20 bg-white px-3.5 py-2 text-sm font-bold text-sky-950 shadow-sm transition hover:border-sky-950 hover:bg-sky-50 hover:text-sky-950">
               <span className="relative flex h-2.5 w-2.5" aria-hidden="true"><span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"/><span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-500"/></span>
               Live results
             </Link>
@@ -505,7 +515,7 @@ export default function LandingPage() {
         {mobileMenuOpen && (
           <nav id="mobile-navigation" className="border-t border-slate-200 bg-white px-5 py-5 shadow-lg md:hidden">
             <div className="flex flex-col gap-2 text-sm font-semibold text-slate-700">
-              <Link to="/live-results" onClick={() => setMobileMenuOpen(false)} className="inline-flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-3 font-bold text-emerald-800 transition hover:bg-emerald-100">
+              <Link to="/live-results" onClick={() => setMobileMenuOpen(false)} className="inline-flex items-center gap-2 rounded-xl border border-sky-950/20 bg-white px-3 py-3 font-bold text-sky-950 transition hover:border-sky-950 hover:bg-sky-50 hover:text-sky-950">
                 <span className="relative flex h-2.5 w-2.5" aria-hidden="true"><span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"/><span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-500"/></span>
                 Live results
               </Link>
@@ -873,7 +883,7 @@ export default function LandingPage() {
             <div><strong className="block text-white">{branding.logo_title}</strong><span className="text-sky-200">{branding.logo_subtitle}</span></div>
           </div>
           <p className="text-sky-200">{lt("footer_notice").text}</p>
-          <a href="https://services3.arcgis.com/7J7WB6yJX0pYke9q/ArcGIS/rest/services/LGAs_Boundaries/FeatureServer" target="_blank" rel="noreferrer" className="text-sky-100 hover:text-white">Map boundary source <ArrowRight size={13} className="inline"/></a>
+          <a href="https://github.com/wmgeolab/geoBoundaries" target="_blank" rel="noreferrer" className="text-sky-100 hover:text-white">Map boundary source <ArrowRight size={13} className="inline"/></a>
         </div>
       </footer>
 

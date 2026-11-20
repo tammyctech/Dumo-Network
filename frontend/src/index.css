@@ -10,10 +10,10 @@
   --color-sky-300: #95acb8;
   --color-sky-400: #5f8293;
   --color-sky-500: #365f72;
-  --color-sky-600: #1d4659;
-  --color-sky-700: #123447;
-  --color-sky-800: #0b2736;
-  --color-sky-900: #071d2a;
+  --color-sky-600: #071722;
+  --color-sky-700: #071722;
+  --color-sky-800: #071722;
+  --color-sky-900: #071722;
   --color-sky-950: #071722;
 
   --color-brand-50: #f0fdf4;
@@ -93,8 +93,22 @@ body {
 }
 
 :where(a, button, input, select, textarea):focus-visible {
-  outline: 2px solid #059669;
+  outline: 2px solid #071722;
   outline-offset: 2px;
+}
+
+/* Interactive controls presented on white surfaces use the sidebar navy. */
+:where(.bg-white, header, .app-topbar) :where(a, button):not([class*="text-white"]) {
+  color: #071722;
+}
+
+:where(.bg-white, header, .app-topbar) :where(a, button):not([class*="text-white"]):hover {
+  color: #071722;
+  border-color: #071722;
+}
+
+:where(.bg-white, header, .app-topbar) :where(a, button):not([class*="text-white"]) svg {
+  color: #071722;
 }
 
 @layer components {
