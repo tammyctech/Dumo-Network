@@ -13,6 +13,7 @@ import { AuthProvider } from "./context/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AdminRoute from "./components/AdminRoute";
 import SiteVisitTracker from "./components/SiteVisitTracker";
+import SeoMetadata from "./components/SeoMetadata";
 
 // Shared application layout
 const AppLayout = lazy(() => import("./layouts/AppLayout"));
@@ -66,6 +67,7 @@ export default function App() {
   return (
     <>
       <BrowserRouter>
+        <SeoMetadata />
         <SiteVisitTracker />
         <AuthProvider>
           <Suspense fallback={<div className="min-h-screen bg-[#F5F7FA]" />}>

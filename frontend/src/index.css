@@ -381,12 +381,36 @@ header h3 {
   background-image: radial-gradient(circle at 84% 0%, rgb(255 255 255 / 0.045), transparent 28rem);
 }
 
-:root.dark :is(.bg-white, .bg-slate-50, .bg-slate-50\/70, .bg-slate-50\/80) {
+:root.dark :is(.bg-white, .bg-white\/95, .bg-white\/90, .bg-white\/80, .bg-slate-50, .bg-slate-50\/70, .bg-slate-50\/80) {
   background-color: var(--dark-surface-card) !important;
+  color: var(--dark-text-primary);
 }
 
-:root.dark :is(.bg-slate-100, .bg-slate-100\/80) {
+:root.dark :is(.bg-slate-100, .bg-slate-100\/80, .bg-sky-50, .bg-sky-50\/50, .bg-sky-50\/70) {
   background-color: var(--dark-surface-raised) !important;
+  color: var(--dark-text-primary);
+}
+
+:root.dark [class*="bg-[#f8faf8]"],
+:root.dark [class*="bg-[#f7f9fb]"],
+:root.dark [class*="bg-[#f6f8f7]"],
+:root.dark [class*="bg-[#f5f7fa]"],
+:root.dark [class*="bg-[#F5F7FA]"],
+:root.dark [class*="bg-[#f4f7fa]"],
+:root.dark [class*="bg-[#f4f6f8]"],
+:root.dark [class*="bg-[#f2f5f2]"],
+:root.dark [class*="bg-[#f1f5f9]"] {
+  background-color: var(--dark-surface-card) !important;
+  color: var(--dark-text-primary) !important;
+}
+
+:root.dark .from-sky-50 {
+  --tw-gradient-from: var(--dark-surface-raised) !important;
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important;
+}
+
+:root.dark .to-white {
+  --tw-gradient-to: var(--dark-surface-card) !important;
 }
 
 :root.dark :is(.bg-emerald-50, .bg-emerald-50\/70) {
@@ -407,7 +431,7 @@ header h3 {
   color: var(--dark-text-primary) !important;
 }
 
-:root.dark :is(.text-slate-700, .text-slate-600) {
+:root.dark :is(.text-slate-700, .text-slate-600, .text-slate-300) {
   color: var(--dark-text-secondary) !important;
 }
 
@@ -449,6 +473,25 @@ header h3 {
 
 :root.dark :is(button, a).bg-white {
   background-color: var(--dark-surface-raised) !important;
+  color: var(--dark-text-primary) !important;
+}
+
+:root.dark :is(.bg-white, .bg-white\/95, .bg-white\/90, .bg-white\/80) :is(a, button):not([class*="text-white"]) {
+  color: var(--dark-text-primary) !important;
+}
+
+:root.dark :is(.bg-white, .bg-white\/95, .bg-white\/90, .bg-white\/80) :is(a, button):not([class*="text-white"]) svg {
+  color: var(--dark-text-primary) !important;
+}
+
+:root.dark .landing-page main [style*="color"]:not(.text-white),
+:root.dark .landing-page header [style*="color"]:not(.text-white) {
+  color: var(--dark-text-primary) !important;
+}
+
+:root.dark .landing-page :is(.bg-sky-900, .bg-sky-950, [class*="bg-[#071722]"]) [style*="color"],
+:root.dark .landing-page :is(.bg-sky-900, .bg-sky-950, [class*="bg-[#071722]"]) :is(h1, h2, h3, p, span) {
+  color: #f8fafc !important;
 }
 
 :root.dark :is(.shadow-sm, .shadow-md, .shadow-lg, .shadow-xl, .shadow-2xl) {
