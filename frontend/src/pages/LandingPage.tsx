@@ -577,13 +577,13 @@ export default function LandingPage() {
               <div className="mt-8 flex flex-wrap gap-3">
                 <a
                   href="#results"
-                  className="group inline-flex min-h-12 items-center gap-2 rounded-lg bg-sky-700 px-5 py-3 text-sm font-bold text-white shadow-md transition hover:bg-sky-800"
+                  className="landing-hero-cta landing-hero-cta-primary group inline-flex min-h-12 items-center gap-2 rounded-lg bg-sky-700 px-5 py-3 text-sm font-bold text-white shadow-md transition hover:bg-sky-800"
                 >
                   <span>{lt("hero_results_button").text}</span>
                 </a>
                 <Link
                   to={accountPath}
-                  className="group inline-flex min-h-12 items-center gap-2 rounded-lg border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-800 transition hover:border-sky-300 hover:text-sky-800"
+                  className="landing-hero-cta landing-hero-cta-secondary group inline-flex min-h-12 items-center gap-2 rounded-lg border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-800 transition hover:border-sky-300 hover:text-sky-800"
                 >
                   {user?<LayoutDashboard size={18} aria-hidden="true"/>:<LogIn size={18} aria-hidden="true"/>}
                   <span>{user?accountLabel:lt("hero_login_button").text}</span>
