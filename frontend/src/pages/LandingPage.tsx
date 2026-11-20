@@ -490,7 +490,7 @@ export default function LandingPage() {
       <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/95 text-slate-950 shadow-sm backdrop-blur-xl">
         <div className="mx-auto flex h-[4.5rem] max-w-7xl items-center justify-between px-5 lg:px-8">
           <Link to="/" className="flex items-center gap-3 text-slate-950">
-            {branding.logo_data_url ? <img src={branding.logo_data_url} alt="" className="h-10 w-10 rounded-xl bg-white object-contain p-1"/> : <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-sky-700 text-white"><Activity size={20} strokeWidth={2.5} /></span>}
+            {branding.logo_data_url ? <img src={branding.logo_data_url} alt="" className="nav-logo-mark h-10 w-10 rounded-xl bg-white object-contain p-1"/> : <span className="nav-logo-mark flex h-10 w-10 items-center justify-center rounded-xl bg-sky-700 text-white"><Activity size={20} strokeWidth={2.5} /></span>}
             <span>
               <span className="block text-sm font-black tracking-[0.12em]">
                 {branding.logo_title.toUpperCase()}

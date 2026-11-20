@@ -624,6 +624,12 @@ html.dark body #root :is(main, header, section, article, aside, dialog, [role="d
   transform: translateY(-1px);
 }
 
+:root.dark .landing-page .nav-logo-mark {
+  background-color: #94a9c9 !important;
+  color: #020b18 !important;
+  box-shadow: 0 6px 18px rgb(148 169 201 / 0.2);
+}
+
 :root.dark .landing-page main > section {
   border-color: var(--landing-border) !important;
   background-color: var(--landing-bg) !important;
