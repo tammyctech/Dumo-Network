@@ -882,7 +882,7 @@ export default function LandingPage() {
             <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/10 text-white"><Activity size={18}/></span>
             <div><strong className="block text-white">{branding.logo_title}</strong><span className="text-sky-200">{branding.logo_subtitle}</span></div>
           </div>
-          <p className="text-sky-200">{lt("footer_notice").text}</p>
+          <p className="text-sky-200"><strong className="text-white">Transparent by design.</strong> Figures remain unofficial until declared by the authorized electoral body.</p>
           <a href="https://github.com/wmgeolab/geoBoundaries" target="_blank" rel="noreferrer" className="text-sky-100 hover:text-white">Map boundary source <ArrowRight size={13} className="inline"/></a>
         </div>
       </footer>
