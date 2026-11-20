@@ -5,7 +5,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from ..database import get_db
-from ..models import Election, PartyResult, PollingUnit, ResultSubmission
+from ..models import Election, PartyResult, PollingUnit, ResultSubmission, Ward
 
 
 router = APIRouter(
@@ -84,6 +84,13 @@ def public_election_overview(db: Session = Depends(get_db)):
         .order_by(PollingUnit.lga)
     ).all()
 
+    lga_ward_rows = db.execute(
+        select(Ward.lga, func.count(Ward.id))
+        .where(Ward.state == "Rivers")
+        .group_by(Ward.lga)
+    ).all()
+    wards_by_lga = dict(lga_ward_rows)
+
     lga_submission_rows = db.execute(
         select(
             PollingUnit.lga,
@@ -120,6 +127,12 @@ def public_election_overview(db: Session = Depends(get_db)):
         submitted_units = submissions_by_lga.get(lga, 0)
         parties = parties_by_lga.get(lga, [])
         leader = parties[0] if parties else None
+        total_valid_votes = sum(party["votes"] for party in parties)
+        leader_percentage = (
+            round(leader["votes"] / total_valid_votes * 100, 2)
+            if leader and total_valid_votes
+            else 0
+        )
         coverage = (
             round(submitted_units / total_units * 100, 2)
             if total_units
@@ -128,10 +141,13 @@ def public_election_overview(db: Session = Depends(get_db)):
         lga_results.append(
             {
                 "lga": lga,
+                "total_wards": wards_by_lga.get(lga, 0),
                 "total_polling_units": total_units,
                 "submitted_polling_units": submitted_units,
                 "coverage_percent": coverage,
                 "leader": leader,
+                "leader_percentage": leader_percentage,
+                "total_valid_votes": total_valid_votes,
                 "party_totals": parties,
             }
         )
