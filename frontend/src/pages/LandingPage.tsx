@@ -460,6 +460,7 @@ export default function LandingPage() {
           </Link>
 
           <nav className="hidden items-center gap-7 md:flex">
+            <Link to="/live-results" className="relative py-2 text-sm font-semibold text-slate-600 transition hover:text-sky-700">Live results</Link>
             <a
               href="#results"
               className="relative py-2 text-sm font-semibold text-slate-600 transition hover:text-sky-700"
@@ -502,6 +503,7 @@ export default function LandingPage() {
         {mobileMenuOpen && (
           <nav id="mobile-navigation" className="border-t border-slate-200 bg-white px-5 py-5 shadow-lg md:hidden">
             <div className="flex flex-col gap-2 text-sm font-semibold text-slate-700">
+              <Link to="/live-results" onClick={() => setMobileMenuOpen(false)} className="rounded-lg px-3 py-3 transition hover:bg-sky-50 hover:text-sky-800">Live results</Link>
               <a
                 href="#results"
                 onClick={() => setMobileMenuOpen(false)}

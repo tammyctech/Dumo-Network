@@ -21,6 +21,7 @@ const AppLayout = lazy(() => import("./layouts/AppLayout"));
 const Login = lazy(() => import("./pages/Login"));
 const ActivateAgent = lazy(() => import("./pages/ActivateAgent"));
 const LandingPage = lazy(() => import("./pages/LandingPage"));
+const LiveResults = lazy(() => import("./pages/LiveResults"));
 const AgentApplicationForm = lazy(() => import("./pages/AgentApplicationForm"));
 const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
@@ -82,6 +83,11 @@ export default function App() {
           <Route
             path="/login"
             element={<Login />}
+          />
+
+          <Route
+            path="/live-results"
+            element={<LiveResults />}
           />
 
           <Route
