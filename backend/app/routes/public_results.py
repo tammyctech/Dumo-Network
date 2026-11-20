@@ -15,12 +15,20 @@ router = APIRouter(
 
 
 @router.get("/election-overview")
-def public_election_overview(db: Session = Depends(get_db)):
+def public_election_overview(
+    race: str = "governorship",
+    db: Session = Depends(get_db),
+):
     """Return a privacy-safe public summary of the latest Rivers election."""
 
+    normalized_race = race.strip().lower()
+    race_term = "president" if normalized_race == "presidential" else "governor"
     election = db.scalar(
         select(Election)
-        .where(Election.state == "Rivers")
+        .where(
+            Election.state == "Rivers",
+            func.lower(Election.name).contains(race_term),
+        )
         .order_by(Election.id.desc())
         .limit(1)
     )

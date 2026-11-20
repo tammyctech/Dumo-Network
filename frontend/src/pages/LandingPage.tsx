@@ -460,13 +460,10 @@ export default function LandingPage() {
           </Link>
 
           <nav className="hidden items-center gap-7 md:flex">
-            <Link to="/live-results" className="relative py-2 text-sm font-semibold text-slate-600 transition hover:text-sky-700">Live results</Link>
-            <a
-              href="#results"
-              className="relative py-2 text-sm font-semibold text-slate-600 transition hover:text-sky-700"
-            >
-              <span>{lt("nav_results").text}</span>
-            </a>
+            <Link to="/live-results" className="inline-flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-3.5 py-2 text-sm font-bold text-emerald-800 shadow-sm transition hover:border-emerald-300 hover:bg-emerald-100">
+              <span className="relative flex h-2.5 w-2.5" aria-hidden="true"><span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"/><span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-500"/></span>
+              Live results
+            </Link>
             <a
               href="#updates"
               className="relative py-2 text-sm font-semibold text-slate-600 transition hover:text-sky-700"
@@ -503,14 +500,10 @@ export default function LandingPage() {
         {mobileMenuOpen && (
           <nav id="mobile-navigation" className="border-t border-slate-200 bg-white px-5 py-5 shadow-lg md:hidden">
             <div className="flex flex-col gap-2 text-sm font-semibold text-slate-700">
-              <Link to="/live-results" onClick={() => setMobileMenuOpen(false)} className="rounded-lg px-3 py-3 transition hover:bg-sky-50 hover:text-sky-800">Live results</Link>
-              <a
-                href="#results"
-                onClick={() => setMobileMenuOpen(false)}
-                className="rounded-lg px-3 py-3 transition hover:bg-sky-50 hover:text-sky-800"
-              >
-                <span style={{color:lt("nav_results").color}}>{lt("nav_results").text}</span>
-              </a>
+              <Link to="/live-results" onClick={() => setMobileMenuOpen(false)} className="inline-flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-3 font-bold text-emerald-800 transition hover:bg-emerald-100">
+                <span className="relative flex h-2.5 w-2.5" aria-hidden="true"><span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"/><span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-500"/></span>
+                Live results
+              </Link>
               <a
                 href="#updates"
                 onClick={() => setMobileMenuOpen(false)}
