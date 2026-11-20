@@ -445,15 +445,15 @@ export default function LandingPage() {
 
   return (
     <div className="landing-page min-h-screen bg-slate-100 pb-52 text-slate-950 sm:pb-28">
-      <header className="sticky top-0 z-40 border-b border-sky-800 bg-sky-950/95 text-white shadow-lg shadow-sky-950/15 backdrop-blur-xl">
+      <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/95 text-slate-950 shadow-sm backdrop-blur-xl">
         <div className="mx-auto flex h-[4.5rem] max-w-7xl items-center justify-between px-5 lg:px-8">
-          <Link to="/" className="flex items-center gap-3 text-white">
-            {branding.logo_data_url ? <img src={branding.logo_data_url} alt="" className="h-10 w-10 rounded-xl bg-white object-contain p-1"/> : <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-sky-600 bg-sky-800 text-white"><Activity size={20} strokeWidth={2.5} /></span>}
+          <Link to="/" className="flex items-center gap-3 text-slate-950">
+            {branding.logo_data_url ? <img src={branding.logo_data_url} alt="" className="h-10 w-10 rounded-xl bg-white object-contain p-1"/> : <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-sky-700 text-white"><Activity size={20} strokeWidth={2.5} /></span>}
             <span>
               <span className="block text-sm font-black tracking-[0.12em]">
                 {branding.logo_title.toUpperCase()}
               </span>
-              <span className="mt-0.5 block text-[10px] uppercase tracking-[0.2em] text-sky-200">
+              <span className="mt-0.5 block text-[10px] uppercase tracking-[0.2em] text-slate-500">
                 {branding.logo_subtitle}
               </span>
             </span>
@@ -462,26 +462,26 @@ export default function LandingPage() {
           <nav className="hidden items-center gap-7 md:flex">
             <a
               href="#results"
-              className="relative py-2 text-sm font-semibold text-sky-100 transition hover:text-white"
+              className="relative py-2 text-sm font-semibold text-slate-600 transition hover:text-sky-700"
             >
               <span>{lt("nav_results").text}</span>
             </a>
             <a
               href="#updates"
-              className="relative py-2 text-sm font-semibold text-sky-100 transition hover:text-white"
+              className="relative py-2 text-sm font-semibold text-slate-600 transition hover:text-sky-700"
             >
               <span>{lt("nav_updates").text}</span>
             </a>
             <a
               href="#methodology"
-              className="relative py-2 text-sm font-semibold text-sky-100 transition hover:text-white"
+              className="relative py-2 text-sm font-semibold text-slate-600 transition hover:text-sky-700"
             >
               <span>{lt("nav_methodology").text}</span>
             </a>
-            <a href="#report-incident" className="rounded-lg border border-red-300/30 bg-red-500/10 px-3 py-2 text-sm font-bold text-red-100 hover:bg-red-500/20">Report incident</a>
+            <a href="#report-incident" className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm font-bold text-red-700 hover:bg-red-100">Report incident</a>
             <Link
               to="/login"
-              className="group inline-flex min-h-11 items-center gap-2 rounded-xl bg-white px-4 text-sm font-bold text-sky-950 shadow-md transition hover:bg-sky-50"
+              className="group inline-flex min-h-11 items-center gap-2 rounded-xl bg-sky-700 px-4 text-sm font-bold text-white shadow-md transition hover:bg-sky-800"
             >
               <LogIn size={17} aria-hidden="true" />
               <span>{lt("nav_login").text}</span>
@@ -494,7 +494,7 @@ export default function LandingPage() {
             aria-expanded={mobileMenuOpen}
             aria-controls="mobile-navigation"
             onClick={() => setMobileMenuOpen((value) => !value)}
-            className="flex h-11 w-11 items-center justify-center rounded-xl border border-sky-700 bg-sky-900 text-white transition hover:bg-sky-800 md:hidden"
+            className="flex h-11 w-11 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-700 transition hover:bg-sky-50 hover:text-sky-700 md:hidden"
           >
             {mobileMenuOpen ? <X /> : <Menu />}
           </button>
@@ -538,43 +538,42 @@ export default function LandingPage() {
       </header>
 
       <main>
-        <section className="relative isolate overflow-hidden border-b border-sky-900 bg-sky-950 pb-12 pt-12 text-white sm:pb-16 sm:pt-16">
-          <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(14,165,233,0.14),transparent_42%),radial-gradient(circle_at_82%_12%,rgba(125,211,252,0.18),transparent_30%)]" />
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-sky-500 to-transparent" />
+        <section className="relative isolate overflow-hidden border-b border-slate-200 bg-[#f4f7fa] pb-12 pt-12 text-slate-950 sm:pb-20 sm:pt-20">
+          <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(14,165,233,0.07),transparent_42%),radial-gradient(circle_at_82%_12%,rgba(186,230,253,0.5),transparent_30%)]" />
           <div className="relative mx-auto grid max-w-7xl gap-12 px-5 lg:grid-cols-[1.02fr_0.98fr] lg:items-center lg:gap-16 lg:px-8">
             <div>
-              <div className="inline-flex items-center gap-2.5 rounded-lg border border-sky-700 bg-sky-900/70 px-3.5 py-2 text-[11px] font-bold uppercase tracking-[0.15em] text-sky-100">
+              <div className="inline-flex items-center gap-2.5 rounded-lg border border-sky-200 bg-white px-3.5 py-2 text-[11px] font-bold uppercase tracking-[0.15em] text-sky-800 shadow-sm">
                 <span className={`relative flex h-2 w-2 ${loading ? "animate-pulse" : ""}`}>
                   <span className="absolute inline-flex h-full w-full rounded-full bg-sky-600 opacity-40" />
                   <span className="relative inline-flex h-2 w-2 rounded-full bg-sky-600" />
                 </span>
                 {loading ? "Loading public results · Rivers State" : "Public results · Rivers State"}
               </div>
-              <h1 className="mt-7 max-w-2xl text-[2.8rem] font-semibold leading-[1.04] tracking-[-0.055em] text-white sm:text-6xl lg:text-[4.2rem]">
-                <span className="block text-white">{lt("hero_line_1").text}</span>
-                <span className="block text-sky-300">{lt("hero_line_2").text}</span>
-                <span className="block text-white">{lt("hero_line_3").text}</span>
+              <h1 className="mt-7 max-w-2xl text-[2.8rem] font-semibold leading-[1.04] tracking-[-0.055em] text-slate-950 sm:text-6xl lg:text-[4.2rem]">
+                <span className="block text-slate-950">{lt("hero_line_1").text}</span>
+                <span className="block text-sky-700">{lt("hero_line_2").text}</span>
+                <span className="block text-slate-950">{lt("hero_line_3").text}</span>
               </h1>
-              <p className="mt-6 max-w-xl text-base leading-7 text-sky-100 sm:text-lg sm:leading-8">
+              <p className="mt-6 max-w-xl text-base leading-7 text-slate-600 sm:text-lg sm:leading-8">
                 {lt("hero_description").text}
               </p>
               <div className="mt-8 flex flex-wrap gap-3">
                 <a
                   href="#results"
-                  className="group inline-flex min-h-12 items-center gap-2 rounded-lg bg-white px-5 py-3 text-sm font-bold text-sky-950 shadow-md transition hover:bg-sky-50"
+                  className="group inline-flex min-h-12 items-center gap-2 rounded-lg bg-sky-700 px-5 py-3 text-sm font-bold text-white shadow-md transition hover:bg-sky-800"
                 >
                   <span>{lt("hero_results_button").text}</span>
                 </a>
                 <Link
                   to="/login"
-                  className="group inline-flex min-h-12 items-center gap-2 rounded-lg border border-sky-700 bg-sky-900/70 px-5 py-3 text-sm font-semibold text-white transition hover:bg-sky-900"
+                  className="group inline-flex min-h-12 items-center gap-2 rounded-lg border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-800 transition hover:border-sky-300 hover:text-sky-800"
                 >
                   <LogIn size={18} aria-hidden="true" />
                   <span>{lt("hero_login_button").text}</span>
                 </Link>
               </div>
-              <div className="mt-8 flex max-w-xl items-start gap-3 border-l-2 border-amber-400 pl-4 text-sm leading-6 text-sky-100">
-                <ShieldCheck size={18} className="mt-0.5 shrink-0 text-amber-300" aria-hidden="true" />
+              <div className="mt-8 flex max-w-xl items-start gap-3 border-l-2 border-amber-500 pl-4 text-sm leading-6 text-slate-600">
+                <ShieldCheck size={18} className="mt-0.5 shrink-0 text-amber-600" aria-hidden="true" />
                 <p>{lt("hero_disclaimer").text}</p>
               </div>
             </div>
@@ -647,13 +646,13 @@ export default function LandingPage() {
             ].map((item) => {
               const Icon = item.icon;
               return (
-                <div key={item.label} className="flex items-center gap-3 rounded-xl border border-sky-800 bg-sky-900/60 px-4 py-3">
-                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-sky-800 text-sky-100">
+                <div key={item.label} className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-sky-50 text-sky-700">
                     <Icon size={17} aria-hidden="true" />
                   </span>
                   <span>
-                    <span className="block text-[10px] font-semibold uppercase tracking-[0.13em] text-sky-300">{item.label}</span>
-                    <span className="mt-0.5 block text-sm font-semibold text-white">{item.value}</span>
+                    <span className="block text-[10px] font-semibold uppercase tracking-[0.13em] text-slate-500">{item.label}</span>
+                    <span className="mt-0.5 block text-sm font-semibold text-slate-900">{item.value}</span>
                   </span>
                 </div>
               );
