@@ -444,7 +444,7 @@ export default function LandingPage() {
     );
 
   return (
-    <div className="landing-page min-h-screen bg-[#f5f7f6] text-slate-950">
+    <div className="landing-page min-h-screen bg-[#f5f7f6] pb-52 text-slate-950 sm:pb-28">
       <header className="sticky top-0 z-40 border-b border-slate-200/80 bg-white/95 shadow-sm shadow-slate-900/[0.03] backdrop-blur-xl">
         <div className="mx-auto flex h-[4.5rem] max-w-7xl items-center justify-between px-5 lg:px-8">
           <Link to="/" className="flex items-center gap-3 text-slate-950">
@@ -877,8 +877,8 @@ export default function LandingPage() {
         </section>
       </main>
 
-      <footer className="border-t border-emerald-900 bg-emerald-950 py-10">
-        <div className="mx-auto flex max-w-7xl flex-col gap-6 px-5 text-sm text-emerald-100 sm:flex-row sm:items-center sm:justify-between lg:px-8">
+      <footer className="fixed inset-x-0 bottom-0 z-50 border-t border-emerald-900 bg-emerald-950/98 py-4 shadow-2xl shadow-black/30 backdrop-blur">
+        <div className="mx-auto flex max-w-7xl flex-col gap-3 px-5 text-sm text-emerald-100 sm:flex-row sm:items-center sm:justify-between lg:px-8">
           <div className="flex items-center gap-3">
             <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-800 text-emerald-50"><Activity size={18} /></span>
             <div><strong className="block text-white">{branding.logo_title}</strong><span className="text-emerald-200">{branding.logo_subtitle}</span></div>
