@@ -424,6 +424,10 @@ header h3 {
   color: #991b1b;
 }
 
+.email-centre-summary-value {
+  color: #0f172a;
+}
+
 .lga-progress-heading,
 .lga-progress-name {
   color: #0f172a;
@@ -652,6 +656,22 @@ header h3 {
   border-color: #8f4545 !important;
   background-color: #3b2024 !important;
   color: #efaaa4 !important;
+}
+
+:root.dark .email-centre-hero {
+  border-color: #294a69 !important;
+  background-color: #07172b !important;
+  background-image: linear-gradient(135deg, #07172b 0%, #0c213a 68%, #12352f 100%) !important;
+  color: #cbd5e1 !important;
+}
+
+:root.dark .email-centre-summary {
+  border-color: #315474 !important;
+  background-color: #102a44 !important;
+}
+
+:root.dark .email-centre-summary-value {
+  color: #cbd5e1 !important;
 }
 
 :root.dark .lga-progress-section .lga-progress-heading {

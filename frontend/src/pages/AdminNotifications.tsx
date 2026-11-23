@@ -144,14 +144,14 @@ export default function AdminNotifications() {
 
   return (
     <div className="space-y-7">
-      <section className="relative overflow-hidden rounded-[1.75rem] border border-slate-200 bg-gradient-to-br from-white via-white to-emerald-50 px-6 py-7 text-slate-900 shadow-sm sm:px-8">
+      <section className="email-centre-hero relative overflow-hidden rounded-[1.75rem] border border-slate-200 bg-gradient-to-br from-white via-white to-emerald-50 px-6 py-7 text-slate-900 shadow-sm sm:px-8">
         <div className="relative flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
           <div>
             <div className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.2em] text-emerald-700"><Radio size={15}/> Communications command centre</div>
             <h1 className="mt-3 text-3xl font-black tracking-tight sm:text-4xl">Email Centre</h1>
             <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600">Send branded email campaigns, welcome assigned agents, and manage recurring communications.</p>
           </div>
-          <button onClick={() => void load()} disabled={loading} className="inline-flex w-fit items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-700 transition hover:bg-slate-50 disabled:opacity-50"><RefreshCw size={17} className={loading ? "animate-spin" : ""}/> Refresh data</button>
+          <button onClick={() => void load()} disabled={loading} className="user-action-button user-action-refresh inline-flex w-fit items-center gap-2 rounded-xl border px-4 py-3 text-sm font-bold disabled:opacity-50"><RefreshCw size={17} className={`user-action-refresh-icon ${loading ? "animate-spin" : ""}`}/> Refresh data</button>
         </div>
         <div className="relative mt-7 grid gap-3 sm:grid-cols-3">
           <Summary label="Email series" value={emailCampaigns.length.toLocaleString("en-NG")} icon={Mail}/>
@@ -237,7 +237,7 @@ export default function AdminNotifications() {
 
 function Summary({ label, value, icon: Icon, accent = "slate" }: { label: string; value: string; icon: typeof Users; accent?: "slate" | "emerald" | "amber" }) {
   const color = accent === "emerald" ? "text-emerald-700" : accent === "amber" ? "text-amber-700" : "text-slate-600";
-  return <div className="rounded-2xl border border-slate-200 bg-white/80 p-4"><div className={`flex items-center gap-2 text-xs font-semibold ${color}`}><Icon size={15}/>{label}</div><p className="mt-2 text-2xl font-black text-slate-900">{value}</p></div>;
+  return <div className="email-centre-summary rounded-2xl border border-slate-200 bg-white/80 p-4"><div className={`flex items-center gap-2 text-xs font-semibold ${color}`}><Icon size={15}/>{label}</div><p className="email-centre-summary-value mt-2 text-2xl font-black">{value}</p></div>;
 }
 function Notice({ kind, title, message }: { kind: "error" | "success"; title: string; message: string }) {
   const success = kind === "success";
