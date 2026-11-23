@@ -70,6 +70,12 @@ Do not commit OAuth credentials or refresh tokens. Personal Gmail accounts are
 limited to roughly 500 outgoing messages per day; use the delivery history to
 avoid resending messages that were already delivered.
 
+If Google returns `invalid_grant`, authorize the Gmail account again with the
+same Google Cloud OAuth client and `gmail.send` scope, replace
+`GMAIL_REFRESH_TOKEN` in the backend deployment environment, and restart or
+redeploy the backend. Do not retry previous agent notifications automatically;
+send a new email only when an administrator intentionally requests it.
+
 Use `SMTP_USE_SSL=true`, `SMTP_USE_TLS=false`, and usually port `465` when the
 provider requires implicit SSL. Approval still succeeds if email delivery is
 unavailable; the admin page reports that the message was not sent.

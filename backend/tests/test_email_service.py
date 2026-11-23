@@ -79,7 +79,7 @@ class ApprovalEmailTests(unittest.TestCase):
         self.assertIn("raw", post.call_args_list[1].kwargs["json"])
 
     @patch("app.services.email_service.requests.post")
-    def test_gmail_api_reports_google_oauth_error_description(self, post):
+    def test_gmail_api_reports_actionable_invalid_grant_error(self, post):
         response = MagicMock(); response.ok = False; response.status_code = 400
         response.json.return_value = {"error": "invalid_grant", "error_description": "Token has been expired or revoked."}
         post.return_value = response
@@ -91,8 +91,9 @@ class ApprovalEmailTests(unittest.TestCase):
             sent, error = send_system_email(recipient="agent@example.com", subject="Assignment",
                 plain_text="Assigned", html="<p>Assigned</p>")
         self.assertFalse(sent)
-        self.assertIn("invalid_grant", error)
-        self.assertIn("expired or revoked", error)
+        self.assertIn("expired or been revoked", error)
+        self.assertIn("GMAIL_REFRESH_TOKEN", error)
+        self.assertNotIn("invalid_grant", error)
 
 
 if __name__ == "__main__":

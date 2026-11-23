@@ -498,7 +498,7 @@ export default function PollingUnitManagement() {
                 </div>
               </div>
 
-              <p className="mt-3 text-3xl font-bold text-slate-900">
+              <p className="polling-unit-stat-value mt-3 text-3xl font-bold">
                 {loadingOverview && summary === null
                   ? "..."
                   : stat.value}

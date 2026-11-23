@@ -65,7 +65,12 @@ def _gmail_access_token() -> tuple[str | None, str | None]:
                 code = f"HTTP {response.status_code}"
                 description = "Google rejected the OAuth token exchange."
             logger.error("Gmail OAuth token refresh rejected: %s: %s", code, description)
-            return None, f"Gmail OAuth error: {code} — {description}"
+            if code == "invalid_grant":
+                return None, (
+                    "Gmail authorization has expired or been revoked. Reconnect the Gmail account "
+                    "and replace GMAIL_REFRESH_TOKEN in the backend environment."
+                )
+            return None, "Gmail authorization failed. Check the backend email configuration and logs."
         return response.json()["access_token"], None
     except (requests.RequestException, KeyError, ValueError) as exc:
         logger.exception("Gmail OAuth token refresh failed")

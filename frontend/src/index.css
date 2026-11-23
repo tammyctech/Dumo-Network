@@ -336,6 +336,44 @@ header h3 {
   color: #0369a1;
 }
 
+.polling-unit-stat-value {
+  color: #0f172a;
+}
+
+.user-management-subtitle {
+  color: #475569;
+}
+
+.user-action-print {
+  border-color: #6ee7b7;
+  background-color: #ecfdf5;
+  color: #065f46;
+}
+
+.user-action-print:hover {
+  background-color: #d1fae5;
+}
+
+.user-action-danger {
+  border-color: #dc2626;
+  background-color: #b91c1c;
+  color: #fff7ed;
+}
+
+.user-action-danger:hover {
+  background-color: #991b1b;
+}
+
+.user-action-refresh {
+  border-color: #cbd5e1;
+  background-color: #f8fafc;
+  color: #075985;
+}
+
+.user-action-refresh:hover {
+  background-color: #e0f2fe;
+}
+
 .lga-progress-heading,
 .lga-progress-name {
   color: #0f172a;
@@ -491,6 +529,32 @@ header h3 {
 
 :root.dark .dashboard-refresh-icon {
   color: #7dd3fc !important;
+}
+
+:root.dark .polling-unit-stat-value {
+  color: #d5dee9 !important;
+}
+
+:root.dark .user-management-subtitle {
+  color: #aab8ca !important;
+}
+
+:root.dark .user-action-print {
+  border-color: #3f8069 !important;
+  background-color: #123d32 !important;
+  color: #9de1c5 !important;
+}
+
+:root.dark .user-action-danger {
+  border-color: #b94b4b !important;
+  background-color: #5f2028 !important;
+  color: #ffb4ab !important;
+}
+
+:root.dark .user-action-refresh {
+  border-color: #365a7d !important;
+  background-color: #102a44 !important;
+  color: #9bd8f5 !important;
 }
 
 :root.dark .lga-progress-section .lga-progress-heading {
