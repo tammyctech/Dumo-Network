@@ -286,7 +286,7 @@ description,
 
           </p>
 
-          <p className="mt-3 break-words text-[28px] font-semibold leading-tight tracking-tight text-slate-900 sm:text-3xl">
+          <p className="dashboard-stat-value mt-3 break-words text-[28px] font-semibold leading-tight tracking-tight sm:text-3xl">
 
             {value}
 
