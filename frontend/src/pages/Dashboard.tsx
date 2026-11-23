@@ -948,8 +948,8 @@ const workflowUnavailableMessage = statistics?.election
 
               <div className="mt-6 grid gap-4 sm:grid-cols-3">
                 <div className="rounded-xl bg-slate-50 p-4 ring-1 ring-slate-200">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Total units</p>
-                  <p className="mt-2 text-2xl font-bold text-slate-950">{formatNumber(statistics.total_polling_units)}</p>
+                  <p className="coverage-total-label text-xs font-semibold uppercase tracking-wide">Total units</p>
+                  <p className="coverage-total-value mt-2 text-2xl font-bold">{formatNumber(statistics.total_polling_units)}</p>
                 </div>
                 <div className="rounded-xl bg-emerald-50 p-4 ring-1 ring-emerald-200">
                   <p className="text-xs font-semibold uppercase tracking-wide text-emerald-700">Filled with agents</p>
