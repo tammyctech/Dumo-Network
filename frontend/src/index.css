@@ -564,7 +564,7 @@ header h3 {
   background-color: #57927a !important;
 }
 
-:root.dark :is(.text-emerald-600, .text-emerald-700, .text-emerald-800) {
+:root.dark :is(.text-emerald-600, .text-emerald-700, .text-emerald-800, .text-emerald-950) {
   color: #86cdb2 !important;
 }
 
@@ -572,7 +572,7 @@ header h3 {
   color: #f28b82 !important;
 }
 
-:root.dark :is(.text-amber-600, .text-amber-700, .text-amber-800, .text-yellow-600, .text-yellow-700, .text-yellow-800) {
+:root.dark :is(.text-amber-600, .text-amber-700, .text-amber-800, .text-amber-950, .text-yellow-600, .text-yellow-700, .text-yellow-800, .text-yellow-950) {
   color: #f6c56f !important;
 }
 
