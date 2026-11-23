@@ -1590,17 +1590,17 @@ const workflowUnavailableMessage = statistics?.election
 
           {/* LGA MONITORING */}
 
-          <section className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-[0_1px_2px_rgba(15,23,42,0.03)]">
+          <section className="lga-progress-section overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-[0_1px_2px_rgba(15,23,42,0.03)]">
 
             <div className="border-b border-slate-200 p-6">
 
-              <h2 className="text-lg font-bold text-slate-900">
+              <h2 className="lga-progress-heading text-lg font-bold">
 
                 LGA Submission Progress
 
               </h2>
 
-              <p className="mt-2 text-sm text-slate-500">
+              <p className="lga-progress-muted mt-2 text-sm">
 
                 Polling-unit submission coverage by Local
 
@@ -1632,7 +1632,7 @@ const workflowUnavailableMessage = statistics?.election
 
                 <table className="w-full min-w-[650px] text-left text-sm">
 
-                  <thead className="bg-slate-50 text-slate-600">
+                  <thead className="lga-progress-head bg-slate-50">
 
                     <tr>
 
@@ -1664,13 +1664,13 @@ const workflowUnavailableMessage = statistics?.election
 
                   </thead>
 
-                  <tbody className="divide-y divide-slate-100">
+                  <tbody className="lga-progress-body divide-y divide-slate-100">
 
                     {sortedLgaData.map((lga) => (
 
                       <tr key={lga.lga}>
 
-                        <td className="px-6 py-4 font-medium text-slate-900">
+                        <td className="lga-progress-name px-6 py-4 font-medium">
 
                           {lga.lga}
 

@@ -332,6 +332,20 @@ header h3 {
   color: #0f172a;
 }
 
+.lga-progress-heading,
+.lga-progress-name {
+  color: #0f172a;
+}
+
+.lga-progress-muted,
+.lga-progress-head {
+  color: #475569;
+}
+
+.lga-progress-body {
+  color: #334155;
+}
+
 :root[data-custom-brand="true"] .bg-emerald-700,
 :root[data-custom-brand="true"] .bg-emerald-600 {
   background-color: var(--brand-primary) !important;
@@ -469,6 +483,20 @@ header h3 {
 
 :root.dark .dashboard-stat-value {
   color: #f8fafc !important;
+}
+
+:root.dark .lga-progress-section .lga-progress-heading {
+  color: #cbd5e1 !important;
+}
+
+:root.dark .lga-progress-section .lga-progress-muted,
+:root.dark .lga-progress-section .lga-progress-head {
+  color: #94a3b8 !important;
+}
+
+:root.dark .lga-progress-section .lga-progress-body,
+:root.dark .lga-progress-section .lga-progress-name {
+  color: #b6c2d1 !important;
 }
 
 :root.dark .landing-page :is(.text-slate-700, .text-slate-600, .text-slate-500, .text-slate-400, .text-slate-300) {
