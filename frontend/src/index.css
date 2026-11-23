@@ -332,6 +332,10 @@ header h3 {
   color: #0f172a;
 }
 
+.dashboard-refresh-icon {
+  color: #0369a1;
+}
+
 .lga-progress-heading,
 .lga-progress-name {
   color: #0f172a;
@@ -483,6 +487,10 @@ header h3 {
 
 :root.dark .dashboard-stat-value {
   color: #f8fafc !important;
+}
+
+:root.dark .dashboard-refresh-icon {
+  color: #7dd3fc !important;
 }
 
 :root.dark .lga-progress-section .lga-progress-heading {

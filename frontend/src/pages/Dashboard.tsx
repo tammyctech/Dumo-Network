@@ -668,7 +668,7 @@ const workflowUnavailableMessage = statistics?.election
 
             size={17}
 
-            className={refreshing ? "animate-spin" : ""}
+            className={`dashboard-refresh-icon ${refreshing ? "animate-spin" : ""}`}
 
           />
 
