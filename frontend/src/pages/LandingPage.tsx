@@ -31,9 +31,7 @@ const API_URL = import.meta.env.DEV
   ? (import.meta.env.VITE_API_URL || "http://127.0.0.1:8000").replace(/\/$/, "")
   : "";
 
-const RIVERS_GEOJSON_URL =
-  "https://media.githubusercontent.com/media/wmgeolab/geoBoundaries/main/" +
-  "releaseData/gbOpen/NGA/ADM2/geoBoundaries-NGA-ADM2.geojson";
+const RIVERS_GEOJSON_URL = "/data/rivers-lgas.geojson";
 const RIVERS_LGAS = ["Abua/Odual", "Ahoada East", "Ahoada West", "Akuku-Toru", "Andoni", "Asari-Toru", "Bonny", "Degema", "Eleme", "Emohua", "Etche", "Gokana", "Ikwerre", "Khana", "Obio/Akpor", "Ogba/Egbema/Ndoni", "Ogu/Bolo", "Okrika", "Omuma", "Opobo/Nkoro", "Oyigbo", "Port Harcourt", "Tai"];
 
 type PartyTotal = { party: string; votes: number };
@@ -126,6 +124,7 @@ function normalizeLga(value: string): string {
     .replace(/[^a-z0-9]/g, "");
   const aliases: Record<string, string> = {
     obiaakpor: "obioakpor",
+    emuoha: "emohua",
     omumma: "omuma",
   };
   return aliases[normalized] || normalized;

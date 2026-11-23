@@ -35,14 +35,18 @@ const PRESIDENTIAL_ELECTION_DAY = new Date("2027-01-16T08:30:00+01:00");
 const GOVERNORSHIP_ELECTION_DAY = new Date("2027-02-06T08:30:00+01:00");
 const RIVERS_REGISTERED_VOTERS = 3_537_190;
 
-const NIGERIA_MAP_URL = "https://media.githubusercontent.com/media/wmgeolab/geoBoundaries/main/releaseData/gbOpen/NGA/ADM2/geoBoundaries-NGA-ADM2.geojson";
+const RIVERS_MAP_URL = "/data/rivers-lgas.geojson";
 type MapFeature = { properties: { shapeName: string }; geometry: { type: "Polygon" | "MultiPolygon"; coordinates: number[][][] | number[][][][] } };
 type MapData = { features: MapFeature[] };
 type PartyTotal={party:string;votes:number};
 type LgaResult={lga:string;total_wards:number;total_polling_units:number;submitted_polling_units:number;coverage_percent:number|null;leader:PartyTotal|null;leader_percentage:number;party_totals:PartyTotal[]};
 type Overview={total_polling_units:number;submitted_polling_units:number;submission_coverage_percent:number|null;party_totals:PartyTotal[];lga_results:LgaResult[];last_updated:string|null};
 const API=import.meta.env.DEV?(import.meta.env.VITE_API_URL||"http://127.0.0.1:8000").replace(/\/$/,""):"";
-const normalize=(value:string)=>value.toLowerCase().replace(/[^a-z]/g,"");
+const normalize=(value:string)=>{
+  const normalized=value.toLowerCase().replace(/[^a-z]/g,"");
+  const aliases:Record<string,string>={emuoha:"emohua",omumma:"omuma"};
+  return aliases[normalized]||normalized;
+};
 
 function initials(name: string) {
   return name.split(/\s+/).slice(0, 2).map(part => part[0]).join("").toUpperCase();
@@ -55,8 +59,9 @@ export default function LiveResults() {
   const [selectedState, setSelectedState] = useState("Port Harcourt");
   const [overview,setOverview]=useState<Overview>({total_polling_units:0,submitted_polling_units:0,submission_coverage_percent:0,party_totals:[],lga_results:[],last_updated:null});
   const [mapData, setMapData] = useState<MapData | null>(null);
+  const [mapError, setMapError] = useState("");
   const [now, setNow] = useState(()=>new Date());
-  useEffect(() => { const controller = new AbortController(); void fetch(NIGERIA_MAP_URL, {signal:controller.signal}).then(response => response.ok ? response.json() : Promise.reject()).then(setMapData).catch(()=>undefined); return ()=>controller.abort(); }, []);
+  useEffect(() => { const controller = new AbortController(); void fetch(RIVERS_MAP_URL, {signal:controller.signal}).then(response => response.ok ? response.json() : Promise.reject(new Error("Map boundaries could not be loaded."))).then(setMapData).catch(error=>{if(!controller.signal.aborted)setMapError(error instanceof Error?error.message:"Map boundaries could not be loaded.");}); return ()=>controller.abort(); }, []);
   useEffect(()=>{const controller=new AbortController();const load=()=>void fetch(`${API}/api/public/election-overview?race=${race}`,{signal:controller.signal}).then(response=>response.ok?response.json():Promise.reject()).then(setOverview).catch(()=>undefined);setOverview({total_polling_units:0,submitted_polling_units:0,submission_coverage_percent:0,party_totals:[],lga_results:[],last_updated:null});load();const timer=window.setInterval(load,60000);return()=>{controller.abort();window.clearInterval(timer)}},[race]);
   useEffect(() => { const timer=window.setInterval(()=>setNow(new Date()),1000); return ()=>window.clearInterval(timer); }, []);
   const visibleStates = useMemo(
@@ -127,7 +132,7 @@ export default function LiveResults() {
           <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-xl shadow-slate-950/5 sm:p-8">
             <div className="flex flex-wrap items-center justify-between gap-3"><div><p className="text-xs font-black uppercase tracking-[.16em] text-sky-700">Rivers State map</p><h2 className="mt-2 text-2xl font-black">Select an LGA</h2></div><span className="rounded-full bg-sky-50 px-3 py-1.5 text-xs font-bold text-sky-800">23 LGAs</span></div>
             <div className="mt-7 rounded-2xl border border-sky-100 bg-gradient-to-br from-sky-50 to-white p-4 sm:p-7">
-              {mapData&&<NigeriaMap data={mapData} selectedZone={selectedZone} selectedState={selectedState} onSelect={setSelectedState}/>}
+              {mapData?<NigeriaMap data={mapData} selectedZone={selectedZone} selectedState={selectedState} onSelect={setSelectedState}/>:<div className="mb-7 flex h-[300px] items-center justify-center rounded-xl border border-dashed border-sky-200 bg-white px-6 text-center text-sm font-semibold text-slate-500 sm:h-[390px]">{mapError||"Loading Rivers State map…"}</div>}
               <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-5">{visibleStates.map(state=>{const row=lgaByName.get(normalize(state));return <button key={state} onClick={()=>setSelectedState(state)} className={`min-h-14 rounded-xl border px-3 py-2 text-left text-sm font-bold transition ${selectedState===state?"border-sky-700 bg-sky-700 text-white shadow-lg shadow-sky-900/15":"border-slate-200 bg-white text-slate-700 hover:-translate-y-0.5 hover:border-sky-300 hover:text-sky-800"}`}>{state}<small className="mt-1 block font-medium opacity-70">{row?.total_wards??0} wards · {row?.total_polling_units??0} units</small></button>})}</div>
             </div>
           </div>
