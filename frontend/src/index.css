@@ -1031,6 +1031,64 @@ html.dark body #root :is(main, header, section, article, aside, dialog, [role="d
   fill: #aab8ca !important;
 }
 
+.topbar-account-button:hover {
+  background: #f1f5f9;
+}
+
+.topbar-account-avatar {
+  background: #e0f2fe;
+  color: #075985;
+  --tw-ring-color: #fff;
+}
+
+.topbar-account-name {
+  color: #0f172a;
+}
+
+.topbar-account-role {
+  color: #64748b;
+}
+
+:root.dark .topbar-account {
+  border-color: #294a69 !important;
+}
+
+:root.dark .topbar-account-button:hover {
+  background: #102a44 !important;
+}
+
+:root.dark .topbar-account-avatar {
+  background: #173b5c !important;
+  color: #9bd8f5 !important;
+  --tw-ring-color: #294a69 !important;
+}
+
+:root.dark .topbar-account-name {
+  color: #e2e8f0 !important;
+}
+
+:root.dark .topbar-account-role {
+  color: #94a3b8 !important;
+}
+
+.nav-sign-out:hover {
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+:root.dark .nav-sign-out {
+  color: #fda4af !important;
+}
+
+:root.dark .nav-sign-out:hover {
+  background: rgb(127 29 29 / 0.32) !important;
+  color: #fecdd3 !important;
+}
+
+:root.dark .nav-sign-out:hover svg {
+  color: #fda4af !important;
+}
+
 .settings-profile-summary {
   background: #f8fafc;
 }

@@ -465,7 +465,7 @@ export default function AppLayout() {
           <button
             type="button"
             onClick={handleLogout}
-            className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-slate-300 transition hover:bg-red-400/15 hover:text-red-100"
+            className="nav-sign-out flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-slate-300 transition"
           >
             <LogOut size={18} />
             Sign Out
@@ -636,7 +636,7 @@ export default function AppLayout() {
 
             {/* ACCOUNT */}
 
-            <div ref={profileRef} className="relative border-l border-slate-200 pl-3 sm:pl-4">
+            <div ref={profileRef} className="topbar-account relative border-l border-slate-200 pl-3 sm:pl-4">
               <button
                 type="button"
                 aria-label={`Account options for ${user?.full_name || "Dumo User"}`}
@@ -645,16 +645,16 @@ export default function AppLayout() {
                   setNotificationsOpen(false);
                   setProfileOpen((open) => !open);
                 }}
-                className="flex min-h-11 items-center gap-2 rounded-xl px-1.5 text-left hover:bg-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-600 sm:gap-3 sm:px-2"
+                className="topbar-account-button flex min-h-11 items-center gap-2 rounded-xl px-1.5 text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-600 sm:gap-3 sm:px-2"
               >
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-sky-100 text-xs font-bold text-sky-800 ring-2 ring-white">
+                <span className="topbar-account-avatar flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xs font-bold ring-2">
                   {userInitials}
                 </span>
                 <span className="hidden min-w-0 md:block">
-                  <span className="block max-w-36 truncate text-sm font-semibold text-slate-900">
+                  <span className="topbar-account-name block max-w-36 truncate text-sm font-semibold">
                     {user?.full_name || "Dumo User"}
                   </span>
-                  <span className="block text-xs capitalize text-slate-500">
+                  <span className="topbar-account-role block text-xs capitalize">
                     {user?.role || "User"}
                   </span>
                 </span>
@@ -676,7 +676,7 @@ export default function AppLayout() {
                     <button
                       type="button"
                       onClick={handleLogout}
-                      className="flex min-h-11 w-full items-center gap-3 rounded-lg px-3 text-sm font-medium text-red-700 hover:bg-red-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-red-600"
+                      className="nav-sign-out flex min-h-11 w-full items-center gap-3 rounded-lg px-3 text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-red-600"
                     >
                       <LogOut size={17} />
                       Sign out
