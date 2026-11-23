@@ -1,7 +1,7 @@
 import unittest
 
 from app.models import PollingUnit
-from app.routes.admin_sms import _assignment_login_message
+from app.routes.admin_sms import _assignment_login_message, _valid_phone
 
 
 class AdminSmsMessageTests(unittest.TestCase):
@@ -30,6 +30,10 @@ class AdminSmsMessageTests(unittest.TestCase):
         self.assertNotIn("change after login", message)
         self.assertIn("Login details: Phone +2348012345678, Temp Pass: 12345", message)
         self.assertNotIn(self.unit.name, message)
+
+    def test_recipient_phone_is_normalized_for_loading(self):
+        self.assertEqual(_valid_phone("0801 234 5678"), "+2348012345678")
+        self.assertIsNone(_valid_phone("not-a-number"))
 
     def test_existing_password_message_has_no_temporary_password(self):
         message = _assignment_login_message(

@@ -41,6 +41,10 @@ class SmsSendRequest(BaseModel):
 def _valid_phone(phone_number: str | None) -> str | None:
     if not phone_number:
         return None
+    try:
+        return normalize_nigerian_phone(phone_number)
+    except ValueError:
+        return None
 
 
 def _assignment_login_message(
@@ -69,10 +73,6 @@ def _assignment_login_message(
     # The final variant is normally well below one GSM segment. Keep the link
     # and login credentials intact if an unusually long deployment URL is used.
     return f"Dear {first_name}, You've been assigned to {locations[-1]}. {login_details} Sign in: {login_url}"
-    try:
-        return normalize_nigerian_phone(phone_number)
-    except ValueError:
-        return None
 
 
 def _deliver_sms(
