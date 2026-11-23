@@ -41,6 +41,33 @@ class SmsSendRequest(BaseModel):
 def _valid_phone(phone_number: str | None) -> str | None:
     if not phone_number:
         return None
+
+
+def _assignment_login_message(
+    *, phone: str, polling_unit: PollingUnit | None, login_url: str,
+    must_change_password: bool, default_password: str,
+) -> str:
+    password = (
+        f"Temp password {default_password}; change after login."
+        if must_change_password
+        else "Use your current password."
+    )
+    locations = []
+    if polling_unit:
+        locations = [
+            f"PU {polling_unit.code}, {polling_unit.ward}, {polling_unit.lga} LGA",
+            f"PU {polling_unit.code}, {polling_unit.lga} LGA",
+            f"PU {polling_unit.code}",
+        ]
+    else:
+        locations = ["No PU assigned"]
+    for location in locations:
+        message = f"DYN: {location}. Login {phone} at {login_url}. {password}"
+        if len(message) <= 160:
+            return message
+    # The final variant is normally well below one GSM segment. Keep the link
+    # and login credentials intact if an unusually long deployment URL is used.
+    return f"DYN: {locations[-1]}. Login {phone} at {login_url}. {password}"
     try:
         return normalize_nigerian_phone(phone_number)
     except ValueError:
@@ -229,19 +256,12 @@ def send_admin_sms(
         default_password = os.getenv("DEFAULT_AGENT_PASSWORD", "12345")
         for phone, user in users_by_phone.items():
             unit = units_by_agent.get(user.id)
-            assignment = (
-                f"{unit.code}, {unit.name}, {unit.ward}, {unit.lga} LGA"
-                if unit else "No polling unit is currently assigned"
-            )
-            password_details = (
-                f"Temporary password: {default_password}. Change it after signing in."
-                if user.must_change_password
-                else "Use your existing password, or Forgot password if needed."
-            )
-            personalized = (
-                f"Hello {user.full_name}. Your Dumo Youth Network polling unit: {assignment}. "
-                f"Login phone: {phone}. Sign in: {login_url}. "
-                f"{password_details}"
+            personalized = _assignment_login_message(
+                phone=phone,
+                polling_unit=unit,
+                login_url=login_url,
+                must_change_password=user.must_change_password,
+                default_password=default_password,
             )
             deliveries.append((phone, personalized))
     else:
