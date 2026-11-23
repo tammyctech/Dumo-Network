@@ -988,6 +988,27 @@ html.dark body #root :is(main, header, section, article, aside, dialog, [role="d
   background: #17483b !important;
 }
 
+:root.dark .dashboard-current-election {
+  border-color: #294a69 !important;
+  background: #091b31 !important;
+}
+
+:root.dark .dashboard-current-election-icon {
+  color: #9de1c5 !important;
+}
+
+:root.dark .dashboard-current-election-label {
+  color: #b9c6d7 !important;
+}
+
+:root.dark .dashboard-current-election-name {
+  color: #f1f5f9 !important;
+}
+
+:root.dark .dashboard-current-election-date {
+  color: #94a3b8 !important;
+}
+
 .settings-profile-summary {
   background: #f8fafc;
 }

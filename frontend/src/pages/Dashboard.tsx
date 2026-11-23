@@ -778,7 +778,7 @@ const workflowUnavailableMessage = statistics?.election
 
           {/* ELECTION INFORMATION */}
 
-          <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_1px_2px_rgba(15,23,42,0.03)] sm:p-6">
+          <section className="dashboard-current-election rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_1px_2px_rgba(15,23,42,0.03)] sm:p-6">
 
             <div className="flex flex-wrap items-center justify-between gap-5">
 
@@ -790,11 +790,11 @@ const workflowUnavailableMessage = statistics?.election
 
                     size={19}
 
-                    className="text-slate-500"
+                    className="dashboard-current-election-icon text-slate-500"
 
                   />
 
-                  <h2 className="text-sm font-semibold text-slate-800">
+                  <h2 className="dashboard-current-election-label text-sm font-semibold">
 
                     Current Election
 
@@ -802,7 +802,7 @@ const workflowUnavailableMessage = statistics?.election
 
                 </div>
 
-                <p className="mt-3 break-words text-lg font-semibold tracking-tight text-slate-950 sm:text-xl">
+                <p className="dashboard-current-election-name mt-3 break-words text-lg font-semibold tracking-tight sm:text-xl">
 
                   {statistics.election?.name ??
 
@@ -810,7 +810,7 @@ const workflowUnavailableMessage = statistics?.election
 
                 </p>
 
-                <p className="mt-1 text-sm text-slate-500">
+                <p className="dashboard-current-election-date mt-1 text-sm">
 
                   {formatDate(
 
