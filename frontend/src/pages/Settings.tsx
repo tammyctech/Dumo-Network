@@ -741,10 +741,10 @@ export default function Settings() {
                 {/* SECURITY HEADER */}
 
                 <div className="flex items-start gap-3">
-                  <div className="rounded-xl bg-emerald-100 p-3">
+                  <div className="settings-security-icon rounded-xl p-3">
                     <LockKeyhole
                       size={22}
-                      className="text-emerald-700"
+                      aria-hidden="true"
                     />
                   </div>
 
@@ -762,12 +762,12 @@ export default function Settings() {
 
                 {/* SECURITY INFORMATION */}
 
-                <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-                  <p className="text-sm font-semibold text-slate-800">
+                <div className="settings-security-info rounded-xl border p-4">
+                  <p className="settings-security-info-title text-sm font-semibold">
                     Change Password
                   </p>
 
-                  <p className="mt-1 text-sm text-slate-600">
+                  <p className="settings-security-info-copy mt-1 text-sm">
                     Enter your current password and choose
                     a new password to secure your account.
                   </p>

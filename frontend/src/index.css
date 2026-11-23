@@ -977,6 +977,42 @@ html.dark body #root :is(main, header, section, article, aside, dialog, [role="d
 }
 
 /* Settings dashboard navigation keeps icon tiles and copy legible in both themes. */
+.settings-security-icon {
+  background: #d1fae5;
+  color: #047857;
+}
+
+.settings-security-info {
+  border-color: #e2e8f0;
+  background: #f8fafc;
+}
+
+.settings-security-info-title {
+  color: #1e293b;
+}
+
+.settings-security-info-copy {
+  color: #475569;
+}
+
+:root.dark .settings-security-icon {
+  background: #123d32 !important;
+  color: #9de1c5 !important;
+}
+
+:root.dark .settings-security-info {
+  border-color: #294a69 !important;
+  background: #0d2440 !important;
+}
+
+:root.dark .settings-security-info-title {
+  color: #e2e8f0 !important;
+}
+
+:root.dark .settings-security-info-copy {
+  color: #aab8ca !important;
+}
+
 .settings-appearance-card {
   background: rgb(236 253 245 / 0.7);
 }
