@@ -1045,6 +1045,17 @@ html.dark body #root :is(main, header, section, article, aside, dialog, [role="d
   color: #b9c6d7 !important;
 }
 
+:root.dark .organization-brand-preview {
+  border-color: #365675 !important;
+  background-color: #07172b !important;
+  background-image: none !important;
+  color: #e2e8f0 !important;
+}
+
+:root.dark .organization-brand-preview-header {
+  border-color: #294a69 !important;
+}
+
 :root.dark .landing-copy-card {
   border-color: #294a69 !important;
   background: #0d2440 !important;
