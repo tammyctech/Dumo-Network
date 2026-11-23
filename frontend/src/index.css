@@ -344,6 +344,36 @@ header h3 {
   color: #475569;
 }
 
+.user-action-button {
+  transition: transform 160ms ease, background-color 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.user-action-button:not(:disabled):hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 18px rgb(15 23 42 / 0.14);
+}
+
+.user-action-button svg {
+  flex-shrink: 0;
+  transition: color 160ms ease, transform 160ms ease;
+}
+
+.user-action-button:not(:disabled):hover svg {
+  transform: scale(1.14);
+}
+
+.user-action-print-icon {
+  color: #047857 !important;
+}
+
+.user-action-danger-icon {
+  color: #fff7ed !important;
+}
+
+.user-action-refresh-icon {
+  color: #0369a1 !important;
+}
+
 .user-action-print {
   border-color: #6ee7b7;
   background-color: #ecfdf5;
@@ -545,15 +575,42 @@ header h3 {
   color: #9de1c5 !important;
 }
 
+:root.dark .user-action-print:hover {
+  border-color: #6bb99a !important;
+  background-color: #1a5142 !important;
+}
+
+:root.dark .user-action-print-icon {
+  color: #9de1c5 !important;
+}
+
 :root.dark .user-action-danger {
   border-color: #b94b4b !important;
   background-color: #5f2028 !important;
   color: #ffb4ab !important;
 }
 
+:root.dark .user-action-danger:hover {
+  border-color: #e16c68 !important;
+  background-color: #792b32 !important;
+}
+
+:root.dark .user-action-danger-icon {
+  color: #ffb4ab !important;
+}
+
 :root.dark .user-action-refresh {
   border-color: #365a7d !important;
   background-color: #102a44 !important;
+  color: #9bd8f5 !important;
+}
+
+:root.dark .user-action-refresh:hover {
+  border-color: #5c86aa !important;
+  background-color: #173b5c !important;
+}
+
+:root.dark .user-action-refresh-icon {
   color: #9bd8f5 !important;
 }
 
