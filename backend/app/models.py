@@ -225,6 +225,12 @@ class Election(Base):
         nullable=False,
     )
 
+    is_active: Mapped[bool] = mapped_column(
+        Boolean,
+        default=False,
+        nullable=False,
+    )
+
 
 # ============================================================
 # AGENT ASSIGNMENT MODEL

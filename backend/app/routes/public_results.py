@@ -16,21 +16,18 @@ router = APIRouter(
 
 @router.get("/election-overview")
 def public_election_overview(
-    race: str = "governorship",
+    race: str | None = None,
     db: Session = Depends(get_db),
 ):
-    """Return a privacy-safe public summary of the latest Rivers election."""
+    """Return a privacy-safe summary of the administrator-selected election."""
 
-    normalized_race = race.strip().lower()
-    race_term = "president" if normalized_race == "presidential" else "governor"
+    query = select(Election).where(Election.state == "Rivers")
+    if race:
+        normalized_race = race.strip().lower()
+        race_term = "president" if normalized_race == "presidential" else "governor"
+        query = query.where(func.lower(Election.name).contains(race_term))
     election = db.scalar(
-        select(Election)
-        .where(
-            Election.state == "Rivers",
-            func.lower(Election.name).contains(race_term),
-        )
-        .order_by(Election.id.desc())
-        .limit(1)
+        query.order_by(Election.is_active.desc(), Election.id.desc()).limit(1)
     )
 
     total_polling_units = db.scalar(

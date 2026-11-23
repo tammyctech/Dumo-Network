@@ -316,7 +316,7 @@ export default function AppLayout() {
 
         {/* LOGO */}
 
-        <div className="flex h-[76px] shrink-0 items-center justify-between border-b border-white/10 px-5">
+        <div className="app-sidebar-header flex h-[76px] shrink-0 items-center justify-between border-b px-5">
 
           <div className="flex min-w-0 items-center gap-2.5">
 
@@ -330,11 +330,11 @@ export default function AppLayout() {
 
             <div className="min-w-0">
 
-              <p className="text-[13px] font-bold tracking-[0.07em] text-white">
+              <p className="app-sidebar-logo-title text-[13px] font-bold tracking-[0.07em]">
                 {branding.logo_title.toUpperCase()}
               </p>
 
-              <p className="text-[10px] text-sky-200">
+              <p className="app-sidebar-logo-subtitle text-[10px]">
                 {branding.logo_subtitle.toUpperCase()}
               </p> 
 
@@ -346,7 +346,7 @@ export default function AppLayout() {
             type="button"
             aria-label="Close sidebar"
             onClick={() => setSidebarOpen(false)}
-            className="rounded-lg p-2 text-sky-100/70 hover:bg-white/10 hover:text-white lg:hidden"
+            className="app-sidebar-close rounded-lg p-2 lg:hidden"
           >
             <X size={20} />
           </button>
@@ -356,7 +356,7 @@ export default function AppLayout() {
         {/* WORKSPACE LABEL */}
 
         <div className="px-5 pb-3 pt-6">
-          <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-sky-200/70">
+          <p className="app-sidebar-eyebrow text-[10px] font-bold uppercase tracking-[0.16em]">
             Election intelligence
           </p>
         </div>
@@ -409,26 +409,26 @@ export default function AppLayout() {
             SIDEBAR FOOTER
         ================================================= */}
 
-        <div className="shrink-0 border-t border-white/10 p-4">
+        <div className="app-sidebar-footer shrink-0 border-t p-4">
 
           {/* DATA NOTICE */}
 
-          <div className="mb-4 rounded-xl border border-white/10 bg-white/[.07] p-3.5">
+          <div className="app-sidebar-notice mb-4 rounded-xl border p-3.5">
 
             <div className="flex items-center gap-2">
 
               <ShieldCheck
                 size={16}
-                className="text-sky-300"
+                className="app-sidebar-notice-icon"
               />
 
-              <p className="text-xs font-semibold text-white">
+              <p className="app-sidebar-notice-title text-xs font-semibold">
                 Election data
               </p>
 
             </div>
 
-            <p className="mt-2 text-xs leading-5 text-slate-300/70">
+            <p className="app-sidebar-notice-copy mt-2 text-xs leading-5">
               Monitoring figures are unofficial and agent-submitted.
             </p>
 
@@ -436,19 +436,19 @@ export default function AppLayout() {
 
           {/* USER PROFILE */}
 
-          <div className="mb-3 flex items-center gap-3 rounded-xl border border-white/10 bg-white/[.07] p-3">
+          <div className="app-sidebar-profile mb-3 flex items-center gap-3 rounded-xl border p-3">
 
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-sky-400 text-sm font-bold text-slate-950">
+            <div className="app-sidebar-profile-avatar flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-bold">
               {userInitials}
             </div>
 
             <div className="min-w-0 flex-1">
 
-              <p className="truncate text-sm font-semibold">
+              <p className="app-sidebar-profile-name truncate text-sm font-semibold">
                 {user?.full_name || "Dumo User"}
               </p>
 
-              <p className="text-xs capitalize text-slate-300/70">
+              <p className="app-sidebar-profile-role text-xs capitalize">
                 {user?.role || "User"}
               </p>
 

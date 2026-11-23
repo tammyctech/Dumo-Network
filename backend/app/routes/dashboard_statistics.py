@@ -107,14 +107,14 @@ def dashboard_statistics(
     # ELECTION SELECTION
     # --------------------------------------
 
-    # Use the most recently created Rivers
-    # election if no election ID is supplied.
+    # Use the administrator-selected active election, falling back to the
+    # most recently created Rivers election for pre-migration databases.
 
     if election_id is None:
         election = db.scalar(
             select(Election)
             .where(Election.state == "Rivers")
-            .order_by(Election.id.desc())
+            .order_by(Election.is_active.desc(), Election.id.desc())
             .limit(1)
         )
     else:

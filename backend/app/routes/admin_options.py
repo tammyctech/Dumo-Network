@@ -65,6 +65,7 @@ def get_elections(
                 "id": election.id,
                 "name": election.name,
                 "election_date": election.election_date,
+                "is_active": election.is_active,
             }
             for election in elections
         ],

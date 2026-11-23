@@ -3,7 +3,7 @@ from pathlib import Path
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, ConfigDict
-from sqlalchemy import delete, func, select, text
+from sqlalchemy import delete, func, select, text, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -102,6 +102,47 @@ def create_election(
         election_date=election.election_date,
         state=election.state,
     )
+
+
+@router.put("/api/admin/elections/{election_id}/activate")
+def activate_election(
+    election_id: int,
+    db: Session = Depends(get_db),
+    admin: User = Depends(require_admin),
+):
+    """Make one Rivers election the shared default for dashboards and public pages."""
+    election = db.scalar(select(Election).where(
+        Election.id == election_id,
+        Election.state == "Rivers",
+    ))
+    if election is None:
+        raise HTTPException(status_code=404, detail="Rivers State election not found.")
+
+    db.execute(
+        update(Election)
+        .where(Election.state == "Rivers")
+        .values(is_active=False)
+    )
+    election.is_active = True
+    db.add(AuditLog(
+        user_id=admin.id,
+        action="activate_election",
+        table_name="elections",
+        record_id=election.id,
+        old_data=None,
+        new_data={"is_active": True, "name": election.name},
+    ))
+    db.commit()
+    return {
+        "message": f'"{election.name}" is now the active election.',
+        "election": {
+            "id": election.id,
+            "name": election.name,
+            "election_date": election.election_date,
+            "state": election.state,
+            "is_active": True,
+        },
+    }
 
 
 @router.delete("/api/admin/elections/{election_id}/results")

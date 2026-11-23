@@ -1077,7 +1077,115 @@ html.dark body #root :is(main, header, section, article, aside, dialog, [role="d
 }
 
 .app-sidebar-section {
-  color: #8ebbd2;
+  color: #64748b;
+}
+
+.app-sidebar {
+  border-color: #dbe4ee !important;
+  background: #f8fafc !important;
+  color: #0f172a !important;
+  box-shadow: 10px 0 30px rgb(15 23 42 / 0.06) !important;
+}
+
+.live-results-countdown-label {
+  color: #0369a1;
+}
+
+.live-results-countdown-heading,
+.live-results-countdown-value {
+  color: #0f172a;
+}
+
+.live-results-countdown-badge {
+  border-color: #bae6fd;
+  background: #fff;
+  color: #075985;
+}
+
+.live-results-countdown-card {
+  border-color: #e0f2fe;
+  background: #fff;
+}
+
+.live-results-countdown-unit {
+  color: #64748b;
+}
+
+:root.dark .live-results-countdown {
+  border-color: #294a69 !important;
+  background: #0d2440 !important;
+}
+
+:root.dark .live-results-countdown-label {
+  color: #7dd3fc !important;
+}
+
+:root.dark .live-results-countdown-heading,
+:root.dark .live-results-countdown-value {
+  color: #f1f5f9 !important;
+}
+
+:root.dark .live-results-countdown-badge {
+  border-color: #365675 !important;
+  background: #102a44 !important;
+  color: #bae6fd !important;
+}
+
+:root.dark .live-results-countdown-card {
+  border-color: #365675 !important;
+  background: #07172b !important;
+}
+
+:root.dark .live-results-countdown-unit {
+  color: #aab8ca !important;
+}
+
+.app-sidebar-header,
+.app-sidebar-footer {
+  border-color: #dbe4ee;
+}
+
+.app-sidebar-logo-title {
+  color: #0f172a;
+}
+
+.app-sidebar-logo-subtitle,
+.app-sidebar-eyebrow {
+  color: #0369a1;
+}
+
+.app-sidebar-close {
+  color: #475569;
+}
+
+.app-sidebar-close:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+.app-sidebar-notice,
+.app-sidebar-profile {
+  border-color: #dbe4ee;
+  background: #fff;
+}
+
+.app-sidebar-notice-icon {
+  color: #0284c7;
+}
+
+.app-sidebar-notice-title,
+.app-sidebar-profile-name {
+  color: #0f172a;
+}
+
+.app-sidebar-notice-copy,
+.app-sidebar-profile-role {
+  color: #64748b;
+}
+
+.app-sidebar-profile-avatar {
+  background: #e0f2fe;
+  color: #075985;
 }
 
 .app-sidebar-link {
@@ -1261,6 +1369,58 @@ html.dark body #root :is(main, header, section, article, aside, dialog, [role="d
 
 :root.dark .app-sidebar-section {
   color: #8ebbd2 !important;
+}
+
+:root.dark .app-sidebar {
+  border-color: #1e293b !important;
+  background: #071722 !important;
+  color: #fff !important;
+  box-shadow: 10px 0 30px rgb(2 6 23 / 0.25) !important;
+}
+
+:root.dark .app-sidebar-header,
+:root.dark .app-sidebar-footer {
+  border-color: rgb(255 255 255 / 0.1) !important;
+}
+
+:root.dark .app-sidebar-logo-title,
+:root.dark .app-sidebar-notice-title,
+:root.dark .app-sidebar-profile-name {
+  color: #fff !important;
+}
+
+:root.dark .app-sidebar-logo-subtitle,
+:root.dark .app-sidebar-eyebrow {
+  color: #bae6fd !important;
+}
+
+:root.dark .app-sidebar-close {
+  color: rgb(224 242 254 / 0.75) !important;
+}
+
+:root.dark .app-sidebar-close:hover {
+  background: rgb(255 255 255 / 0.1) !important;
+  color: #fff !important;
+}
+
+:root.dark .app-sidebar-notice,
+:root.dark .app-sidebar-profile {
+  border-color: rgb(255 255 255 / 0.1) !important;
+  background: rgb(255 255 255 / 0.07) !important;
+}
+
+:root.dark .app-sidebar-notice-icon {
+  color: #7dd3fc !important;
+}
+
+:root.dark .app-sidebar-notice-copy,
+:root.dark .app-sidebar-profile-role {
+  color: rgb(203 213 225 / 0.75) !important;
+}
+
+:root.dark .app-sidebar-profile-avatar {
+  background: #38bdf8 !important;
+  color: #0f172a !important;
 }
 
 :root.dark .app-sidebar-link {

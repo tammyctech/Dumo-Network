@@ -40,7 +40,7 @@ type MapFeature = { properties: { shapeName: string }; geometry: { type: "Polygo
 type MapData = { features: MapFeature[] };
 type PartyTotal={party:string;votes:number};
 type LgaResult={lga:string;total_wards:number;total_polling_units:number;submitted_polling_units:number;coverage_percent:number|null;leader:PartyTotal|null;leader_percentage:number;party_totals:PartyTotal[]};
-type Overview={total_polling_units:number;submitted_polling_units:number;submission_coverage_percent:number|null;party_totals:PartyTotal[];lga_results:LgaResult[];last_updated:string|null};
+type Overview={election:{id:number;name:string;election_date:string}|null;total_polling_units:number;submitted_polling_units:number;submission_coverage_percent:number|null;party_totals:PartyTotal[];lga_results:LgaResult[];last_updated:string|null};
 const API=import.meta.env.DEV?(import.meta.env.VITE_API_URL||"http://127.0.0.1:8000").replace(/\/$/,""):"";
 const normalize=(value:string)=>{
   const normalized=value.toLowerCase().replace(/[^a-z]/g,"");
@@ -57,12 +57,12 @@ export default function LiveResults() {
   const [race,setRace]=useState<"governorship"|"presidential">("governorship");
   const [selectedZone] = useState("Rivers State");
   const [selectedState, setSelectedState] = useState("Port Harcourt");
-  const [overview,setOverview]=useState<Overview>({total_polling_units:0,submitted_polling_units:0,submission_coverage_percent:0,party_totals:[],lga_results:[],last_updated:null});
+  const [overview,setOverview]=useState<Overview>({election:null,total_polling_units:0,submitted_polling_units:0,submission_coverage_percent:0,party_totals:[],lga_results:[],last_updated:null});
   const [mapData, setMapData] = useState<MapData | null>(null);
   const [mapError, setMapError] = useState("");
   const [now, setNow] = useState(()=>new Date());
   useEffect(() => { const controller = new AbortController(); void fetch(RIVERS_MAP_URL, {signal:controller.signal}).then(response => response.ok ? response.json() : Promise.reject(new Error("Map boundaries could not be loaded."))).then(setMapData).catch(error=>{if(!controller.signal.aborted)setMapError(error instanceof Error?error.message:"Map boundaries could not be loaded.");}); return ()=>controller.abort(); }, []);
-  useEffect(()=>{const controller=new AbortController();const load=()=>void fetch(`${API}/api/public/election-overview?race=${race}`,{signal:controller.signal}).then(response=>response.ok?response.json():Promise.reject()).then(setOverview).catch(()=>undefined);setOverview({total_polling_units:0,submitted_polling_units:0,submission_coverage_percent:0,party_totals:[],lga_results:[],last_updated:null});load();const timer=window.setInterval(load,60000);return()=>{controller.abort();window.clearInterval(timer)}},[race]);
+  useEffect(()=>{const controller=new AbortController();const load=()=>void fetch(`${API}/api/public/election-overview`,{signal:controller.signal}).then(response=>response.ok?response.json():Promise.reject()).then((data:Overview)=>{setOverview(data);setRace(data.election?.name.toLowerCase().includes("president")?"presidential":"governorship")}).catch(()=>undefined);load();const timer=window.setInterval(load,60000);return()=>{controller.abort();window.clearInterval(timer)}},[]);
   useEffect(() => { const timer=window.setInterval(()=>setNow(new Date()),1000); return ()=>window.clearInterval(timer); }, []);
   const visibleStates = useMemo(
     () => RIVERS_LGAS,
@@ -75,7 +75,7 @@ export default function LiveResults() {
   const candidates=[...(race==="governorship"?GOVERNORSHIP_candidates:PRESIDENTIAL_candidates)]
     .sort((left,right)=>(candidatePriority[left[1]]??99)-(candidatePriority[right[1]]??99));
   const visibleCandidates = candidates;
-  const electionDay=race==="governorship"?GOVERNORSHIP_ELECTION_DAY:PRESIDENTIAL_ELECTION_DAY;
+  const electionDay=overview.election?.election_date?new Date(overview.election.election_date):(race==="governorship"?GOVERNORSHIP_ELECTION_DAY:PRESIDENTIAL_ELECTION_DAY);
   const remaining=Math.max(0,electionDay.getTime()-now.getTime());
   const countdown={days:Math.floor(remaining/86400000),hours:Math.floor(remaining/3600000)%24,mins:Math.floor(remaining/60000)%60,secs:Math.floor(remaining/1000)%60};
 
@@ -94,15 +94,15 @@ export default function LiveResults() {
       <section className="border-b border-slate-200 bg-[#071722] text-white">
         <div className="mx-auto max-w-7xl px-5 py-6 lg:px-8">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-            <label className="text-sm font-bold text-slate-300">Select election<select value={race} onChange={event=>setRace(event.target.value as "governorship"|"presidential")} className="ml-0 mt-2 min-h-11 w-full rounded-xl border border-white/15 bg-white/10 px-4 text-sm font-bold text-white outline-none focus:border-sky-400 sm:ml-3 sm:mt-0 sm:w-auto"><option value="governorship" className="text-slate-950">Rivers State Governorship Election</option><option value="presidential" className="text-slate-950">Presidential Election — Rivers State Results</option></select></label>
-            <nav className="flex gap-2 overflow-x-auto" aria-label="Election race">{(["governorship","presidential"] as const).map(item=><button key={item} onClick={()=>setRace(item)} className={`rounded-xl px-4 py-2.5 text-left ${race===item?"bg-white text-slate-950":"border border-white/10 bg-white/5 text-slate-200"}`}><strong className="block text-sm capitalize">{item}</strong><span className="text-xs opacity-60">Rivers State only</span></button>)}</nav>
+            <div className="text-sm font-bold text-slate-300">Active election<span className="ml-0 mt-2 block min-h-11 rounded-xl border border-white/15 bg-white/10 px-4 py-3 text-sm font-bold text-white sm:ml-3 sm:mt-0 sm:inline-flex">{overview.election?.name || "No active election"}</span></div>
+            <span className="rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-left text-slate-200"><strong className="block text-sm capitalize">{race}</strong><span className="text-xs opacity-60">Selected by administrator</span></span>
           </div>
         </div>
       </section>
 
       <section className="border-b border-slate-200 bg-white py-10 sm:py-14">
         <div className="mx-auto max-w-7xl px-5 lg:px-8">
-          <div className="flex flex-wrap items-center justify-between gap-4"><p className="text-sm font-black uppercase tracking-[.18em] text-sky-700">Election desk</p><div className="flex flex-wrap gap-2 text-xs font-bold"><span className="rounded-full bg-slate-100 px-3 py-2">Election day <strong className="ml-1">{race==="governorship"?"6 Feb 2027":"16 Jan 2027"}</strong></span><span className="rounded-full bg-sky-50 px-3 py-2 text-sky-800">Candidate lists <strong className="ml-1">Published</strong></span><span className="rounded-full bg-slate-100 px-3 py-2">Registered voters <strong className="ml-1">{RIVERS_REGISTERED_VOTERS.toLocaleString()}</strong></span></div></div>
+          <div className="flex flex-wrap items-center justify-between gap-4"><p className="text-sm font-black uppercase tracking-[.18em] text-sky-700">Election desk</p><div className="flex flex-wrap gap-2 text-xs font-bold"><span className="rounded-full bg-slate-100 px-3 py-2">Election day <strong className="ml-1">{electionDay.toLocaleDateString("en-NG",{day:"numeric",month:"short",year:"numeric",timeZone:"Africa/Lagos"})}</strong></span><span className="rounded-full bg-sky-50 px-3 py-2 text-sky-800">Candidate lists <strong className="ml-1">Published</strong></span><span className="rounded-full bg-slate-100 px-3 py-2">Registered voters <strong className="ml-1">{RIVERS_REGISTERED_VOTERS.toLocaleString()}</strong></span></div></div>
           <div className="mt-8 grid gap-8 xl:grid-cols-[1.15fr_.85fr]">
             <div><span className="text-xs font-black uppercase tracking-[.18em] text-slate-500">South South</span><h1 className="mt-2 text-5xl font-black tracking-[-.055em] sm:text-7xl">Rivers State</h1><p className="mt-2 text-xl font-semibold text-slate-500">{race==="governorship"?"Governorship election":"Presidential election · Rivers State result"}</p><div className="mt-7 grid grid-cols-2 gap-3 sm:grid-cols-4"><Stat value="23" label="LGAs"/><Stat value={String(overview.lga_results.reduce((sum,row)=>sum+row.total_wards,0))} label="Wards"/><Stat value={overview.total_polling_units.toLocaleString()} label="Polling units"/><Stat value={`${overview.submission_coverage_percent??0}%`} label="Reporting"/></div><div className="mt-7 flex flex-wrap items-center gap-3"><span className="rounded-full bg-sky-50 px-4 py-2 text-sm font-black text-sky-800">Live collation</span><span className="text-sm text-slate-500">Unofficial agent-submitted results</span></div></div>
             <div className="overflow-hidden rounded-3xl border border-slate-200 bg-[#f7f9fb] shadow-xl shadow-slate-950/5"><div className="border-b border-slate-200 bg-white px-6 py-4"><p className="font-black">Rivers election centre</p></div><div className="grid grid-cols-2 gap-px bg-slate-200"><DeskMetric label="Current stage" value="Collation" note="Live field reports" icon={<ShieldCheck size={17}/>}/><DeskMetric label="LGAs covered" value={`${overview.lga_results.filter(row=>row.submitted_polling_units>0).length} / 23`} note="Local governments" icon={<MapPin size={17}/>}/><DeskMetric label="Units reporting" value={overview.submitted_polling_units.toLocaleString()} note="Polling units" icon={<Radio size={17}/>}/><DeskMetric label="Last update" value={overview.last_updated?new Date(overview.last_updated).toLocaleTimeString("en-NG",{timeZone:"Africa/Lagos",hour:"2-digit",minute:"2-digit"}):"—"} note="West Africa Time" icon={<CalendarDays size={17}/>}/></div></div>
@@ -110,8 +110,8 @@ export default function LiveResults() {
         </div>
       </section>
 
-      <section className="border-b border-slate-200 bg-sky-50 py-12">
-        <div className="mx-auto grid max-w-7xl gap-6 px-5 lg:grid-cols-[.8fr_1.2fr] lg:px-8"><div><p className="text-xs font-black uppercase tracking-[.18em] text-sky-700">Until election day</p><h2 className="mt-2 text-3xl font-black">Time remaining before polling opens</h2><span className="mt-4 inline-flex rounded-full border border-sky-200 bg-white px-3 py-1.5 text-xs font-bold text-sky-800">Pre-election</span></div><div className="grid grid-cols-4 gap-2 sm:gap-3">{Object.entries(countdown).map(([label,value])=><div key={label} className="rounded-2xl border border-sky-100 bg-white p-3 text-center shadow-sm sm:p-5"><strong className="block text-2xl font-black tabular-nums sm:text-4xl">{String(value).padStart(2,"0")}</strong><span className="mt-1 block text-xs capitalize text-slate-500">{label}</span></div>)}</div></div>
+      <section className="live-results-countdown border-b border-slate-200 bg-sky-50 py-12">
+        <div className="mx-auto grid max-w-7xl gap-6 px-5 lg:grid-cols-[.8fr_1.2fr] lg:px-8"><div><p className="live-results-countdown-label text-xs font-black uppercase tracking-[.18em]">Until election day</p><h2 className="live-results-countdown-heading mt-2 text-3xl font-black">Time remaining before polling opens</h2><span className="live-results-countdown-badge mt-4 inline-flex rounded-full border px-3 py-1.5 text-xs font-bold">Pre-election</span></div><div className="grid grid-cols-4 gap-2 sm:gap-3">{Object.entries(countdown).map(([label,value])=><div key={label} className="live-results-countdown-card rounded-2xl border p-3 text-center shadow-sm sm:p-5"><strong className="live-results-countdown-value block text-2xl font-black tabular-nums sm:text-4xl">{String(value).padStart(2,"0")}</strong><span className="live-results-countdown-unit mt-1 block text-xs capitalize">{label}</span></div>)}</div></div>
       </section>
 
       <section className="border-b border-slate-200 bg-white py-14">

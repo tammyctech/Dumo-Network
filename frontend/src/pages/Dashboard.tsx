@@ -70,6 +70,8 @@ type Election = {
 
   election_date: string;
 
+  is_active: boolean;
+
 };
 
 type PartyTotal = {
@@ -362,6 +364,8 @@ const [selectedElectionId, setSelectedElectionId] =
 
     useState<string>("");
 
+const [activatingElection, setActivatingElection] = useState(false);
+
 const [loading, setLoading] = useState(true);
 
 const [refreshing, setRefreshing] = useState(false);
@@ -425,6 +429,12 @@ const data = await response.json();
         ) {
 
           setElections(data.elections);
+          const activeElection = data.elections.find(
+            (election: Election) => election.is_active
+          );
+          if (activeElection) {
+            setSelectedElectionId(String(activeElection.id));
+          }
 
         }
 
@@ -443,6 +453,31 @@ const data = await response.json();
     return () => controller.abort();
 
   }, [token, user?.role]);
+
+  async function selectActiveElection(electionId: string) {
+    if (!electionId || !token || user?.role !== "admin") return;
+    setActivatingElection(true);
+    setError("");
+    try {
+      const response = await fetch(
+        `${API_URL}/api/admin/elections/${encodeURIComponent(electionId)}/activate`,
+        {
+          method: "PUT",
+          headers: token !== "cookie-session" ? { Authorization: `Bearer ${token}` } : {},
+        }
+      );
+      if (!response.ok) throw new Error(await readApiError(response));
+      setSelectedElectionId(electionId);
+      setElections((current) => current.map((election) => ({
+        ...election,
+        is_active: String(election.id) === electionId,
+      })));
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "Unable to activate the election.");
+    } finally {
+      setActivatingElection(false);
+    }
+  }
 
   // ========================================
 
@@ -844,21 +879,15 @@ const workflowUnavailableMessage = statistics?.election
 
                     value={selectedElectionId}
 
-                    onChange={(event) =>
+                    onChange={(event) => void selectActiveElection(event.target.value)}
 
-                      setSelectedElectionId(event.target.value)
-
-                    }
+                    disabled={activatingElection}
 
                     className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm"
 
                   >
 
-                    <option value="">
-
-                      Latest election
-
-                    </option>
+                    <option value="" disabled>Select the active election</option>
 
                     {elections.map((election) => (
 
