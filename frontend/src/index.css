@@ -976,6 +976,102 @@ html.dark body #root :is(main, header, section, article, aside, dialog, [role="d
   color: var(--landing-heading) !important;
 }
 
+/* Settings dashboard navigation keeps icon tiles and copy legible in both themes. */
+.settings-page-icon {
+  background: #d1fae5;
+  color: #047857;
+}
+
+.settings-nav-item {
+  background: transparent;
+}
+
+.settings-nav-item:hover {
+  background: #f8fafc;
+}
+
+.settings-nav-item.is-selected {
+  background: #ecfdf5;
+}
+
+.settings-nav-icon {
+  background: #f1f5f9;
+  color: #475569;
+  transition: background-color 160ms ease, color 160ms ease;
+}
+
+.settings-nav-item:hover .settings-nav-icon {
+  background: #e0f2fe;
+  color: #0369a1;
+}
+
+.settings-nav-item.is-selected .settings-nav-icon {
+  background: #d1fae5;
+  color: #047857;
+}
+
+.settings-nav-title {
+  color: #0f172a;
+}
+
+.settings-nav-description {
+  color: #64748b;
+}
+
+.settings-nav-chevron {
+  color: #94a3b8;
+}
+
+:root.dark .settings-page-icon {
+  background: #123d32 !important;
+  color: #9de1c5 !important;
+}
+
+:root.dark .settings-nav {
+  border-color: #294a69 !important;
+  background: #07172b !important;
+}
+
+:root.dark .settings-nav-item {
+  border-color: #1d3b58 !important;
+  background: transparent !important;
+}
+
+:root.dark .settings-nav-item:hover {
+  background: #102a44 !important;
+}
+
+:root.dark .settings-nav-item.is-selected {
+  background: #123d32 !important;
+}
+
+:root.dark .settings-nav-icon {
+  background: #102a44 !important;
+  color: #aab8ca !important;
+}
+
+:root.dark .settings-nav-item:hover .settings-nav-icon {
+  background: #173b5c !important;
+  color: #9bd8f5 !important;
+}
+
+:root.dark .settings-nav-item.is-selected .settings-nav-icon {
+  background: #1a5142 !important;
+  color: #9de1c5 !important;
+}
+
+:root.dark .settings-nav-title {
+  color: #e2e8f0 !important;
+}
+
+:root.dark .settings-nav-description {
+  color: #94a3b8 !important;
+}
+
+:root.dark .settings-nav-chevron {
+  color: #7f91a8 !important;
+}
+
 /* Landing-page motion system. */
 @keyframes landing-word-in {
   from { opacity: 0; transform: translateY(1.15rem); filter: blur(5px); }

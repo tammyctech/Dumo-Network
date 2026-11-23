@@ -448,10 +448,10 @@ export default function Settings() {
 
       <div>
         <div className="mb-3 flex items-center gap-3">
-          <div className="rounded-xl bg-emerald-100 p-3">
+          <div className="settings-page-icon rounded-xl p-3">
             <Settings2
               size={24}
-              className="text-emerald-700"
+              aria-hidden="true"
             />
           </div>
 
@@ -473,7 +473,7 @@ export default function Settings() {
         {/* SETTINGS NAVIGATION */}
 
         <div className="lg:col-span-4">
-          <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+          <div className="settings-nav overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
             {settingsMenu.map((item) => {
               const Icon = item.icon;
               const selected = activeTab === item.id;
@@ -487,43 +487,32 @@ export default function Settings() {
                   }
                   aria-current={selected ? "page" : undefined}
                   className={`
+                    settings-nav-item ${selected ? "is-selected" : ""}
                     flex w-full items-center gap-4
                     border-b border-slate-100
                     px-5 py-5 text-left
                     transition-colors
-                    ${
-                      selected
-                        ? "bg-emerald-50"
-                        : "hover:bg-slate-50"
-                    }
                   `}
                 >
                   <div
-                    className={`
-                      rounded-xl p-3
-                      ${
-                        selected
-                          ? "bg-emerald-100 text-emerald-700"
-                          : "bg-slate-100 text-slate-600"
-                      }
-                    `}
+                    className="settings-nav-icon rounded-xl p-3"
                   >
                     <Icon size={20} />
                   </div>
 
                   <div className="min-w-0 flex-1">
-                    <p className="font-semibold text-slate-900">
+                    <p className="settings-nav-title font-semibold">
                       {item.name}
                     </p>
 
-                    <p className="text-xs text-slate-500">
+                    <p className="settings-nav-description text-xs">
                       {item.description}
                     </p>
                   </div>
 
                   <ChevronRight
                     size={18}
-                    className="text-slate-400"
+                    className="settings-nav-chevron"
                   />
                 </button>
               );
