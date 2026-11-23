@@ -48,10 +48,10 @@ def _assignment_login_message(
     must_change_password: bool, default_password: str,
 ) -> str:
     first_name = full_name.strip().split(maxsplit=1)[0] if full_name.strip() else "Agent"
-    password = (
-        f"Temp password {default_password}."
+    login_details = (
+        f"Login details: Phone {phone}, Temp Pass: {default_password}."
         if must_change_password
-        else "Use your current password."
+        else f"Login details: Phone {phone}, use current password."
     )
     locations = []
     if polling_unit:
@@ -63,12 +63,12 @@ def _assignment_login_message(
     else:
         locations = ["No PU assigned"]
     for location in locations:
-        message = f"Dear {first_name}, You've been assigned to {location}. Login {phone} at {login_url}. {password}"
+        message = f"Dear {first_name}, You've been assigned to {location}. {login_details} Sign in: {login_url}"
         if len(message) <= 160:
             return message
     # The final variant is normally well below one GSM segment. Keep the link
     # and login credentials intact if an unusually long deployment URL is used.
-    return f"Dear {first_name}, You've been assigned to {locations[-1]}. Login {phone} at {login_url}. {password}"
+    return f"Dear {first_name}, You've been assigned to {locations[-1]}. {login_details} Sign in: {login_url}"
     try:
         return normalize_nigerian_phone(phone_number)
     except ValueError:

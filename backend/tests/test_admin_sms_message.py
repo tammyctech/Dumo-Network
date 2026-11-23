@@ -28,7 +28,7 @@ class AdminSmsMessageTests(unittest.TestCase):
         self.assertIn("You've been assigned to PU", message)
         self.assertNotIn("DYN:", message)
         self.assertNotIn("change after login", message)
-        self.assertIn("Temp password 12345", message)
+        self.assertIn("Login details: Phone +2348012345678, Temp Pass: 12345", message)
         self.assertNotIn(self.unit.name, message)
 
     def test_existing_password_message_has_no_temporary_password(self):
@@ -42,8 +42,8 @@ class AdminSmsMessageTests(unittest.TestCase):
         )
         self.assertLessEqual(len(message), 160)
         self.assertTrue(message.startswith("Dear Ada,"))
-        self.assertIn("Use your current password", message)
-        self.assertNotIn("Temp password", message)
+        self.assertIn("Login details: Phone +2348012345678, use current password", message)
+        self.assertNotIn("Temp Pass", message)
 
 
 if __name__ == "__main__":
