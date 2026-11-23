@@ -1018,6 +1018,32 @@ html.dark body #root :is(main, header, section, article, aside, dialog, [role="d
   background: #0d3029 !important;
 }
 
+:root.dark #profile-full-name,
+:root.dark #profile-phone {
+  border-color: #365675 !important;
+  background: #07172b !important;
+  color: #e2e8f0 !important;
+  caret-color: #9de1c5;
+}
+
+:root.dark #profile-full-name::placeholder,
+:root.dark #profile-phone::placeholder {
+  color: #7f91a8 !important;
+}
+
+:root.dark #profile-full-name:focus,
+:root.dark #profile-phone:focus {
+  border-color: #5ab394 !important;
+  box-shadow: 0 0 0 3px rgb(90 179 148 / 0.18) !important;
+}
+
+:root.dark #profile-full-name:-webkit-autofill,
+:root.dark #profile-phone:-webkit-autofill {
+  -webkit-text-fill-color: #e2e8f0 !important;
+  -webkit-box-shadow: 0 0 0 1000px #07172b inset !important;
+  caret-color: #9de1c5;
+}
+
 :root.dark .settings-appearance-icon {
   background: #17483b !important;
   color: #9de1c5 !important;
