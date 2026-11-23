@@ -524,7 +524,7 @@ export default function AppLayout() {
             {/* OPERATING AREA */}
 
             <div className="hidden items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-[11px] font-semibold text-slate-600 md:flex">
-              <MapPin size={13} className="text-sky-700" />
+              <MapPin size={13} className="app-location-icon" />
               Rivers State
 
             </div>
