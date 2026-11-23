@@ -1134,6 +1134,92 @@ html.dark body #root :is(main, header, section, article, aside, dialog, [role="d
   opacity: 0.62;
 }
 
+.form-submission-popup {
+  position: fixed;
+  top: 1.25rem;
+  right: 1.25rem;
+  z-index: 100;
+  display: flex;
+  width: min(26rem, calc(100vw - 2rem));
+  align-items: flex-start;
+  gap: 0.75rem;
+  border: 1px solid;
+  border-radius: 1rem;
+  padding: 1rem;
+  box-shadow: 0 18px 45px rgb(15 23 42 / 0.2);
+  animation: form-popup-in 220ms ease-out;
+}
+
+.form-submission-popup.is-success {
+  border-color: #6ee7b7;
+  background: #ecfdf5;
+  color: #065f46;
+}
+
+.form-submission-popup.is-error {
+  border-color: #fca5a5;
+  background: #fef2f2;
+  color: #991b1b;
+}
+
+.form-submission-popup-title {
+  font-size: 0.875rem;
+  font-weight: 800;
+}
+
+.form-submission-popup-message {
+  margin-top: 0.25rem;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+}
+
+.form-submission-popup-close {
+  display: grid;
+  min-width: 2rem;
+  min-height: 2rem;
+  place-items: center;
+  border-radius: 0.5rem;
+  color: currentColor;
+}
+
+.form-submission-popup-close:hover {
+  background: rgb(15 23 42 / 0.08);
+}
+
+:root.dark .form-submission-popup.is-success {
+  border-color: #347b65 !important;
+  background: #123d32 !important;
+  color: #d1fae5 !important;
+}
+
+:root.dark .form-submission-popup.is-error {
+  border-color: #9f3f4c !important;
+  background: #3b1820 !important;
+  color: #fecdd3 !important;
+}
+
+:root.dark .form-submission-popup-close:hover {
+  background: rgb(255 255 255 / 0.1) !important;
+}
+
+@keyframes form-popup-in {
+  from {
+    opacity: 0;
+    transform: translateY(-0.75rem) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (max-width: 640px) {
+  .form-submission-popup {
+    top: 0.75rem;
+    right: 1rem;
+  }
+}
+
 :root.dark .submit-unofficial-result {
   border: 1px solid #6ee7b7 !important;
   background: #059669 !important;

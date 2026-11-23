@@ -6,6 +6,7 @@ import {
   ChevronRight,
   FileImage,
   Send,
+  X,
 } from "lucide-react";
 
 import { useAuth } from "../context/AuthContext";
@@ -105,11 +106,31 @@ export default function AgentResults() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [submissionPopup, setSubmissionPopup] = useState<{
+    kind: "success" | "error";
+    message: string;
+  } | null>(null);
 
   const [savedSubmissionId, setSavedSubmissionId] = useState<number | null>(
     null
   );
   const [imageUploaded, setImageUploaded] = useState(false);
+
+  useEffect(() => {
+    const message = success || error;
+    if (!message) return;
+
+    setSubmissionPopup({
+      kind: success ? "success" : "error",
+      message,
+    });
+
+    const timeout = window.setTimeout(() => {
+      setSubmissionPopup(null);
+    }, 6500);
+
+    return () => window.clearTimeout(timeout);
+  }, [error, success]);
 
   const selectedAssignment = user?.role === "admin"
     ? (() => {
@@ -459,6 +480,33 @@ export default function AgentResults() {
 
   return (
     <div className="space-y-6">
+      {submissionPopup && (
+        <div
+          role={submissionPopup.kind === "error" ? "alert" : "status"}
+          aria-live={submissionPopup.kind === "error" ? "assertive" : "polite"}
+          className={`form-submission-popup is-${submissionPopup.kind}`}
+        >
+          {submissionPopup.kind === "success" ? (
+            <CheckCircle2 size={22} aria-hidden="true" />
+          ) : (
+            <AlertCircle size={22} aria-hidden="true" />
+          )}
+          <div className="min-w-0 flex-1">
+            <p className="form-submission-popup-title">
+              {submissionPopup.kind === "success" ? "Submission successful" : "Submission failed"}
+            </p>
+            <p className="form-submission-popup-message">{submissionPopup.message}</p>
+          </div>
+          <button
+            type="button"
+            onClick={() => setSubmissionPopup(null)}
+            aria-label="Dismiss message"
+            className="form-submission-popup-close"
+          >
+            <X size={18} aria-hidden="true" />
+          </button>
+        </div>
+      )}
       <div>
         <h1 className="text-2xl font-bold text-slate-900">
           Submit Polling Unit Result
