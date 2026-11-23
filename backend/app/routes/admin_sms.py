@@ -44,11 +44,12 @@ def _valid_phone(phone_number: str | None) -> str | None:
 
 
 def _assignment_login_message(
-    *, phone: str, polling_unit: PollingUnit | None, login_url: str,
+    *, full_name: str, phone: str, polling_unit: PollingUnit | None, login_url: str,
     must_change_password: bool, default_password: str,
 ) -> str:
+    first_name = full_name.strip().split(maxsplit=1)[0] if full_name.strip() else "Agent"
     password = (
-        f"Temp password {default_password}; change after login."
+        f"Temp password {default_password}."
         if must_change_password
         else "Use your current password."
     )
@@ -62,12 +63,12 @@ def _assignment_login_message(
     else:
         locations = ["No PU assigned"]
     for location in locations:
-        message = f"DYN: {location}. Login {phone} at {login_url}. {password}"
+        message = f"Dear {first_name}, You've been assigned to {location}. Login {phone} at {login_url}. {password}"
         if len(message) <= 160:
             return message
     # The final variant is normally well below one GSM segment. Keep the link
     # and login credentials intact if an unusually long deployment URL is used.
-    return f"DYN: {locations[-1]}. Login {phone} at {login_url}. {password}"
+    return f"Dear {first_name}, You've been assigned to {locations[-1]}. Login {phone} at {login_url}. {password}"
     try:
         return normalize_nigerian_phone(phone_number)
     except ValueError:
@@ -257,6 +258,7 @@ def send_admin_sms(
         for phone, user in users_by_phone.items():
             unit = units_by_agent.get(user.id)
             personalized = _assignment_login_message(
+                full_name=user.full_name,
                 phone=phone,
                 polling_unit=unit,
                 login_url=login_url,

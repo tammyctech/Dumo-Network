@@ -16,6 +16,7 @@ class AdminSmsMessageTests(unittest.TestCase):
 
     def test_temporary_password_message_fits_one_segment(self):
         message = _assignment_login_message(
+            full_name="Tamunotonye Emmanuel",
             phone="+2348012345678",
             polling_unit=self.unit,
             login_url="https://dumo-network.vercel.app/login",
@@ -23,11 +24,16 @@ class AdminSmsMessageTests(unittest.TestCase):
             default_password="12345",
         )
         self.assertLessEqual(len(message), 160)
+        self.assertTrue(message.startswith("Dear Tamunotonye,"))
+        self.assertIn("You've been assigned to PU", message)
+        self.assertNotIn("DYN:", message)
+        self.assertNotIn("change after login", message)
         self.assertIn("Temp password 12345", message)
         self.assertNotIn(self.unit.name, message)
 
     def test_existing_password_message_has_no_temporary_password(self):
         message = _assignment_login_message(
+            full_name="Ada Okon",
             phone="+2348012345678",
             polling_unit=self.unit,
             login_url="https://dumo-network.vercel.app/login",
@@ -35,6 +41,7 @@ class AdminSmsMessageTests(unittest.TestCase):
             default_password="12345",
         )
         self.assertLessEqual(len(message), 160)
+        self.assertTrue(message.startswith("Dear Ada,"))
         self.assertIn("Use your current password", message)
         self.assertNotIn("Temp password", message)
 
