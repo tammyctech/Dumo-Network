@@ -378,7 +378,7 @@ export default function AppLayout() {
               <Fragment key={item.name}>
                 {showSection && (
                   <p
-                    className={`px-3 pb-2 text-[10px] font-bold uppercase tracking-[0.16em] text-sky-200/60 ${
+                    className={`app-sidebar-section px-3 pb-2 text-[10px] font-bold uppercase tracking-[0.16em] ${
                       index === 0 ? "pt-6" : "pt-5"
                     }`}
                   >
@@ -389,15 +389,11 @@ export default function AppLayout() {
                   to={item.path}
                   onClick={() => setSidebarOpen(false)}
                   className={({ isActive }) => `
+                    app-sidebar-link ${isActive ? "is-active" : ""}
                     flex min-h-11 items-center gap-3
                     rounded-lg border-l-2 px-3 py-2.5
                     text-[13px] font-medium
                     transition-colors duration-200
-                    ${
-                      isActive
-                        ? "border-sky-400 bg-white text-slate-950 shadow-sm"
-                        : "border-transparent text-slate-300 hover:bg-white/10 hover:text-white"
-                    }
                   `}
                 >
                   <Icon size={18} />

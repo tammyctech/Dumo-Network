@@ -469,14 +469,14 @@ export default function AgentResults() {
         </p>
       </div>
 
-      <div className="rounded-xl border border-amber-200 bg-amber-50 p-4">
+      <div className="results-unofficial-notice rounded-xl border p-4">
         <div className="flex gap-3">
           <AlertCircle
             size={20}
-            className="shrink-0 text-amber-600"
+            className="results-unofficial-notice-icon shrink-0"
           />
 
-          <p className="text-sm text-amber-900">
+          <p className="results-unofficial-notice-text text-sm">
             Results displayed and submitted through the Dumo Youth Network
             Election Monitoring System are
             unofficial monitoring figures, not officially declared
@@ -862,7 +862,7 @@ export default function AgentResults() {
               !user ||
               !["agent", "admin"].includes(user.role)
             }
-            className="flex w-full items-center justify-center gap-3 rounded-xl bg-emerald-600 px-6 py-4 font-semibold text-white hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-50"
+            className="submit-unofficial-result flex w-full items-center justify-center gap-3 rounded-xl px-6 py-4 font-semibold transition-all disabled:cursor-not-allowed"
           >
             <Send size={20} />
             {submitting ? "Submitting..." : "Submit Unofficial Result"}
