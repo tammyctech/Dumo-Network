@@ -1009,6 +1009,28 @@ html.dark body #root :is(main, header, section, article, aside, dialog, [role="d
   color: #94a3b8 !important;
 }
 
+:root.dark .dashboard-lga-coverage .recharts-default-tooltip {
+  border: 1px solid #365675 !important;
+  border-radius: 0.75rem !important;
+  background: #07172b !important;
+  box-shadow: 0 12px 28px rgb(0 0 0 / 0.32) !important;
+}
+
+:root.dark .dashboard-lga-coverage .recharts-tooltip-label {
+  color: #f1f5f9 !important;
+  font-weight: 700 !important;
+}
+
+:root.dark .dashboard-lga-coverage .recharts-tooltip-item,
+:root.dark .dashboard-lga-coverage .recharts-tooltip-item-name,
+:root.dark .dashboard-lga-coverage .recharts-tooltip-item-value {
+  color: #cbd5e1 !important;
+}
+
+:root.dark .dashboard-lga-coverage .recharts-cartesian-axis-tick-value {
+  fill: #aab8ca !important;
+}
+
 .settings-profile-summary {
   background: #f8fafc;
 }
