@@ -578,7 +578,6 @@ export default function LandingPage() {
 
       <main>
         <section className="relative isolate overflow-hidden border-b border-slate-200 bg-[#f4f7fa] pb-12 pt-12 text-slate-950 sm:pb-20 sm:pt-20">
-          <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(14,165,233,0.07),transparent_42%),radial-gradient(circle_at_82%_12%,rgba(186,230,253,0.5),transparent_30%)]" />
           <div className="relative mx-auto grid max-w-7xl gap-12 px-5 lg:grid-cols-[1.02fr_0.98fr] lg:items-center lg:gap-16 lg:px-8">
             <div>
               <div className="inline-flex items-center gap-2.5 rounded-lg border border-sky-200 bg-white px-3.5 py-2 text-[11px] font-bold uppercase tracking-[0.15em] text-sky-800 shadow-sm">
