@@ -82,11 +82,20 @@ polling-unit reassignment alerts by SMS:
 ```text
 TERMII_BASE_URL=https://your-account-base-url
 TERMII_API_KEY=your-live-api-key
-TERMII_SENDER_ID=Dumo
-TERMII_CHANNEL=dnd
+TERMII_SENDER_ID=DYN
+TERMII_PROMOTIONAL_SENDER_ID=DYN
+TERMII_WEBHOOK_SECRET=your-termii-webhook-secret
 ```
 
 Copy the account-specific base URL and API key from the Termii dashboard. The
-sender ID must be approved in Termii and contain 3–11 characters. The `dnd`
-route is recommended for transactional alerts and must be activated on the
-Termii account. Do not commit the real API key.
+sender ID must be approved in Termii and contain 3–11 characters. Welcome and
+general agent messages use Termii's `generic` promotional route. Configure the
+Termii delivery-report webhook as
+`https://YOUR_API_HOST/api/webhooks/termii/delivery-report`; accepted messages
+remain `SENT` until its signed report changes them to `DELIVERED`, `FAILED`, or
+`REJECTED`. `TERMII_WEBHOOK_SECRET` should be the secret Termii uses to sign
+`X-Termii-Signature`; it falls back to `TERMII_API_KEY` for existing setups.
+
+Do not route OTP or security messages through `generic`. If transactional SMS
+is approved later, configure `TERMII_TRANSACTIONAL_SENDER_ID` and
+`TERMII_TRANSACTIONAL_CHANNEL=dnd` separately. Do not commit real credentials.

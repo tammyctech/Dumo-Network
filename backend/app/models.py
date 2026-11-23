@@ -809,3 +809,22 @@ class OrganizationSettings(Base):
         DateTime(timezone=True), default=lambda: datetime.now(timezone.utc),
         onupdate=lambda: datetime.now(timezone.utc), nullable=False,
     )
+
+
+class SmsDelivery(Base):
+    """One provider submission and its latest delivery-report state."""
+
+    __tablename__ = "sms_deliveries"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    termii_message_id: Mapped[str | None] = mapped_column(String(100), nullable=True, unique=True, index=True)
+    recipient: Mapped[str] = mapped_column(String(20), nullable=False)
+    sender_id: Mapped[str] = mapped_column(String(11), nullable=False)
+    channel: Mapped[str] = mapped_column(String(20), nullable=False)
+    message_type: Mapped[str] = mapped_column(String(20), nullable=False)
+    status: Mapped[str] = mapped_column(String(20), nullable=False, default="SENT", index=True)
+    provider_status: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    error: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    submitted_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc), nullable=False)
+    delivered_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)

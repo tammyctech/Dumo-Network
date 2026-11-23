@@ -47,6 +47,7 @@ from .routes import (
     admin_mfa,
     admin_sms,
     site_analytics,
+    termii_webhooks,
 )
 
 
@@ -218,6 +219,7 @@ app.include_router(phone_validation.router)
 app.include_router(admin_mfa.router)
 app.include_router(admin_sms.router)
 app.include_router(site_analytics.router)
+app.include_router(termii_webhooks.router)
 
 
 # =====================================================
