@@ -404,6 +404,26 @@ header h3 {
   background-color: #e0f2fe;
 }
 
+.data-quality-subtitle {
+  color: #475569;
+}
+
+.data-quality-review-notice {
+  border-color: #fcd34d;
+  background-color: #fffbeb;
+  color: #78350f;
+}
+
+.data-quality-review-icon {
+  color: #b45309;
+}
+
+.data-quality-error {
+  border-color: #fecaca;
+  background-color: #fef2f2;
+  color: #991b1b;
+}
+
 .lga-progress-heading,
 .lga-progress-name {
   color: #0f172a;
@@ -612,6 +632,26 @@ header h3 {
 
 :root.dark .user-action-refresh-icon {
   color: #9bd8f5 !important;
+}
+
+:root.dark .data-quality-subtitle {
+  color: #aab8ca !important;
+}
+
+:root.dark .data-quality-review-notice {
+  border-color: #8a6829 !important;
+  background-color: #332810 !important;
+  color: #e8cf91 !important;
+}
+
+:root.dark .data-quality-review-icon {
+  color: #e5b95f !important;
+}
+
+:root.dark .data-quality-error {
+  border-color: #8f4545 !important;
+  background-color: #3b2024 !important;
+  color: #efaaa4 !important;
 }
 
 :root.dark .lga-progress-section .lga-progress-heading {
