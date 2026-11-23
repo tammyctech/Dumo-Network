@@ -977,6 +977,17 @@ html.dark body #root :is(main, header, section, article, aside, dialog, [role="d
 }
 
 /* Settings dashboard navigation keeps icon tiles and copy legible in both themes. */
+:root.dark .sms-send-all {
+  border-color: #347b65 !important;
+  background: #123d32 !important;
+  color: #d1fae5 !important;
+}
+
+:root.dark .sms-send-all:hover {
+  border-color: #5ab394 !important;
+  background: #17483b !important;
+}
+
 .settings-profile-summary {
   background: #f8fafc;
 }
