@@ -14,7 +14,7 @@ class AdminSmsMessageTests(unittest.TestCase):
             state="Rivers",
         )
 
-    def test_temporary_password_message_fits_one_segment(self):
+    def test_temporary_password_message_uses_original_template(self):
         message = _assignment_login_message(
             full_name="Tamunotonye Emmanuel",
             phone="+2348012345678",
@@ -23,13 +23,11 @@ class AdminSmsMessageTests(unittest.TestCase):
             must_change_password=True,
             default_password="12345",
         )
-        self.assertLessEqual(len(message), 160)
-        self.assertTrue(message.startswith("Dear Tamunotonye,"))
-        self.assertIn("You've been assigned to PU", message)
-        self.assertNotIn("DYN:", message)
-        self.assertNotIn("change after login", message)
-        self.assertIn("Login details: Phone +2348012345678, Temp Pass: 12345", message)
-        self.assertNotIn(self.unit.name, message)
+        self.assertTrue(message.startswith("Hello Tamunotonye."))
+        self.assertNotIn("Tamunotonye Emmanuel", message)
+        self.assertIn("Your Dumo Youth Network polling unit", message)
+        self.assertIn(self.unit.name, message)
+        self.assertIn("Temporary password: 12345", message)
 
     def test_recipient_phone_is_normalized_for_loading(self):
         self.assertEqual(_valid_phone("0801 234 5678"), "+2348012345678")
@@ -44,10 +42,10 @@ class AdminSmsMessageTests(unittest.TestCase):
             must_change_password=False,
             default_password="12345",
         )
-        self.assertLessEqual(len(message), 160)
-        self.assertTrue(message.startswith("Dear Ada,"))
-        self.assertIn("Login details: Phone +2348012345678, use current password", message)
-        self.assertNotIn("Temp Pass", message)
+        self.assertTrue(message.startswith("Hello Ada."))
+        self.assertNotIn("Ada Okon", message)
+        self.assertIn("Use your existing password", message)
+        self.assertNotIn("Temporary password", message)
 
 
 if __name__ == "__main__":

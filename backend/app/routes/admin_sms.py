@@ -52,27 +52,19 @@ def _assignment_login_message(
     must_change_password: bool, default_password: str,
 ) -> str:
     first_name = full_name.strip().split(maxsplit=1)[0] if full_name.strip() else "Agent"
-    login_details = (
-        f"Login details: Phone {phone}, Temp Pass: {default_password}."
-        if must_change_password
-        else f"Login details: Phone {phone}, use current password."
+    assignment = (
+        f"{polling_unit.code}, {polling_unit.name}, {polling_unit.ward}, {polling_unit.lga} LGA"
+        if polling_unit else "No polling unit is currently assigned"
     )
-    locations = []
-    if polling_unit:
-        locations = [
-            f"PU {polling_unit.code}, {polling_unit.ward}, {polling_unit.lga} LGA",
-            f"PU {polling_unit.code}, {polling_unit.lga} LGA",
-            f"PU {polling_unit.code}",
-        ]
-    else:
-        locations = ["No PU assigned"]
-    for location in locations:
-        message = f"Dear {first_name}, You've been assigned to {location}. {login_details} Sign in: {login_url}"
-        if len(message) <= 160:
-            return message
-    # The final variant is normally well below one GSM segment. Keep the link
-    # and login credentials intact if an unusually long deployment URL is used.
-    return f"Dear {first_name}, You've been assigned to {locations[-1]}. {login_details} Sign in: {login_url}"
+    password_details = (
+        f"Temporary password: {default_password}. Change it after signing in."
+        if must_change_password
+        else "Use your existing password, or Forgot password if needed."
+    )
+    return (
+        f"Hello {first_name}. Your Dumo Youth Network polling unit: {assignment}. "
+        f"Login phone: {phone}. Sign in: {login_url}. {password_details}"
+    )
 
 
 def _deliver_sms(
