@@ -985,15 +985,15 @@ export default function Settings() {
                   The workspace uses a consistent light theme with accessible green accents.
                 </p>
 
-                <div className="flex items-center gap-4 rounded-2xl border border-emerald-200 bg-emerald-50/70 p-5">
-                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white text-emerald-700 shadow-sm">
+                <div className="settings-appearance-card flex items-center gap-4 rounded-2xl border border-emerald-200 p-5">
+                  <span className="settings-appearance-icon flex h-11 w-11 shrink-0 items-center justify-center rounded-xl shadow-sm">
                     <Palette size={21} />
                   </span>
                   <div className="min-w-0 flex-1">
-                    <p className="font-semibold text-slate-900">
+                    <p className="settings-appearance-title font-semibold">
                       Light appearance is enabled
                     </p>
-                    <p className="mt-1 text-sm leading-6 text-slate-600">
+                    <p className="settings-appearance-copy mt-1 text-sm leading-6">
                       Pages use bright neutral surfaces with green accents. Theme switching is disabled for a consistent experience.
                     </p>
                   </div>
@@ -1006,7 +1006,7 @@ export default function Settings() {
             ====================================== */}
 
             {activeTab === "organization" && isAdmin && (
-              <form onSubmit={saveOrganization} className="space-y-6">
+              <form onSubmit={saveOrganization} className="organization-settings space-y-6">
                 <div><h2 className="text-xl font-bold text-slate-900">Organization Settings</h2><p className="mt-1 text-sm text-slate-500">Manage public contact details, branding, notifications, and sender identities.</p></div>
                 {organizationError && <div role="alert" className="flex gap-2 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800"><AlertCircle size={19}/>{organizationError}</div>}
                 {organizationSuccess && <div role="status" className="flex gap-2 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800"><CheckCircle2 size={19}/>{organizationSuccess}</div>}
@@ -1025,7 +1025,7 @@ export default function Settings() {
                       <label className="text-sm font-medium text-slate-700">Login description<textarea required rows={3} minLength={2} maxLength={500} value={organization.login_description} onChange={(e)=>updateOrganization("login_description",e.target.value)} className="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3"/></label>
                     </div>
                   </section>
-                  <section className="space-y-5 rounded-xl border border-slate-200 p-5">
+                  <section className="landing-copy-section space-y-5 rounded-xl border border-slate-200 p-5">
                     <div><h3 className="font-bold text-slate-900">Colors, typography, and page artwork</h3><p className="mt-1 text-xs text-slate-500">These choices are applied to the login page and authenticated workspace.</p></div>
                     <div className="grid gap-4 sm:grid-cols-3">
                       {([['primary_color','Primary color'],['background_color','Background color'],['text_color','Text color']] as const).map(([key,label])=><label key={key} className="text-sm font-medium text-slate-700">{label}<span className="mt-2 flex items-center gap-2 rounded-xl border border-slate-300 p-2"><input type="color" value={organization[key]} onChange={(e)=>updateOrganization(key,e.target.value)} className="h-9 w-12 cursor-pointer rounded border-0 bg-transparent"/><input pattern="#[0-9A-Fa-f]{6}" value={organization[key]} onChange={(e)=>updateOrganization(key,e.target.value)} className="min-w-0 flex-1 bg-transparent font-mono text-sm outline-none"/></span></label>)}
@@ -1044,7 +1044,7 @@ export default function Settings() {
                   <section className="space-y-5 rounded-xl border border-slate-200 p-5">
                     <div><h3 className="font-bold text-slate-900">Landing-page text and colors</h3><p className="mt-1 text-xs leading-5 text-slate-500">Edit each public-page text block and choose its exact text color. Dynamic election figures and polling-unit names remain generated from live data.</p></div>
                     <div className="grid gap-4 lg:grid-cols-2">
-                      {Object.entries(landingTextLabels).map(([key,label])=>{const item=organization.landing_text[key]||defaultLandingText[key];return <div key={key} className="rounded-xl border border-slate-200 bg-slate-50/60 p-4"><label className="text-xs font-bold uppercase tracking-wide text-slate-600">{label}<textarea rows={item.text.length>90?3:2} maxLength={600} required value={item.text} onChange={(e)=>updateLandingText(key,"text",e.target.value)} className="mt-2 w-full resize-y rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-normal normal-case tracking-normal text-slate-900"/></label><label className="mt-3 flex items-center gap-3 text-xs font-semibold text-slate-600">Text color<input type="color" value={item.color} onChange={(e)=>updateLandingText(key,"color",e.target.value)} className="h-9 w-12 cursor-pointer rounded border-0 bg-transparent"/><input value={item.color} pattern="#[0-9A-Fa-f]{6}" onChange={(e)=>updateLandingText(key,"color",e.target.value)} className="w-28 rounded-lg border border-slate-300 bg-white px-2 py-1.5 font-mono"/><span className="min-w-0 flex-1 truncate rounded-lg bg-white px-3 py-2" style={{color:item.color}}>{item.text}</span></label></div>})}
+                      {Object.entries(landingTextLabels).map(([key,label])=>{const item=organization.landing_text[key]||defaultLandingText[key];return <div key={key} className="landing-copy-card rounded-xl border p-4"><label className="landing-copy-label text-xs font-bold uppercase tracking-wide">{label}<textarea rows={item.text.length>90?3:2} maxLength={600} required value={item.text} onChange={(e)=>updateLandingText(key,"text",e.target.value)} className="landing-copy-input mt-2 w-full resize-y rounded-lg border px-3 py-2 text-sm font-normal normal-case tracking-normal"/></label><label className="landing-copy-label mt-3 flex items-center gap-3 text-xs font-semibold">Text color<input type="color" value={item.color} onChange={(e)=>updateLandingText(key,"color",e.target.value)} className="h-9 w-12 cursor-pointer rounded border-0 bg-transparent"/><input value={item.color} pattern="#[0-9A-Fa-f]{6}" onChange={(e)=>updateLandingText(key,"color",e.target.value)} className="landing-copy-input w-28 rounded-lg border px-2 py-1.5 font-mono"/><span className="landing-copy-preview min-w-0 flex-1 truncate rounded-lg px-3 py-2" style={{color:item.color}}>{item.text}</span></label></div>})}
                     </div>
                   </section>
                   <section className="grid gap-4 rounded-xl border border-slate-200 p-5 sm:grid-cols-2">
