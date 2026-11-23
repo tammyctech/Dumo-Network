@@ -542,19 +542,19 @@ export default function Settings() {
 
                 {/* PROFILE SUMMARY */}
 
-                <div className="flex items-center gap-4 rounded-xl bg-slate-50 p-5">
-                  <div className="flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100 text-2xl font-bold text-emerald-700">
+                <div className="settings-profile-summary flex items-center gap-4 rounded-xl p-5">
+                  <div className="settings-profile-avatar flex h-16 w-16 items-center justify-center rounded-full text-2xl font-bold">
                     {user?.full_name
                       ?.charAt(0)
                       .toUpperCase() || "U"}
                   </div>
 
                   <div>
-                    <p className="text-lg font-semibold text-slate-900">
+                    <p className="settings-profile-name text-lg font-semibold">
                       {user?.full_name || "Dumo User"}
                     </p>
 
-                    <p className="text-sm capitalize text-slate-500">
+                    <p className="settings-profile-role text-sm capitalize">
                       {user?.role || "User"}
                     </p>
                   </div>
