@@ -1524,20 +1524,20 @@ const workflowUnavailableMessage = statistics?.election
                         pathLength="100" strokeDasharray={`${overallCoverage} 100`} />
                     )}
                   </svg>
-                  <div className="text-center">
-                    <strong className="block text-2xl tabular-nums text-slate-900">{overallCoverage === null ? "—" : `${overallCoverage.toFixed(1)}%`}</strong>
-                    <span className="text-xs text-slate-600">Assigned</span>
+                  <div className="relative text-center">
+                    <strong className="coverage-figure block text-2xl tabular-nums">{overallCoverage === null ? "—" : `${overallCoverage.toFixed(1)}%`}</strong>
+                    <span className="coverage-caption block text-xs">Assigned</span>
                   </div>
                 </div>
-              <dl className="grid w-full grid-cols-2 gap-2 md:grid-cols-3">
+              <dl aria-label="Statewide polling-unit totals" className="grid w-full min-w-0 grid-cols-2 gap-2 lg:grid-cols-3">
                 {[
                   ["Total polling units", coverageUnitCount.toLocaleString("en-NG")],
                   ["Assigned units", coverageTotals.assigned.toLocaleString("en-NG")],
                   ["Unassigned units", coverageTotals.unassigned.toLocaleString("en-NG")],
                 ].map(([label, value]) => (
                   <div key={label} className="rounded-xl border border-slate-200 bg-slate-50 p-3">
-                    <dt className="text-xs font-semibold text-slate-600">{label}</dt>
-                    <dd className="mt-1 text-2xl font-bold tabular-nums text-slate-900">{value}</dd>
+                    <dt className="coverage-caption text-xs font-semibold">{label}</dt>
+                    <dd className="coverage-figure mt-1 text-2xl font-bold tabular-nums">{value}</dd>
                   </div>
                 ))}
               </dl>
@@ -1568,10 +1568,18 @@ const workflowUnavailableMessage = statistics?.election
                           <span className="bg-amber-400" style={{ width: `${100 - coverage}%` }} />
                         </>}
                       </div>
-                      <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs tabular-nums text-slate-600">
-                        <span><strong>{assigned.toLocaleString("en-NG")}</strong> assigned</span>
-                        <span><strong>{unassigned.toLocaleString("en-NG")}</strong> unassigned</span>
-                      </div>
+                      <dl className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3">
+                        {[
+                          ["Total polling units", total],
+                          ["Assigned units", assigned],
+                          ["Unassigned units", unassigned],
+                        ].map(([label, value]) => (
+                          <div key={label}>
+                            <dt className="coverage-caption text-xs font-semibold">{label}</dt>
+                            <dd className="coverage-figure text-xl font-bold tabular-nums">{value.toLocaleString("en-NG")}</dd>
+                          </div>
+                        ))}
+                      </dl>
                     </div>
                 );
               })()}

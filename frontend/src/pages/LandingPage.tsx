@@ -575,7 +575,7 @@ export default function LandingPage() {
       </header>
 
       <main>
-        <section className="relative isolate overflow-hidden border-b border-slate-200 bg-[#f4f7fa] pb-12 pt-12 text-slate-950 sm:pb-20 sm:pt-20">
+        <section className="relative isolate overflow-hidden border-b border-slate-200 bg-[#eef2f6] pb-12 pt-12 text-slate-950 sm:pb-20 sm:pt-20">
           <div className="relative mx-auto grid max-w-7xl gap-12 px-5 lg:grid-cols-[1.02fr_0.98fr] lg:items-center lg:gap-16 lg:px-8">
             <div>
               <div className="inline-flex items-center gap-2.5 rounded-lg border border-sky-200 bg-white px-3.5 py-2 text-[11px] font-bold uppercase tracking-[0.15em] text-sky-800 shadow-sm">

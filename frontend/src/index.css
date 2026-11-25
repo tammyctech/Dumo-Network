@@ -1008,6 +1008,11 @@ html.dark body #root :is(main, header, section, article, aside, dialog, [role="d
   color: #94a3b8 !important;
 }
 
+.dashboard-lga-coverage .coverage-figure { color: #0f172a; }
+.dashboard-lga-coverage .coverage-caption { color: #475569; }
+:root.dark .dashboard-lga-coverage .coverage-figure { color: var(--dark-text-primary); }
+:root.dark .dashboard-lga-coverage .coverage-caption { color: var(--dark-text-secondary); }
+
 :root.dark .dashboard-lga-coverage .recharts-default-tooltip {
   border: 1px solid #2b2f3b !important;
   border-radius: 0.75rem !important;
