@@ -598,7 +598,11 @@ export default function LandingPage() {
                   href="#results"
                   className="landing-hero-cta landing-hero-cta-primary group inline-flex min-h-12 items-center gap-2 rounded-lg bg-sky-700 px-5 py-3 text-sm font-bold text-white shadow-md transition hover:bg-sky-800"
                 >
-                  <span>{lt("hero_results_button").text}</span>
+                  <span aria-hidden="true" className="relative inline-flex h-2.5 w-2.5 shrink-0">
+                    <span className="absolute inset-0 rounded-full bg-emerald-500 motion-safe:animate-ping" />
+                    <span className="relative h-full w-full rounded-full bg-emerald-500 ring-1 ring-emerald-950/25" />
+                  </span>
+                  <span>See Live Results</span>
                 </a>
                 <Link
                   to={accountPath}

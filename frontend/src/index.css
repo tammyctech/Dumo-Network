@@ -1925,6 +1925,24 @@ html.dark { background: #10131c; }
   color: var(--dark-text-primary) !important;
 }
 
+:root.dark .landing-page .landing-hero-cta {
+  --hero-deep-green: #064e3b;
+}
+
+:root.dark .landing-page a.landing-hero-cta-primary,
+:root.dark .landing-page a.landing-hero-cta-secondary:is(:hover, :active) {
+  background: var(--landing-copy) !important;
+  border-color: var(--landing-copy) !important;
+  color: var(--hero-deep-green) !important;
+}
+
+:root.dark .landing-page a.landing-hero-cta-secondary,
+:root.dark .landing-page a.landing-hero-cta-primary:is(:hover, :active) {
+  background: var(--hero-deep-green) !important;
+  border-color: var(--hero-deep-green) !important;
+  color: var(--landing-copy) !important;
+}
+
 :root.dark .landing-page .landing-hero-cta-primary:not(:focus-visible) {
   box-shadow: none !important;
 }
