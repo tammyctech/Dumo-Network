@@ -25,7 +25,7 @@ import { partyColor } from "../constants/partyColors";
 import { useBranding } from "../context/branding";
 import { PartyLogo } from "../constants/partyLogos";
 import { useAuth } from "../context/AuthContext";
-import { setTheme, type ThemeMode } from "../context/theme";
+import { useTheme } from "../context/theme";
 
 const API_URL = import.meta.env.DEV
   ? (import.meta.env.VITE_API_URL || "http://127.0.0.1:8000").replace(/\/$/, "")
@@ -382,8 +382,7 @@ export default function LandingPage() {
   const [mapError, setMapError] = useState("");
   const [error, setError] = useState("");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [themeMode,setThemeMode]=useState<ThemeMode>(()=>document.documentElement.classList.contains("dark")?"dark":"light");
-  function toggleTheme(){const next=themeMode==="dark"?"light":"dark";setTheme(next);window.localStorage.setItem("dumo-theme-user-set","true");setThemeMode(next)}
+  const { mode: themeMode, toggleTheme } = useTheme();
   const [refreshKey, setRefreshKey] = useState(0);
   useEffect(() => {
     const elements = document.querySelectorAll<HTMLElement>(

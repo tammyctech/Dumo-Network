@@ -11,7 +11,7 @@ window.fetch = (input, init = {}) => nativeFetch(input, {
   ...init,
   credentials: init.credentials ?? "include",
 });
-import { initializeTheme } from "./context/theme";
+import { initializeTheme, ThemeProvider } from "./context/theme";
 import { loadBranding } from "./context/branding";
 
 initializeTheme();
@@ -19,6 +19,8 @@ void loadBranding();
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <App />
+    <ThemeProvider>
+      <App />
+    </ThemeProvider>
   </React.StrictMode>
 );

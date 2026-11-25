@@ -2,6 +2,17 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <meta name="theme-color" content="#0B0A18" />
+    <script>
+      (() => {
+        const saved = localStorage.getItem("dumo-theme");
+        const manual = localStorage.getItem("dumo-theme-user-set") === "true";
+        const dark = manual ? saved === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
+        document.documentElement.classList.toggle("dark", dark);
+        document.documentElement.dataset.theme = dark ? "dark" : "light";
+        document.documentElement.style.colorScheme = dark ? "dark" : "light";
+      })();
+    </script>
     <link rel="icon" type="image/x-icon" href="/favicon.ico" />
     <link rel="icon" type="image/png" sizes="32x32" href="/dyn-favicon-32.png" />
     <link rel="apple-touch-icon" href="/dyn-favicon-192.png" />

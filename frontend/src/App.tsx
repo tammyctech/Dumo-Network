@@ -70,7 +70,7 @@ export default function App() {
         <SeoMetadata />
         <SiteVisitTracker />
         <AuthProvider>
-          <Suspense fallback={<div className="min-h-screen bg-[#F5F7FA]" />}>
+          <Suspense fallback={<div className="app-loading-surface min-h-screen" />}>
             <Routes>
 
           {/* ============================================
@@ -232,7 +232,7 @@ function LoadingScreen() {
     <main
       role="status"
       aria-live="polite"
-      className="fixed inset-0 z-[200] flex min-h-screen items-center justify-center bg-[#F5F7FA] px-5"
+      className="app-loading-screen fixed inset-0 z-[200] flex min-h-screen items-center justify-center px-5"
     >
       <div className="flex flex-col items-center text-center">
         <p className="text-sm font-extrabold uppercase tracking-[0.12em] text-slate-900">

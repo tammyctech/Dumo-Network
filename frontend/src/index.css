@@ -297,6 +297,253 @@ video {
   }
 }
 
+/* Final dark-theme authority: overrides legacy page-specific rules above. */
+:root.dark {
+  --brand-primary: #f52d78;
+  --brand-background: #0b0a18;
+  --brand-text: #f5f5fa;
+  --dark-surface-base: #0b0a18;
+  --dark-surface-card: #191927;
+  --dark-surface-raised: #242433;
+  --dark-surface-overlay: #2b2b3d;
+  --dark-border: #2a2a3b;
+  --dark-text-primary: #f5f5fa;
+  --dark-text-secondary: #a1a1b5;
+  --dark-text-muted: #74748a;
+  --workspace-bg: #0b0a18;
+  --workspace-surface: #191927;
+  --workspace-line: #2a2a3b;
+  --workspace-ink: #f5f5fa;
+  --workspace-muted: #a1a1b5;
+  --workspace-accent: #f52d78;
+}
+:root.dark :is(body, #root, .app-shell, .bg-canvas, .dashboard-canvas, .app-loading-surface, .app-loading-screen) { background-color: #0b0a18 !important; color: #f5f5fa; }
+:root.dark :is(.bg-white, .bg-white\/95, .bg-white\/90, .bg-white\/80, .bg-slate-50, .bg-slate-50\/70, .bg-slate-50\/80) { background-color: #191927 !important; }
+:root.dark :is(.bg-slate-100, .bg-slate-100\/80, .bg-slate-200, .bg-sky-50, .bg-sky-50\/50, .bg-sky-50\/70, .bg-sky-100) { background-color: #242433 !important; }
+:root.dark :is(input, select, textarea, .input) { border-color: #36364b !important; background-color: #12121f !important; color: #f5f5fa !important; }
+:root.dark :is(input, select, textarea, .input):focus { border-color: #f52d78 !important; box-shadow: 0 0 0 3px rgb(245 45 120 / .14) !important; }
+:root.dark :is(.text-sky-600, .text-sky-700, .text-sky-800, .text-emerald-600, .text-emerald-700, .text-emerald-800, .text-emerald-950) { color: #f65b94 !important; }
+:root.dark :is(button, a).bg-emerald-700,
+:root.dark :is(button, a).bg-emerald-600,
+:root.dark :is(button, a).bg-sky-700,
+:root.dark :is(button, a).bg-sky-600,
+:root.dark .submit-unofficial-result { border-color: #f52d78 !important; background: #f52d78 !important; color: #fff !important; box-shadow: 0 8px 24px rgb(245 45 120 / .22) !important; }
+:root.dark .app-sidebar { border-color: #2a2a3b !important; background: #12121f !important; color: #f5f5fa !important; }
+:root.dark :is(.app-sidebar-header, .app-sidebar-footer, .topbar-account) { border-color: #2a2a3b !important; }
+:root.dark :is(.app-sidebar-logo-title, .app-sidebar-notice-title, .app-sidebar-profile-name, .topbar-account-name) { color: #f5f5fa !important; }
+:root.dark :is(.app-sidebar-logo-subtitle, .app-sidebar-eyebrow, .app-sidebar-notice-icon) { color: #f52d78 !important; }
+:root.dark :is(.app-sidebar-section, .app-sidebar-notice-copy, .app-sidebar-profile-role, .topbar-account-role) { color: #74748a !important; }
+:root.dark :is(.app-sidebar-notice, .app-sidebar-profile) { border-color: #2a2a3b !important; background: #191927 !important; }
+:root.dark :is(.app-sidebar-profile-avatar, .topbar-account-avatar) { background: rgb(245 45 120 / .16) !important; color: #ff74a8 !important; }
+:root.dark .app-sidebar-link { color: #a1a1b5; }
+:root.dark .app-sidebar-link:hover { background: #242433; color: #f5f5fa; }
+:root.dark .app-sidebar-link.is-active,
+:root.dark .app-sidebar nav a[aria-current="page"] { border-color: #f52d78 !important; background: linear-gradient(90deg, rgb(245 45 120 / .18), rgb(245 45 120 / .04)) !important; color: #fff !important; box-shadow: inset 3px 0 #f52d78 !important; }
+:root.dark .app-sidebar-link.is-active svg { color: #f52d78; }
+:root.dark .app-topbar { border-color: #2a2a3b !important; background: rgb(24 24 36 / .92) !important; }
+:root.dark .topbar-account-button:hover { background: #242433 !important; }
+:root.dark .landing-page { --landing-bg:#0b0a18; --landing-section:#12121f; --landing-card:#191927; --landing-card-hover:#242433; --landing-border:#2a2a3b; --landing-copy:#a1a1b5; --landing-heading:#f5f5fa; --landing-accent:#f52d78; background:#0b0a18 !important; }
+:root.dark .landing-page > header { border-color:#2a2a3b !important; background:rgb(11 10 24 / .9) !important; }
+:root.dark .landing-page main > section:nth-of-type(even) { background:#12121f !important; }
+:root.dark .landing-page .nav-logo-mark { background:#f52d78 !important; color:#fff !important; }
+:root.dark .landing-page :is(.nav-sign-in, .landing-hero-cta, .landing-hero-cta:hover) { border-color:#f52d78 !important; background:#f52d78 !important; color:#fff !important; }
+:root.dark .landing-page :is(article, form, .bg-white, .bg-white\/70, .bg-white\/95, .bg-slate-50) { border-color:#2a2a3b !important; background:#191927 !important; }
+:root.dark .landing-page footer { border-color:#2a2a3b !important; background:#070611 !important; }
+:root.dark .settings-nav-item:hover { background:#242433 !important; }
+:root.dark .settings-nav-item.is-selected { background:rgb(245 45 120 / .14) !important; }
+:root.dark .settings-nav-icon,
+:root.dark .settings-nav-item:hover .settings-nav-icon,
+:root.dark .settings-nav-item.is-selected .settings-nav-icon { background:#2b2b3d !important; color:#f65b94 !important; }
+
+/* ==========================================
+   DUMO DARK DESIGN SYSTEM — NAVY / PINK
+   Kept last so legacy utility classes inherit one coherent global theme.
+========================================== */
+:root.dark {
+  --brand-primary: #f52d78;
+  --brand-background: #0b0a18;
+  --brand-text: #f5f5fa;
+  --dark-surface-base: #0b0a18;
+  --dark-surface-card: #191927;
+  --dark-surface-raised: #242433;
+  --dark-surface-overlay: #2b2b3d;
+  --dark-border: #2a2a3b;
+  --dark-text-primary: #f5f5fa;
+  --dark-text-secondary: #a1a1b5;
+  --dark-text-muted: #74748a;
+  --workspace-bg: #0b0a18;
+  --workspace-surface: #191927;
+  --workspace-line: #2a2a3b;
+  --workspace-ink: #f5f5fa;
+  --workspace-muted: #a1a1b5;
+  --workspace-accent: #f52d78;
+  accent-color: #f52d78;
+}
+
+:root.dark body,
+:root.dark #root,
+:root.dark .app-shell,
+:root.dark .bg-canvas,
+:root.dark .dashboard-canvas,
+:root.dark .app-loading-surface,
+:root.dark .app-loading-screen {
+  background-color: #0b0a18 !important;
+  color: #f5f5fa;
+}
+
+:root.dark .dashboard-canvas,
+:root.dark .app-loading-screen {
+  background-image:
+    radial-gradient(circle at 88% 0%, rgb(99 102 241 / 0.12), transparent 28rem),
+    radial-gradient(circle at 18% 90%, rgb(245 45 120 / 0.07), transparent 26rem) !important;
+}
+
+:root.dark :where(a, button, input, select, textarea):focus-visible {
+  outline-color: #f52d78;
+}
+
+:root.dark ::selection { background: rgb(245 45 120 / 0.35); color: #fff; }
+:root.dark * { scrollbar-color: #4a304b #12121f; }
+:root.dark ::-webkit-scrollbar { width: 10px; height: 10px; }
+:root.dark ::-webkit-scrollbar-track { background: #12121f; }
+:root.dark ::-webkit-scrollbar-thumb { border: 2px solid #12121f; border-radius: 999px; background: #4a304b; }
+
+:root.dark :is(.bg-white, .bg-white\/95, .bg-white\/90, .bg-white\/80, .bg-slate-50, .bg-slate-50\/70, .bg-slate-50\/80) {
+  background-color: #191927 !important;
+}
+
+:root.dark :is(.bg-slate-100, .bg-slate-100\/80, .bg-slate-200, .bg-sky-50, .bg-sky-50\/50, .bg-sky-50\/70, .bg-sky-100, .bg-sky-200\/50) {
+  background-color: #242433 !important;
+}
+
+:root.dark :is(.border, .border-t, .border-b, .border-r, .border-l, [class*="border-slate-"], [class*="border-sky-"]) {
+  border-color: #2a2a3b !important;
+}
+
+:root.dark :is(input, select, textarea, .input) {
+  border-color: #36364b !important;
+  background-color: #12121f !important;
+  color: #f5f5fa !important;
+  box-shadow: none;
+}
+
+:root.dark :is(input, select, textarea, .input):focus {
+  border-color: #f52d78 !important;
+  box-shadow: 0 0 0 3px rgb(245 45 120 / 0.14) !important;
+}
+
+:root.dark :is(input, textarea)::placeholder { color: #74748a !important; }
+:root.dark select option { background: #191927; color: #f5f5fa; }
+
+:root.dark :is(.text-slate-950, .text-slate-900, .text-slate-800),
+:root.dark main :is(h1, h2, h3, h4, h5, h6) { color: #f5f5fa !important; }
+:root.dark :is(.text-slate-700, .text-slate-600, .text-slate-300) { color: #a1a1b5 !important; }
+:root.dark :is(.text-slate-500, .text-slate-400) { color: #74748a !important; }
+:root.dark :is(.text-sky-600, .text-sky-700, .text-sky-800, .text-emerald-600, .text-emerald-700, .text-emerald-800, .text-emerald-950) { color: #f65b94 !important; }
+:root.dark :is(.text-red-600, .text-red-700, .text-red-800) { color: #ff708c !important; }
+:root.dark :is(.text-amber-600, .text-amber-700, .text-amber-800, .text-amber-950, .text-yellow-600, .text-yellow-700, .text-yellow-800) { color: #ffc83d !important; }
+
+:root.dark :is(button, a).bg-emerald-700,
+:root.dark :is(button, a).bg-emerald-600,
+:root.dark :is(button, a).bg-sky-700,
+:root.dark :is(button, a).bg-sky-600,
+:root.dark .submit-unofficial-result {
+  border-color: #f52d78 !important;
+  background: #f52d78 !important;
+  color: #fff !important;
+  box-shadow: 0 8px 24px rgb(245 45 120 / 0.22) !important;
+}
+:root.dark :is(button, a).bg-emerald-700:hover,
+:root.dark :is(button, a).bg-emerald-600:hover,
+:root.dark :is(button, a).bg-sky-700:hover,
+:root.dark :is(button, a).bg-sky-600:hover,
+:root.dark .submit-unofficial-result:hover:not(:disabled) { background: #d91f65 !important; }
+
+:root.dark .app-sidebar {
+  border-color: #2a2a3b !important;
+  background: #12121f !important;
+  color: #f5f5fa !important;
+  box-shadow: 12px 0 32px rgb(0 0 0 / 0.24) !important;
+}
+:root.dark .app-sidebar-header,
+:root.dark .app-sidebar-footer { border-color: #2a2a3b !important; }
+:root.dark .app-sidebar-logo-title,
+:root.dark .app-sidebar-notice-title,
+:root.dark .app-sidebar-profile-name { color: #f5f5fa !important; }
+:root.dark .app-sidebar-logo-subtitle,
+:root.dark .app-sidebar-eyebrow,
+:root.dark .app-sidebar-notice-icon { color: #f52d78 !important; }
+:root.dark .app-sidebar-section,
+:root.dark .app-sidebar-notice-copy,
+:root.dark .app-sidebar-profile-role { color: #74748a !important; }
+:root.dark .app-sidebar-notice,
+:root.dark .app-sidebar-profile { border-color: #2a2a3b !important; background: #191927 !important; }
+:root.dark .app-sidebar-profile-avatar,
+:root.dark .topbar-account-avatar { background: rgb(245 45 120 / 0.16) !important; color: #ff74a8 !important; }
+:root.dark .app-sidebar-link { color: #a1a1b5; }
+:root.dark .app-sidebar-link:hover { background: #242433; color: #f5f5fa; }
+:root.dark .app-sidebar-link.is-active,
+:root.dark .app-sidebar nav a[aria-current="page"] {
+  border-color: #f52d78 !important;
+  background: linear-gradient(90deg, rgb(245 45 120 / 0.18), rgb(245 45 120 / 0.04)) !important;
+  color: #fff !important;
+  box-shadow: inset 3px 0 #f52d78 !important;
+}
+:root.dark .app-sidebar-link.is-active svg { color: #f52d78; }
+
+:root.dark .app-topbar {
+  border-color: #2a2a3b !important;
+  background: rgb(24 24 36 / 0.92) !important;
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.16) !important;
+}
+:root.dark .topbar-account { border-color: #2a2a3b !important; }
+:root.dark .topbar-account-button:hover { background: #242433 !important; }
+:root.dark .topbar-account-name { color: #f5f5fa !important; }
+:root.dark .topbar-account-role { color: #74748a !important; }
+:root.dark .nav-sign-out:hover { background: rgb(255 73 108 / 0.12); color: #ff708c; }
+
+:root.dark table thead,
+:root.dark thead.bg-slate-50 { background: #242433 !important; }
+:root.dark th { color: #a1a1b5 !important; }
+:root.dark tbody tr { border-color: #2a2a3b !important; }
+:root.dark tbody tr:hover { background: rgb(99 102 241 / 0.08) !important; }
+:root.dark :is([role="dialog"], dialog) { border-color: #2a2a3b !important; background: #191927 !important; }
+
+:root.dark .landing-page {
+  --landing-bg: #0b0a18;
+  --landing-section: #12121f;
+  --landing-card: #191927;
+  --landing-card-hover: #242433;
+  --landing-border: #2a2a3b;
+  --landing-copy: #a1a1b5;
+  --landing-heading: #f5f5fa;
+  --landing-accent: #f52d78;
+  background: #0b0a18 !important;
+}
+:root.dark .landing-page > header { border-color: #2a2a3b !important; background: rgb(11 10 24 / 0.9) !important; }
+:root.dark .landing-page main > section:nth-of-type(even) { background: #12121f !important; }
+:root.dark .landing-page main > section:first-of-type {
+  background-image: radial-gradient(circle at 76% 22%, rgb(99 102 241 / 0.2), transparent 30rem), radial-gradient(circle at 15% 8%, rgb(245 45 120 / 0.11), transparent 24rem) !important;
+}
+:root.dark .landing-page .nav-logo-mark { background: #f52d78 !important; color: #fff !important; box-shadow: 0 8px 22px rgb(245 45 120 / 0.25); }
+:root.dark .landing-page .nav-sign-in,
+:root.dark .landing-page .landing-hero-cta,
+:root.dark .landing-page .landing-hero-cta:hover { border-color: #f52d78 !important; background: #f52d78 !important; color: #fff !important; }
+:root.dark .landing-page .nav-sign-in:hover,
+:root.dark .landing-page .landing-hero-cta:hover { background: #d91f65 !important; }
+:root.dark .landing-page :is(article, form, .bg-white, .bg-white\/70, .bg-white\/95, .bg-slate-50, .bg-slate-50\/70) { border-color: #2a2a3b !important; background: #191927 !important; }
+:root.dark .landing-page footer { border-color: #2a2a3b !important; background: #070611 !important; }
+
+:root.dark .recharts-cartesian-grid line { stroke: #2a2a3b; }
+:root.dark .recharts-cartesian-axis-tick-value { fill: #a1a1b5 !important; }
+:root.dark .recharts-default-tooltip { border: 1px solid #36364b !important; border-radius: 12px !important; background: #191927 !important; color: #f5f5fa !important; }
+
+@media (max-width: 640px) {
+  :root.dark .app-topbar { padding-inline: 1rem; }
+  :root.dark .app-shell main { overflow-x: hidden; }
+  :root.dark table { min-width: 100%; }
+}
+
 /* ==========================================
    DUMO YOUTH NETWORK ELECTION MONITORING SYSTEM — HEADING VISIBILITY FIX
 ========================================== */
@@ -1831,3 +2078,28 @@ html.dark body #root :is(main, header, section, article, aside, dialog, [role="d
     filter: none;
   }
 }
+
+/* Dark design-system authority (must remain last). */
+:root.dark{--brand-primary:#f52d78;--brand-background:#0b0a18;--brand-text:#f5f5fa;--dark-surface-base:#0b0a18;--dark-surface-card:#191927;--dark-surface-raised:#242433;--dark-surface-overlay:#2b2b3d;--dark-border:#2a2a3b;--dark-text-primary:#f5f5fa;--dark-text-secondary:#a1a1b5;--dark-text-muted:#74748a;--workspace-bg:#0b0a18;--workspace-surface:#191927;--workspace-line:#2a2a3b;--workspace-ink:#f5f5fa;--workspace-muted:#a1a1b5;--workspace-accent:#f52d78}
+:root.dark :is(body,#root,.app-shell,.bg-canvas,.dashboard-canvas,.app-loading-surface,.app-loading-screen){background-color:#0b0a18!important;color:#f5f5fa}
+:root.dark :is(.bg-white,.bg-white\/95,.bg-white\/90,.bg-white\/80,.bg-slate-50,.bg-slate-50\/70,.bg-slate-50\/80){background-color:#191927!important}
+:root.dark :is(.bg-slate-100,.bg-slate-100\/80,.bg-slate-200,.bg-sky-50,.bg-sky-50\/50,.bg-sky-50\/70,.bg-sky-100){background-color:#242433!important}
+:root.dark :is(input,select,textarea,.input){border-color:#36364b!important;background-color:#12121f!important;color:#f5f5fa!important}
+:root.dark :is(input,select,textarea,.input):focus{border-color:#f52d78!important;box-shadow:0 0 0 3px rgb(245 45 120/.14)!important}
+:root.dark :is(.text-sky-600,.text-sky-700,.text-sky-800,.text-emerald-600,.text-emerald-700,.text-emerald-800,.text-emerald-950){color:#f65b94!important}
+:root.dark :is(button,a).bg-emerald-700,:root.dark :is(button,a).bg-emerald-600,:root.dark :is(button,a).bg-sky-700,:root.dark :is(button,a).bg-sky-600,:root.dark .submit-unofficial-result{border-color:#f52d78!important;background:#f52d78!important;color:#fff!important;box-shadow:0 8px 24px rgb(245 45 120/.22)!important}
+:root.dark .app-sidebar{border-color:#2a2a3b!important;background:#12121f!important;color:#f5f5fa!important}
+:root.dark :is(.app-sidebar-header,.app-sidebar-footer,.topbar-account){border-color:#2a2a3b!important}
+:root.dark :is(.app-sidebar-logo-title,.app-sidebar-notice-title,.app-sidebar-profile-name,.topbar-account-name){color:#f5f5fa!important}
+:root.dark :is(.app-sidebar-logo-subtitle,.app-sidebar-eyebrow,.app-sidebar-notice-icon){color:#f52d78!important}
+:root.dark :is(.app-sidebar-section,.app-sidebar-notice-copy,.app-sidebar-profile-role,.topbar-account-role){color:#74748a!important}
+:root.dark :is(.app-sidebar-notice,.app-sidebar-profile){border-color:#2a2a3b!important;background:#191927!important}
+:root.dark :is(.app-sidebar-profile-avatar,.topbar-account-avatar){background:rgb(245 45 120/.16)!important;color:#ff74a8!important}
+:root.dark .app-sidebar-link{color:#a1a1b5}:root.dark .app-sidebar-link:hover{background:#242433;color:#f5f5fa}
+:root.dark .app-sidebar-link.is-active,:root.dark .app-sidebar nav a[aria-current=page]{border-color:#f52d78!important;background:linear-gradient(90deg,rgb(245 45 120/.18),rgb(245 45 120/.04))!important;color:#fff!important;box-shadow:inset 3px 0 #f52d78!important}
+:root.dark .app-sidebar-link.is-active svg{color:#f52d78}:root.dark .app-topbar{border-color:#2a2a3b!important;background:rgb(24 24 36/.92)!important}:root.dark .topbar-account-button:hover{background:#242433!important}
+:root.dark .landing-page{--landing-bg:#0b0a18;--landing-section:#12121f;--landing-card:#191927;--landing-card-hover:#242433;--landing-border:#2a2a3b;--landing-copy:#a1a1b5;--landing-heading:#f5f5fa;--landing-accent:#f52d78;background:#0b0a18!important}
+:root.dark .landing-page>header{border-color:#2a2a3b!important;background:rgb(11 10 24/.9)!important}:root.dark .landing-page main>section:nth-of-type(even){background:#12121f!important}
+:root.dark .landing-page .nav-logo-mark{background:#f52d78!important;color:#fff!important}:root.dark .landing-page :is(.nav-sign-in,.landing-hero-cta,.landing-hero-cta:hover){border-color:#f52d78!important;background:#f52d78!important;color:#fff!important}
+:root.dark .landing-page :is(article,form,.bg-white,.bg-white\/70,.bg-white\/95,.bg-slate-50){border-color:#2a2a3b!important;background:#191927!important}:root.dark .landing-page footer{border-color:#2a2a3b!important;background:#070611!important}
+:root.dark .settings-nav-item:hover{background:#242433!important}:root.dark .settings-nav-item.is-selected{background:rgb(245 45 120/.14)!important}:root.dark :is(.settings-nav-icon,.settings-nav-item:hover .settings-nav-icon,.settings-nav-item.is-selected .settings-nav-icon){background:#2b2b3d!important;color:#f65b94!important}
