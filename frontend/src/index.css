@@ -1927,10 +1927,6 @@ html.dark { background: #10131c; }
   color: var(--dark-text-primary) !important;
 }
 
-:root.dark .landing-page main > section:first-of-type {
-  background-image: var(--dark-canvas-glow) !important;
-}
-
 :root.dark .landing-page footer { background: var(--dark-deep) !important; }
 :root.dark .landing-page main > section:first-of-type h1 { font-size: clamp(2.2rem, 5vw, 4rem); }
 :root.dark .recharts-cartesian-grid line { stroke: var(--dark-border); }
