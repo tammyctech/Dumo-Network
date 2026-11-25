@@ -817,7 +817,7 @@ export default function LandingPage() {
             <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
               <div>
                 <p className="flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.2em]" style={{color:lt("updates_eyebrow").color}}><Radio size={14} /> {lt("updates_eyebrow").text}</p>
-                <h2 className="mt-3 text-4xl font-bold tracking-[-0.045em] sm:text-5xl" style={{color:lt("updates_heading").color}}>{lt("updates_heading").text}</h2>
+                <h2 className="landing-brand-blue-text mt-3 text-4xl font-bold tracking-[-0.045em] sm:text-5xl">{lt("updates_heading").text}</h2>
               </div>
               <p className="max-w-lg text-sm leading-6" style={{color:lt("updates_description").color}}>{lt("updates_description").text}</p>
             </div>
