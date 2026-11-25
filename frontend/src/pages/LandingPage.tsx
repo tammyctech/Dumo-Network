@@ -26,7 +26,6 @@ import { useBranding } from "../context/branding";
 import { PartyLogo } from "../constants/partyLogos";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/theme";
-import "./public-pages.css";
 
 const API_URL = import.meta.env.DEV
   ? (import.meta.env.VITE_API_URL || "http://127.0.0.1:8000").replace(/\/$/, "")
@@ -485,13 +484,13 @@ export default function LandingPage() {
     );
 
   return (
-    <div className="landing-page public-page">
-      <header className="public-nav">
-        <div className="public-container flex min-h-16 items-center justify-between gap-2 py-2">
-          <Link to="/" className="flex min-w-0 items-center gap-3">
+    <div className="landing-page min-h-screen bg-slate-100 text-slate-950">
+      <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/95 text-slate-950 shadow-sm backdrop-blur-xl">
+        <div className="mx-auto flex h-[4.5rem] max-w-7xl items-center justify-between px-5 lg:px-8">
+          <Link to="/" className="flex items-center gap-3 text-slate-950">
             {branding.logo_data_url ? <img src={branding.logo_data_url} alt="" className="nav-logo-mark h-10 w-10 rounded-xl bg-white object-contain p-1"/> : <span className="nav-logo-mark flex h-10 w-10 items-center justify-center rounded-xl bg-sky-700 text-white"><Activity size={20} strokeWidth={2.5} /></span>}
             <span>
-              <span className="block break-words text-sm font-bold">
+              <span className="block text-sm font-black tracking-[0.12em]">
                 {branding.logo_title.toUpperCase()}
               </span>
               <span className="mt-0.5 block text-[10px] uppercase tracking-[0.2em] text-slate-500">
@@ -500,9 +499,10 @@ export default function LandingPage() {
             </span>
           </Link>
 
-          <nav className="hidden items-center gap-4 lg:flex">
+          <nav className="hidden items-center gap-7 md:flex">
             <Link to="/live-results" className="inline-flex items-center gap-2 rounded-xl border border-sky-950/20 bg-white px-3.5 py-2 text-sm font-bold text-sky-950 shadow-sm transition hover:border-sky-950 hover:bg-sky-50 hover:text-sky-950">
-              Election results
+              <span className="relative flex h-2.5 w-2.5" aria-hidden="true"><span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"/><span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-500"/></span>
+              Live results
             </Link>
             <a
               href="#updates"
@@ -520,12 +520,11 @@ export default function LandingPage() {
             <button type="button" onClick={toggleTheme} className="grid h-11 w-11 place-items-center rounded-xl border border-slate-200 bg-white text-sky-950 transition hover:border-sky-950 hover:bg-sky-50" aria-label={`Turn ${themeMode==="dark"?"on light":"on dark"} mode`}>{themeMode==="dark"?<Sun size={19}/>:<Moon size={19}/>}</button>
             <Link
               to={accountPath}
-              className="public-button nav-sign-in group inline-flex min-h-11 items-center gap-2 rounded-xl bg-sky-700 px-4 text-sm font-bold text-white shadow-md transition hover:bg-sky-800"
+              className="nav-sign-in group inline-flex min-h-11 items-center gap-2 rounded-xl bg-sky-700 px-4 text-sm font-bold text-white shadow-md transition hover:bg-sky-800"
             >
               {user?<LayoutDashboard size={17} aria-hidden="true"/>:<LogIn size={17} aria-hidden="true"/>}
               <span>{accountLabel}</span>
             </Link>
-            {!user && <Link to="/activate-agent" className="public-text-link text-sm">Activate agent</Link>}
           </nav>
 
           <button
@@ -534,16 +533,17 @@ export default function LandingPage() {
             aria-expanded={mobileMenuOpen}
             aria-controls="mobile-navigation"
             onClick={() => setMobileMenuOpen((value) => !value)}
-            className="flex h-11 w-11 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-700 transition hover:bg-sky-50 hover:text-sky-700 lg:hidden"
+            className="flex h-11 w-11 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-700 transition hover:bg-sky-50 hover:text-sky-700 md:hidden"
           >
             {mobileMenuOpen ? <X /> : <Menu />}
           </button>
         </div>
         {mobileMenuOpen && (
-          <nav id="mobile-navigation" className="border-t border-slate-200 bg-white px-5 py-5 shadow-lg lg:hidden">
+          <nav id="mobile-navigation" className="border-t border-slate-200 bg-white px-5 py-5 shadow-lg md:hidden">
             <div className="flex flex-col gap-2 text-sm font-semibold text-slate-700">
               <Link to="/live-results" onClick={() => setMobileMenuOpen(false)} className="inline-flex items-center gap-2 rounded-xl border border-sky-950/20 bg-white px-3 py-3 font-bold text-sky-950 transition hover:border-sky-950 hover:bg-sky-50 hover:text-sky-950">
-                Election results
+                <span className="relative flex h-2.5 w-2.5" aria-hidden="true"><span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"/><span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-500"/></span>
+                Live results
               </Link>
               <a
                 href="#updates"
@@ -563,20 +563,20 @@ export default function LandingPage() {
               <button type="button" onClick={toggleTheme} className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 font-bold text-sky-950"><span>{themeMode==="dark"?<Sun size={18}/>:<Moon size={18}/>}</span>{themeMode==="dark"?"Light mode":"Dark mode"}</button>
               <Link
                 to={accountPath}
-                className="public-button nav-sign-in mt-2 inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-sky-700 px-5 font-bold text-white shadow-md transition hover:bg-sky-800"
+                className="nav-sign-in mt-2 inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-sky-700 px-5 font-bold text-white shadow-md transition hover:bg-sky-800"
               >
                 {user?<LayoutDashboard size={18} aria-hidden="true"/>:<LogIn size={18} aria-hidden="true"/>}
                 <span>{accountLabel}</span>
+                <ArrowRight size={16} aria-hidden="true" />
               </Link>
-              {!user && <Link to="/activate-agent" className="public-text-link px-3 py-3">Activate agent</Link>}
             </div>
           </nav>
         )}
       </header>
 
       <main>
-        <section className="public-hero">
-          <div className="public-container public-hero-grid">
+        <section className="relative isolate overflow-hidden border-b border-slate-200 bg-[#f4f7fa] pb-12 pt-12 text-slate-950 sm:pb-20 sm:pt-20">
+          <div className="relative mx-auto grid max-w-7xl gap-12 px-5 lg:grid-cols-[1.02fr_0.98fr] lg:items-center lg:gap-16 lg:px-8">
             <div>
               <div className="inline-flex items-center gap-2.5 rounded-lg border border-sky-200 bg-white px-3.5 py-2 text-[11px] font-bold uppercase tracking-[0.15em] text-sky-800 shadow-sm">
                 <span className={`relative flex h-2 w-2 ${loading ? "animate-pulse" : ""}`}>
@@ -585,7 +585,7 @@ export default function LandingPage() {
                 </span>
                 {loading ? "Loading public results · Rivers State" : "Public results · Rivers State"}
               </div>
-              <h1 className="mt-7 max-w-2xl public-hero-title font-semibold leading-[1.04] tracking-[-0.055em] text-slate-950">
+              <h1 className="mt-7 max-w-2xl text-[2.8rem] font-semibold leading-[1.04] tracking-[-0.055em] text-slate-950 sm:text-6xl lg:text-[4.2rem]">
                 <span className="block text-slate-950">{lt("hero_line_1").text}</span>
                 <span className="block text-sky-700">{lt("hero_line_2").text}</span>
                 <span className="block text-slate-950">{lt("hero_line_3").text}</span>
@@ -594,12 +594,12 @@ export default function LandingPage() {
                 {lt("hero_description").text}
               </p>
               <div className="mt-8 flex flex-wrap gap-3">
-                <Link
-                  to="/live-results"
-                  className="public-button landing-hero-cta landing-hero-cta-primary group inline-flex min-h-12 items-center gap-2 rounded-lg bg-sky-700 px-5 py-3 text-sm font-bold text-white shadow-md transition hover:bg-sky-800"
+                <a
+                  href="#results"
+                  className="landing-hero-cta landing-hero-cta-primary group inline-flex min-h-12 items-center gap-2 rounded-lg bg-sky-700 px-5 py-3 text-sm font-bold text-white shadow-md transition hover:bg-sky-800"
                 >
                   <span>{lt("hero_results_button").text}</span>
-                </Link>
+                </a>
                 <Link
                   to={accountPath}
                   className="landing-hero-cta landing-hero-cta-secondary group inline-flex min-h-12 items-center gap-2 rounded-lg border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-800 transition hover:border-sky-300 hover:text-sky-800"
@@ -614,7 +614,8 @@ export default function LandingPage() {
               </div>
             </div>
 
-            <div className="public-card landing-preview">
+            <div className="relative rounded-2xl border border-sky-800/70 bg-white p-5 shadow-[0_32px_90px_-35px_rgba(0,0,0,0.65)] sm:p-7">
+              <div className="absolute inset-x-0 top-0 h-1 rounded-t-2xl bg-gradient-to-r from-sky-600 via-sky-400 to-amber-400" />
               <div className="relative flex items-start justify-between gap-4">
                 <div>
                   <p className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.18em] text-sky-800">
@@ -652,7 +653,7 @@ export default function LandingPage() {
                     State coverage
                   </p>
                   <p className="mt-2 text-2xl font-bold tabular-nums tracking-tight text-slate-950 sm:text-3xl">
-                    {!displayOverview.election || displayOverview.submission_coverage_percent == null
+                    {displayOverview.submission_coverage_percent == null
                       ? "—"
                       : `${displayOverview.submission_coverage_percent.toFixed(1)}%`}
                   </p>
@@ -668,50 +669,30 @@ export default function LandingPage() {
                   {hasUploadedResults && leadingParty ? <p className="mt-2 flex items-center gap-2 text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl"><PartyLogo party={leadingParty.party} className="h-9 w-9"/><span className="truncate">{leadingParty.party}</span></p> : <p className="mt-2 text-2xl font-bold text-slate-950 sm:text-3xl">—</p>}
                 </div>
               </div>
-              <Link to="/live-results" className="public-text-link mt-5 inline-flex">Open results explorer</Link>
               <p className="relative mt-5 flex items-center gap-2 border-t border-slate-200 pt-4 text-xs text-slate-500">
                 <Clock3 size={14} /> Last update: {formatDate(displayOverview.last_updated)}
               </p>
             </div>
           </div>
-        </section>
-
-        <section className="landing-coverage">
-          <div className="public-container">
-            <h2 className="results-heading">Public reporting coverage</h2>
-            <div className="results-metrics mt-4">
-              {[
-                { label: "Local government areas", value: "23", icon: MapPin },
-                { label: "Polling units", value: !loading && !error ? formatNumber(displayOverview.total_polling_units) : "—", icon: Database },
-                { label: "Units reporting", value: displayOverview.election ? formatNumber(displayOverview.submitted_polling_units) : "—", icon: Radio },
-                { label: "Reporting coverage", value: displayOverview.election && displayOverview.submission_coverage_percent != null ? `${displayOverview.submission_coverage_percent}%` : "—", icon: BarChart3 },
-              ].map(({ label, value, icon: Icon }) => (
-                <div key={label} className="public-card">
-                  <Icon size={20} className="public-accent" aria-hidden="true"/>
-                  <strong className="results-number mt-3 block">{value}</strong>
-                  <span className="public-muted text-sm">{label}</span>
+          <div className="relative mx-auto mt-12 grid max-w-7xl grid-cols-1 gap-3 px-5 sm:grid-cols-3 lg:px-8">
+            {[
+              { label: "Geographic coverage", value: "23 local government areas", icon: MapPin },
+              { label: "Reporting model", value: "Polling-unit submissions", icon: Radio },
+              { label: "Public status", value: "Provisional & transparent", icon: ShieldCheck },
+            ].map((item) => {
+              const Icon = item.icon;
+              return (
+                <div key={item.label} className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-sky-50 text-sky-700">
+                    <Icon size={17} aria-hidden="true" />
+                  </span>
+                  <span>
+                    <span className="block text-[10px] font-semibold uppercase tracking-[0.13em] text-slate-500">{item.label}</span>
+                    <span className="mt-0.5 block text-sm font-semibold text-slate-900">{item.value}</span>
+                  </span>
                 </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section className="landing-features">
-          <div className="public-container">
-            <h2 className="results-heading">From polling units to statewide results</h2>
-            <div className="landing-feature-grid mt-5">
-              {[
-                { icon: Radio, title: "Polling-unit reporting", text: "Authorized agents submit results from their assigned polling units." },
-                { icon: MapPin, title: "LGA results explorer", text: "Browse reporting coverage and party totals for Rivers State’s local government areas." },
-                { icon: BarChart3, title: "Public results tracking", text: "Follow incoming reports and statewide vote totals as submissions are recorded." },
-              ].map(({ icon: Icon, title, text }) => (
-                <article key={title} className="public-card">
-                  <Icon size={22} className="public-accent" aria-hidden="true"/>
-                  <h3 className="mt-4 font-semibold">{title}</h3>
-                  <p className="public-muted mt-2 leading-relaxed">{text}</p>
-                </article>
-              ))}
-            </div>
+              );
+            })}
           </div>
         </section>
 
@@ -887,11 +868,11 @@ export default function LandingPage() {
                   { icon: Database, title: "Structured records", text: "Votes, accreditation figures, timestamps, and result evidence are stored together." },
                   { icon: BarChart3, title: "Live aggregation", text: "Public totals and LGA leaders are recalculated from received submissions." },
                   { icon: ShieldCheck, title: "Clear status", text: "Every public figure is labeled unofficial and coverage is shown alongside leads." },
-                ].map((item, index) => {
+                ].map((item) => {
                   const Icon = item.icon;
                   return (
-                    <div key={item.title} className="public-card landing-step">
-                      <div className="flex items-center justify-between"><span className="public-brand-icon"><Icon size={19}/></span><span className="public-kicker">Step {index + 1}</span></div>
+                    <div key={item.title} className="rounded-2xl border border-sky-200 bg-white p-6 shadow-md shadow-sky-950/5">
+                      <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-sky-100 text-sky-700"><Icon size={21} /></div>
                       <h3 className="mt-5 font-black text-slate-950">{item.title}</h3>
                       <p className="mt-2 text-sm leading-6 text-slate-600">{item.text}</p>
                     </div>
@@ -921,15 +902,14 @@ export default function LandingPage() {
         </section>
       </main>
 
-      <footer className="public-footer">
-        <div className="public-container landing-footer-grid text-sm">
+      <footer className="border-t border-white/10 bg-sky-950 py-8 text-sky-100">
+        <div className="mx-auto flex max-w-7xl flex-col gap-5 px-5 text-sm sm:flex-row sm:items-center sm:justify-between lg:px-8">
           <div className="flex items-center gap-3">
             {branding.logo_data_url ? <img src={branding.logo_data_url} alt={`${branding.logo_title} logo`} className="h-11 w-11 rounded-xl bg-white object-contain p-1"/> : <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-white/10 text-white"><Activity size={20}/></span>}
-            <div><strong className="block">{branding.logo_title}</strong><span className="public-muted">{branding.logo_subtitle}</span></div>
+            <div><strong className="block text-white">{branding.logo_title}</strong><span className="text-sky-200">{branding.logo_subtitle}</span></div>
           </div>
-          <div><p>Figures remain unofficial until declared by the authorized electoral body.</p><p className="public-muted mt-2">© {new Date().getFullYear()} {branding.logo_title}</p></div>
-          <nav aria-label="Footer navigation" className="grid gap-2"><Link to="/live-results">Election results</Link><a href="#methodology">How it works</a><Link to={accountPath}>{user ? accountLabel : "Sign in"}</Link></nav>
-          <a href="https://github.com/wmgeolab/geoBoundaries" target="_blank" rel="noreferrer" className="public-text-link">Map boundary source <ArrowRight size={13} className="inline"/></a>
+          <p className="text-sky-200"><strong className="text-white">Transparent by design.</strong> Figures remain unofficial until declared by the authorized electoral body.</p>
+          <a href="https://github.com/wmgeolab/geoBoundaries" target="_blank" rel="noreferrer" className="text-sky-100 hover:text-white">Map boundary source <ArrowRight size={13} className="inline"/></a>
         </div>
       </footer>
 
