@@ -143,7 +143,7 @@ export default function LiveResults() {
         <div className="mx-auto max-w-7xl px-5 lg:px-8">
           <div className="grid gap-8 lg:grid-cols-[.75fr_1.25fr] lg:items-end"><div><p className="text-sm font-black uppercase tracking-[.18em] text-sky-700">Live {race==="governorship"?"governorship":"presidential"} score</p><h2 className="mt-3 text-4xl font-black tracking-[-.04em] sm:text-5xl">Statewide candidate results</h2></div><p className="rounded-2xl border border-sky-100 bg-sky-50 p-5 leading-7 text-slate-700">Vote totals and percentages update automatically from submitted polling-unit reports across Rivers State.</p></div>
           <div className="mt-8 flex gap-3"><span className="rounded-full bg-slate-950 px-4 py-2 text-sm font-bold text-white">{overview.submitted_polling_units} units reporting</span><span className="rounded-full border border-slate-200 px-4 py-2 text-sm font-bold text-slate-600">{candidates.length} candidates</span></div>
-          <CandidateCarousel candidates={candidates} totals={overview.party_totals} totalVotes={totalVotes} label="Statewide candidate scores" />
+          <CandidateCarousel candidates={candidates} totals={overview.party_totals} totalVotes={totalVotes} lgaResults={overview.lga_results} label="Statewide candidate scores" />
         </div>
       </section>
 
@@ -151,10 +151,11 @@ export default function LiveResults() {
     </main>
   </div>;
 }
-function CandidateCarousel({ candidates, totals, totalVotes, label }: {
+function CandidateCarousel({ candidates, totals, totalVotes, lgaResults, label }: {
   candidates: readonly (readonly [string, string])[];
   totals: PartyTotal[];
   totalVotes?: number;
+  lgaResults?: LgaResult[];
   label: string;
 }) {
   const track = useRef<HTMLDivElement>(null);
@@ -200,12 +201,49 @@ function CandidateCarousel({ candidates, totals, totalVotes, label }: {
                 {totalVotes !== undefined && (
                   <progress aria-label={`${party} share of recorded votes`} value={share} max={100} className="mt-2 block h-2 w-full accent-sky-600" />
                 )}
+                {lgaResults && <CandidateLgaBreakdown party={party} results={lgaResults} />}
               </div>
             </article>
           );
         })}
       </div>
     </div>
+  );
+}
+
+function CandidateLgaBreakdown({ party, results }: { party: string; results: LgaResult[] }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const reportingAreas = results.filter(row => row.submitted_polling_units > 0);
+
+  return (
+    <details className="mt-3 border-t border-slate-200" onToggle={event => setIsOpen(event.currentTarget.open)}>
+      <summary className="cursor-pointer py-3 text-sm font-bold text-sky-700">
+        LGA breakdown <span className="font-normal text-slate-500">({reportingAreas.length} reporting)</span>
+      </summary>
+      {isOpen && (reportingAreas.length === 0 ? (
+        <p className="pb-2 text-sm text-slate-500">No polling-unit reports are available for an LGA breakdown yet.</p>
+      ) : (
+        <ul className="max-h-64 space-y-3 overflow-y-auto pb-2 pr-1">
+          {reportingAreas.map(row => {
+            const votes = row.party_totals.find(result => result.party === party)?.votes;
+            const lgaVotes = row.party_totals.reduce((sum, result) => sum + result.votes, 0);
+            const share = votes !== undefined && lgaVotes > 0 ? (votes / lgaVotes) * 100 : null;
+            return (
+              <li key={row.lga} className="rounded-xl bg-slate-50 p-2.5 text-sm">
+                <p className="font-semibold">{row.lga}</p>
+                <p className="mt-1 text-slate-700">
+                  {votes === undefined ? "No party tally reported" : `${votes.toLocaleString()} votes`}
+                  {share !== null && ` · ${share.toFixed(1)}% of recorded LGA votes`}
+                </p>
+                <p className="mt-1 text-xs text-slate-500">
+                  {row.submitted_polling_units.toLocaleString()} of {row.total_polling_units.toLocaleString()} polling units reporting
+                </p>
+              </li>
+            );
+          })}
+        </ul>
+      ))}
+    </details>
   );
 }
 
