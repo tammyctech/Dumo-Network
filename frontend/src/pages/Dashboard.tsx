@@ -1515,7 +1515,32 @@ const workflowUnavailableMessage = statistics?.election
             </div>
             {lgaAgentCoverage.length === 0 ? <div className="py-12 text-center text-sm text-slate-500">No LGA agent coverage data is available.</div> : (
               <>
-              <div className="mt-5 flex flex-col items-center gap-5 rounded-2xl border border-slate-200 bg-slate-50 p-4 sm:flex-row sm:gap-8 sm:p-6">
+              <label className="mt-5 block max-w-sm text-sm font-semibold">LGA coverage · Select an LGA
+                <select className="input mt-1" value={selectedCoverage?.lga ?? ""} onChange={event => setCoverageLga(event.target.value)}>
+                  {coverageOptions.map(row => <option key={row.lga} value={row.lga}>{row.lga}</option>)}
+                </select>
+              </label>
+              {selectedCoverage && (() => {
+                const row = selectedCoverage;
+                const assigned = row.assigned_polling_units;
+                const unassigned = row.unassigned_polling_units;
+                const total = assigned + unassigned;
+                const coverage = total > 0 ? (assigned / total) * 100 : null;
+
+                return (
+                    <div aria-live="polite" className="mt-3 min-w-0 rounded-xl border border-slate-200 bg-slate-50 p-3 sm:p-4">
+                      <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
+                        <h3 className="break-words text-sm font-bold text-slate-900">{row.lga}</h3>
+                        <span className="text-xs font-semibold tabular-nums text-slate-600">
+                          {coverage === null ? "No polling units" : `${coverage.toFixed(1)}% assigned`}
+                        </span>
+                      </div>
+                      <div aria-hidden="true" className="mt-2 flex h-2.5 overflow-hidden rounded-full bg-slate-200">
+                        {coverage !== null && <>
+                          <span className="bg-[var(--chart-blue,#059669)]" style={{ width: `${coverage}%` }} />
+                          <span className="bg-amber-400" style={{ width: `${100 - coverage}%` }} />
+                        <h3 className="mt-6 text-sm font-bold text-slate-900">Statewide coverage</h3>
+              <div className="mt-3 flex flex-col items-center gap-5 rounded-2xl border border-slate-200 bg-slate-50 p-4 sm:flex-row sm:gap-8 sm:p-6">
                 <div className="relative grid h-32 w-32 shrink-0 place-items-center">
                   <svg viewBox="0 0 120 120" aria-hidden="true" className="absolute inset-0 h-full w-full -rotate-90">
                     <circle cx="60" cy="60" r="52" fill="none" stroke={overallCoverage === null ? "var(--chart-grid, #cbd5e1)" : "#fbbf24"} strokeWidth="10" />
@@ -1542,31 +1567,7 @@ const workflowUnavailableMessage = statistics?.election
                 ))}
               </dl>
               </div>
-              <label className="mt-5 block max-w-sm text-sm font-semibold">Select an LGA
-                <select className="input mt-1" value={selectedCoverage?.lga ?? ""} onChange={event => setCoverageLga(event.target.value)}>
-                  {coverageOptions.map(row => <option key={row.lga} value={row.lga}>{row.lga}</option>)}
-                </select>
-              </label>
-              {selectedCoverage && (() => {
-                const row = selectedCoverage;
-                const assigned = row.assigned_polling_units;
-                const unassigned = row.unassigned_polling_units;
-                const total = assigned + unassigned;
-                const coverage = total > 0 ? (assigned / total) * 100 : null;
-
-                return (
-                    <div aria-live="polite" className="mt-3 min-w-0 rounded-xl border border-slate-200 bg-slate-50 p-3 sm:p-4">
-                      <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
-                        <h3 className="break-words text-sm font-bold text-slate-900">{row.lga}</h3>
-                        <span className="text-xs font-semibold tabular-nums text-slate-600">
-                          {coverage === null ? "No polling units" : `${coverage.toFixed(1)}% assigned`}
-                        </span>
-                      </div>
-                      <div aria-hidden="true" className="mt-2 flex h-2.5 overflow-hidden rounded-full bg-slate-200">
-                        {coverage !== null && <>
-                          <span className="bg-[var(--chart-blue,#059669)]" style={{ width: `${coverage}%` }} />
-                          <span className="bg-amber-400" style={{ width: `${100 - coverage}%` }} />
-                        </>}
+              </>}
                       </div>
                       <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs tabular-nums text-slate-600">
                         <span><strong>{assigned.toLocaleString("en-NG")}</strong> assigned</span>
