@@ -1,8 +1,7 @@
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { Activity, CalendarDays, CheckCircle2, MapPin, Radio, Share2, ShieldCheck } from "lucide-react";
 import { PartyLogo } from "../constants/partyLogos";
-import { partyColor } from "../constants/partyColors";
 import { useBranding } from "../context/branding";
 
 const RIVERS_LGAS = ["Abua/Odual", "Ahoada East", "Ahoada West", "Akuku-Toru", "Andoni", "Asari-Toru", "Bonny", "Degema", "Eleme", "Emohua", "Etche", "Gokana", "Ikwerre", "Khana", "Obio/Akpor", "Ogba/Egbema/Ndoni", "Ogu/Bolo", "Okrika", "Omuma", "Opobo/Nkoro", "Oyigbo", "Port Harcourt", "Tai"];
@@ -74,7 +73,6 @@ export default function LiveResults() {
   const candidatePriority:Record<string,number>={NDC:0,ADC:1,APC:2};
   const candidates=[...(race==="governorship"?GOVERNORSHIP_candidates:PRESIDENTIAL_candidates)]
     .sort((left,right)=>(candidatePriority[left[1]]??99)-(candidatePriority[right[1]]??99));
-  const visibleCandidates = candidates;
   const electionDay=overview.election?.election_date?new Date(overview.election.election_date):(race==="governorship"?GOVERNORSHIP_ELECTION_DAY:PRESIDENTIAL_ELECTION_DAY);
   const remaining=Math.max(0,electionDay.getTime()-now.getTime());
   const countdown={days:Math.floor(remaining/86400000),hours:Math.floor(remaining/3600000)%24,mins:Math.floor(remaining/60000)%60,secs:Math.floor(remaining/1000)%60};
@@ -119,7 +117,7 @@ export default function LiveResults() {
       </section>
 
       <section className="border-b border-slate-200 bg-[#f4f6f8] py-14">
-        <div className="mx-auto max-w-7xl px-5 lg:px-8"><p className="text-xs font-black uppercase tracking-[.18em] text-sky-700">{race==="governorship"?"Governorship candidates":"Presidential candidates"}</p><div className="mt-2 flex items-end justify-between gap-4"><h2 className="text-4xl font-black">Candidates</h2><span className="text-sm font-bold text-slate-500">{candidates.length} published</span></div><div className="mt-7 grid gap-3 md:grid-cols-2 xl:grid-cols-5">{candidates.slice(0,5).map(([name,party],index)=><article key={party} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"><span className="text-xs font-black text-slate-400">{String(index+1).padStart(2,"0")}</span><div className="mt-4 flex items-center gap-3"><span className="grid h-12 w-12 place-items-center rounded-xl bg-slate-100 text-xs font-black">{initials(name)}</span><PartyLogo party={party} className="h-14 w-14"/></div><h3 className="mt-4 font-black leading-snug">{name}</h3><p className="mt-1 text-sm font-bold text-sky-700">{party}</p><p className="mt-4 border-t border-slate-100 pt-3 text-xs leading-5 text-slate-500">Live score: <strong className="text-slate-700">{(overview.party_totals.find(row=>row.party===party)?.votes??0).toLocaleString()} votes</strong></p></article>)}</div><button onClick={()=>document.getElementById("spread-analysis")?.scrollIntoView({behavior:"smooth"})} className="mt-6 rounded-xl border border-slate-300 bg-white px-5 py-3 text-sm font-black hover:border-sky-300 hover:text-sky-800">View live candidate scores</button></div>
+        <div className="mx-auto max-w-7xl px-5 lg:px-8"><p className="text-xs font-black uppercase tracking-[.18em] text-sky-700">{race==="governorship"?"Governorship candidates":"Presidential candidates"}</p><div className="mt-2 flex items-end justify-between gap-4"><h2 className="text-4xl font-black">Candidates</h2><span className="text-sm font-bold text-slate-500">{candidates.length} published</span></div><CandidateCarousel candidates={candidates} totals={overview.party_totals} label="Published candidates" /><button onClick={()=>document.getElementById("spread-analysis")?.scrollIntoView({behavior:"smooth"})} className="mt-6 rounded-xl border border-slate-300 bg-white px-5 py-3 text-sm font-black hover:border-sky-300 hover:text-sky-800">View live candidate scores</button></div>
       </section>
       <section className="border-b border-slate-200 bg-white py-14 sm:py-20">
         <div className="mx-auto max-w-7xl px-5 lg:px-8">
@@ -145,7 +143,7 @@ export default function LiveResults() {
         <div className="mx-auto max-w-7xl px-5 lg:px-8">
           <div className="grid gap-8 lg:grid-cols-[.75fr_1.25fr] lg:items-end"><div><p className="text-sm font-black uppercase tracking-[.18em] text-sky-700">Live {race==="governorship"?"governorship":"presidential"} score</p><h2 className="mt-3 text-4xl font-black tracking-[-.04em] sm:text-5xl">Statewide candidate results</h2></div><p className="rounded-2xl border border-sky-100 bg-sky-50 p-5 leading-7 text-slate-700">Vote totals and percentages update automatically from submitted polling-unit reports across Rivers State.</p></div>
           <div className="mt-8 flex gap-3"><span className="rounded-full bg-slate-950 px-4 py-2 text-sm font-bold text-white">{overview.submitted_polling_units} units reporting</span><span className="rounded-full border border-slate-200 px-4 py-2 text-sm font-bold text-slate-600">{candidates.length} candidates</span></div>
-          <div className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-3">{visibleCandidates.map(([name, party])=><article key={`${party}-${name}`} className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-xl"><div className="h-1" style={{backgroundColor:partyColor(party)}}/><div className="p-5"><div className="flex items-center gap-3"><span className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-slate-100 text-sm font-black text-slate-700">{initials(name)}</span><div className="min-w-0"><h3 className="truncate font-black">{name}</h3><div className="mt-1 flex items-center gap-2"><PartyLogo party={party} className="h-12 w-12"/><span className="text-sm font-bold text-slate-500">{party}</span></div></div></div><div className="mt-5 flex items-end justify-between border-t border-slate-100 pt-4"><div><strong className="text-2xl font-black">{(overview.party_totals.find(row=>row.party===party)?.votes??0).toLocaleString()}</strong><span className="ml-1 text-sm text-slate-500">votes ({totalVotes?(((overview.party_totals.find(row=>row.party===party)?.votes??0)/totalVotes)*100).toFixed(1):"0.0"}%)</span></div><span className="text-sm font-black text-slate-900">Statewide</span></div><div className="mt-3 h-2 overflow-hidden rounded-full bg-slate-100"><div className="h-full w-0 bg-sky-600"/></div><p className="mt-3 flex items-center gap-2 text-sm text-slate-500"><ShieldCheck size={15}/>Live reported score</p></div></article>)}</div>
+          <CandidateCarousel candidates={candidates} totals={overview.party_totals} totalVotes={totalVotes} label="Statewide candidate scores" />
         </div>
       </section>
 
@@ -153,6 +151,64 @@ export default function LiveResults() {
     </main>
   </div>;
 }
+function CandidateCarousel({ candidates, totals, totalVotes, label }: {
+  candidates: readonly (readonly [string, string])[];
+  totals: PartyTotal[];
+  totalVotes?: number;
+  label: string;
+}) {
+  const track = useRef<HTMLDivElement>(null);
+
+  function move(direction: number) {
+    const element = track.current;
+    if (!element) return;
+    const firstCard = element.firstElementChild;
+    if (!firstCard) return;
+    const gap = parseFloat(getComputedStyle(element).columnGap) || 0;
+    const step = firstCard.getBoundingClientRect().width + gap;
+    const cardsPerPage = Math.max(1, Math.floor((element.clientWidth + gap) / step + 0.01));
+    element.scrollBy({
+      left: direction * step * cardsPerPage,
+      behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth",
+    });
+  }
+
+  return (
+    <div className="mt-6">
+      <div className="mb-3 flex justify-end gap-2">
+        <button type="button" onClick={() => move(-1)} aria-label={`Previous ${label.toLowerCase()}`} className="min-h-11 rounded-xl border border-slate-300 bg-white px-3 text-sm font-bold hover:border-sky-500">Previous</button>
+        <button type="button" onClick={() => move(1)} aria-label={`Next ${label.toLowerCase()}`} className="min-h-11 rounded-xl border border-slate-300 bg-white px-3 text-sm font-bold hover:border-sky-500">Next</button>
+      </div>
+      <div ref={track} role="region" aria-label={label} tabIndex={0} className="grid snap-x snap-mandatory auto-cols-[85%] grid-flow-col gap-3 overflow-x-auto pb-3 sm:auto-cols-[calc((100%-0.75rem)/2)] lg:auto-cols-[calc((100%-2.25rem)/4)] xl:auto-cols-[calc((100%-3rem)/5)]">
+        {candidates.map(([name, party], index) => {
+          const votes = totals.find(row => row.party === party)?.votes ?? 0;
+          const share = totalVotes ? (votes / totalVotes) * 100 : 0;
+          return (
+            <article key={party} className="flex min-w-0 snap-start flex-col rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+              <span className="text-xs font-black text-slate-400">{String(index + 1).padStart(2, "0")}</span>
+              <div className="mt-4 flex items-center gap-3">
+                <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-slate-100 text-xs font-black">{initials(name)}</span>
+                <PartyLogo party={party} className="h-14 w-14" />
+              </div>
+              <h3 className="mt-4 break-words font-black leading-snug">{name}</h3>
+              <p className="mt-1 text-sm font-bold text-sky-700">{party}</p>
+              <div className="mt-auto pt-4">
+                <p className="border-t border-slate-100 pt-3 text-xs leading-5 text-slate-500">
+                  Live score: <strong className="text-slate-700">{votes.toLocaleString()} votes</strong>
+                  {totalVotes !== undefined && <span> ({share.toFixed(1)}%)</span>}
+                </p>
+                {totalVotes !== undefined && (
+                  <progress aria-label={`${party} share of recorded votes`} value={share} max={100} className="mt-2 block h-2 w-full accent-sky-600" />
+                )}
+              </div>
+            </article>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 function Metric({label,value}:{label:string;value:string}) {
   return <div className="rounded-xl border border-white/10 bg-white/5 p-4"><span className="block text-xs text-slate-400">{label}</span><strong className="mt-2 block text-xl text-white">{value}</strong></div>;
 }
