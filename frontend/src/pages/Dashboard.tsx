@@ -623,7 +623,6 @@ const partyData = statistics?.party_totals ?? [];
 
 const lgaData = statistics?.lga_progress ?? [];
 const lgaAgentCoverage = statistics?.lga_agent_coverage ?? [];
-const maxLgaUnits = Math.max(1, ...lgaAgentCoverage.map(row => row.assigned_polling_units + row.unassigned_polling_units));
 const coverageTotals = lgaAgentCoverage.reduce(
   (totals, row) => ({
     assigned: totals.assigned + row.assigned_polling_units,
@@ -632,6 +631,7 @@ const coverageTotals = lgaAgentCoverage.reduce(
   { assigned: 0, unassigned: 0 },
 );
 const coverageUnitCount = coverageTotals.assigned + coverageTotals.unassigned;
+const overallCoverage = coverageUnitCount > 0 ? (coverageTotals.assigned / coverageUnitCount) * 100 : null;
 const visibleCoverage = lgaAgentCoverage.map(row => {
   const total = row.assigned_polling_units + row.unassigned_polling_units;
   return { ...row, coverage: total > 0 ? (row.assigned_polling_units / total) * 100 : null };
@@ -1524,9 +1524,23 @@ const workflowUnavailableMessage = statistics?.election
             </div>
             {lgaAgentCoverage.length === 0 ? <div className="py-12 text-center text-sm text-slate-500">No LGA agent coverage data is available.</div> : (
               <>
-              <dl className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-3">
+              <div className="mt-5 flex flex-col items-center gap-5 rounded-2xl border border-slate-200 bg-slate-50 p-4 sm:flex-row sm:gap-8 sm:p-6">
+                <div className="relative grid h-32 w-32 shrink-0 place-items-center">
+                  <svg viewBox="0 0 120 120" aria-hidden="true" className="absolute inset-0 h-full w-full -rotate-90">
+                    <circle cx="60" cy="60" r="52" fill="none" stroke={overallCoverage === null ? "var(--chart-grid, #cbd5e1)" : "#fbbf24"} strokeWidth="10" />
+                    {overallCoverage !== null && (
+                      <circle cx="60" cy="60" r="52" fill="none" stroke="var(--chart-blue, #059669)" strokeWidth="10"
+                        pathLength="100" strokeDasharray={`${overallCoverage} 100`} />
+                    )}
+                  </svg>
+                  <div className="text-center">
+                    <strong className="block text-2xl tabular-nums text-slate-900">{overallCoverage === null ? "—" : `${overallCoverage.toFixed(1)}%`}</strong>
+                    <span className="text-xs text-slate-600">Assigned</span>
+                  </div>
+                </div>
+              <dl className="grid w-full grid-cols-2 gap-2 md:grid-cols-3">
                 {[
-                  ["Overall coverage", coverageUnitCount ? `${(coverageTotals.assigned / coverageUnitCount * 100).toFixed(1)}%` : "—"],
+                  ["Total polling units", coverageUnitCount.toLocaleString("en-NG")],
                   ["Assigned units", coverageTotals.assigned.toLocaleString("en-NG")],
                   ["Unassigned units", coverageTotals.unassigned.toLocaleString("en-NG")],
                 ].map(([label, value]) => (
@@ -1536,6 +1550,7 @@ const workflowUnavailableMessage = statistics?.election
                   </div>
                 ))}
               </dl>
+              </div>
               <div className="mt-5 grid gap-3 sm:grid-cols-2">
                 <label className="text-sm font-semibold">Find an LGA
                   <input type="search" className="input mt-1" value={coverageSearch} onChange={event => setCoverageSearch(event.target.value)} placeholder="Search by name" />
@@ -1565,8 +1580,10 @@ const workflowUnavailableMessage = statistics?.election
                         </span>
                       </div>
                       <div aria-hidden="true" className="mt-2 flex h-2.5 overflow-hidden rounded-full bg-slate-200">
-                        <span className="bg-[var(--chart-blue,#059669)]" style={{ width: `${(assigned / maxLgaUnits) * 100}%` }} />
-                        <span className="bg-amber-400" style={{ width: `${(unassigned / maxLgaUnits) * 100}%` }} />
+                        {coverage !== null && <>
+                          <span className="bg-[var(--chart-blue,#059669)]" style={{ width: `${coverage}%` }} />
+                          <span className="bg-amber-400" style={{ width: `${100 - coverage}%` }} />
+                        </>}
                       </div>
                       <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs tabular-nums text-slate-600">
                         <span><strong>{assigned.toLocaleString("en-NG")}</strong> assigned</span>
