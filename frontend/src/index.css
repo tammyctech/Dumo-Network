@@ -1969,6 +1969,9 @@ html.dark { background: #10131c; }
   color: inherit !important;
 }
 
+.landing-page .landing-heading-accent { color: #0369a1; }
+:root.dark .landing-page main .landing-heading-accent { color: #7dd3fc !important; }
+
 :root.dark .landing-page footer { background: var(--dark-deep) !important; }
 :root.dark .landing-page main > section:first-of-type h1 { font-size: clamp(2.2rem, 5vw, 4rem); }
 :root.dark .recharts-cartesian-grid line { stroke: var(--dark-border); }
