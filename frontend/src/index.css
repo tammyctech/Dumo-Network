@@ -1963,6 +1963,7 @@ html.dark { background: #10131c; }
 
 .landing-page .landing-heading-accent { color: #0369a1; }
 :root.dark .landing-page main .landing-heading-accent { color: #7dd3fc !important; }
+.landing-page main .landing-hero-heading-accent { color: #005b8f !important; }
 
 :root.dark .landing-page footer { background: var(--dark-deep) !important; }
 :root.dark .landing-page main > section:first-of-type h1 { font-size: clamp(2.2rem, 5vw, 4rem); }

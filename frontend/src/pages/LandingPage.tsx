@@ -587,7 +587,7 @@ export default function LandingPage() {
               </div>
               <h1 className="mt-7 max-w-2xl text-[2.8rem] font-semibold leading-[1.04] tracking-[-0.055em] text-slate-950 sm:text-6xl lg:text-[4.2rem]">
                 <span className="block text-slate-950">{lt("hero_line_1").text}</span>
-                <span className="landing-heading-accent block">{lt("hero_line_2").text}</span>
+                <span className="landing-hero-heading-accent block">{lt("hero_line_2").text}</span>
                 <span className="block text-slate-950">{lt("hero_line_3").text}</span>
               </h1>
               <p className="mt-6 max-w-xl text-base leading-7 text-slate-600 sm:text-lg sm:leading-8">
