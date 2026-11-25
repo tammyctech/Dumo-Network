@@ -1926,21 +1926,22 @@ html.dark { background: #10131c; }
 }
 
 :root.dark .landing-page .landing-hero-cta {
-  --hero-deep-green: #064e3b;
+  --hero-light-blue: #7dd3fc;
+  --hero-blue-ink: #0c4a6e;
 }
 
 :root.dark .landing-page a.landing-hero-cta-primary,
 :root.dark .landing-page a.landing-hero-cta-secondary:is(:hover, :active) {
   background: var(--landing-copy) !important;
   border-color: var(--landing-copy) !important;
-  color: var(--hero-deep-green) !important;
+  color: var(--hero-blue-ink) !important;
 }
 
 :root.dark .landing-page a.landing-hero-cta-secondary,
 :root.dark .landing-page a.landing-hero-cta-primary:is(:hover, :active) {
-  background: var(--hero-deep-green) !important;
-  border-color: var(--hero-deep-green) !important;
-  color: var(--landing-copy) !important;
+  background: var(--hero-light-blue) !important;
+  border-color: var(--hero-light-blue) !important;
+  color: var(--hero-blue-ink) !important;
 }
 
 :root.dark .landing-page .landing-hero-cta-primary:not(:focus-visible) {
@@ -1953,16 +1954,16 @@ html.dark { background: #10131c; }
 
 .landing-page a.landing-dashboard-link,
 :root.dark .landing-page a.landing-dashboard-link {
-  background: #064e3b !important;
-  border-color: #064e3b !important;
-  color: #dce0e7 !important;
+  background: #7dd3fc !important;
+  border-color: #7dd3fc !important;
+  color: #0c4a6e !important;
 }
 
 .landing-page a.landing-dashboard-link:is(:hover, :active),
 :root.dark .landing-page a.landing-dashboard-link:is(:hover, :active) {
   background: #dce0e7 !important;
   border-color: #dce0e7 !important;
-  color: #064e3b !important;
+  color: #0c4a6e !important;
 }
 
 .landing-page a.landing-dashboard-link :is(span, svg) {
