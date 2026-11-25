@@ -141,6 +141,10 @@ body {
   color: var(--workspace-ink);
 }
 
+:root:not(.dark) .app-shell {
+  --workspace-bg: #eef2f6;
+}
+
 .app-shell .bg-canvas,
 .app-shell .dashboard-canvas {
   background-color: var(--workspace-bg);
