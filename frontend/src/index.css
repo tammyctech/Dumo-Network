@@ -874,7 +874,6 @@ html.dark body #root :is(main, header, section, article, aside, dialog, [role="d
 }
 
 :root.dark .landing-page .nav-sign-in:hover {
-  background: #bac4ff !important;
   transform: translateY(-1px);
 }
 
@@ -952,7 +951,7 @@ html.dark body #root :is(main, header, section, article, aside, dialog, [role="d
 }
 
 :root.dark .landing-page main :is(.bg-sky-600, .bg-sky-700, .bg-sky-800):not(.landing-hero-cta):hover {
-  background-color: #bac4ff !important;
+  background-color: var(--dark-accent) !important;
 }
 
 :root.dark .landing-page input[type="file"]::file-selector-button {
@@ -1911,9 +1910,12 @@ html.dark { background: #10131c; }
   color: white !important;
 }
 
-:root.dark :is(a, button):is(.bg-sky-600, .bg-sky-700, .bg-sky-800, .bg-emerald-600, .bg-emerald-700):hover:not(:disabled),
-:root.dark .landing-page :is(.nav-sign-in, .landing-hero-cta-primary):hover {
+:root.dark :is(a, button):is(.bg-sky-600, .bg-sky-700, .bg-sky-800, .bg-emerald-600, .bg-emerald-700):hover:not(:disabled) {
   background: var(--dark-accent-hover) !important;
+}
+
+:root.dark .landing-page :is(.nav-sign-in, .landing-hero-cta-primary):hover {
+  background: var(--dark-accent) !important;
 }
 
 :root.dark :is(a, button):is(.bg-sky-600, .bg-sky-700, .bg-emerald-600, .bg-emerald-700):active:not(:disabled) {

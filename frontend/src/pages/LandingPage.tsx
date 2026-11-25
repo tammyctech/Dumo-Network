@@ -283,7 +283,7 @@ function MapPanel({
             <button
               type="button"
               onClick={onRetry}
-              className="mt-4 inline-flex min-h-10 items-center gap-2 rounded-lg border border-sky-200 bg-white px-3 text-sm font-semibold text-sky-800 hover:bg-sky-50"
+              className="mt-4 inline-flex min-h-10 items-center gap-2 rounded-lg border border-sky-200 bg-white px-3 text-sm font-semibold text-sky-800"
             >
               <RefreshCw size={15} />
               Retry map
@@ -500,7 +500,7 @@ export default function LandingPage() {
           </Link>
 
           <nav className="hidden items-center gap-7 md:flex">
-            <Link to="/live-results" className="inline-flex items-center gap-2 rounded-xl border border-sky-950/20 bg-white px-3.5 py-2 text-sm font-bold text-sky-950 shadow-sm transition hover:border-sky-950 hover:bg-sky-50 hover:text-sky-950">
+            <Link to="/live-results" className="inline-flex items-center gap-2 rounded-xl border border-sky-950/20 bg-white px-3.5 py-2 text-sm font-bold text-sky-950 shadow-sm transition hover:border-sky-950 hover:text-sky-950">
               <span className="relative flex h-2.5 w-2.5" aria-hidden="true"><span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"/><span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-500"/></span>
               Live results
             </Link>
@@ -517,7 +517,7 @@ export default function LandingPage() {
               <span>{lt("nav_methodology").text}</span>
             </a>
             <a href="#report-incident" className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm font-bold text-red-700 hover:bg-red-100">Report incident</a>
-            <button type="button" onClick={toggleTheme} className="grid h-11 w-11 place-items-center rounded-xl border border-slate-200 bg-white text-sky-950 transition hover:border-sky-950 hover:bg-sky-50" aria-label={`Turn ${themeMode==="dark"?"on light":"on dark"} mode`}>{themeMode==="dark"?<Sun size={19}/>:<Moon size={19}/>}</button>
+            <button type="button" onClick={toggleTheme} className="grid h-11 w-11 place-items-center rounded-xl border border-slate-200 bg-white text-sky-950 transition hover:border-sky-950" aria-label={`Turn ${themeMode==="dark"?"on light":"on dark"} mode`}>{themeMode==="dark"?<Sun size={19}/>:<Moon size={19}/>}</button>
             <Link
               to={accountPath}
               className="nav-sign-in group inline-flex min-h-11 items-center gap-2 rounded-xl bg-sky-700 px-4 text-sm font-bold text-white shadow-md transition hover:bg-sky-800"
@@ -533,7 +533,7 @@ export default function LandingPage() {
             aria-expanded={mobileMenuOpen}
             aria-controls="mobile-navigation"
             onClick={() => setMobileMenuOpen((value) => !value)}
-            className="flex h-11 w-11 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-700 transition hover:bg-sky-50 hover:text-sky-700 md:hidden"
+            className="flex h-11 w-11 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-700 transition hover:text-sky-700 md:hidden"
           >
             {mobileMenuOpen ? <X /> : <Menu />}
           </button>
@@ -541,21 +541,21 @@ export default function LandingPage() {
         {mobileMenuOpen && (
           <nav id="mobile-navigation" className="border-t border-slate-200 bg-white px-5 py-5 shadow-lg md:hidden">
             <div className="flex flex-col gap-2 text-sm font-semibold text-slate-700">
-              <Link to="/live-results" onClick={() => setMobileMenuOpen(false)} className="inline-flex items-center gap-2 rounded-xl border border-sky-950/20 bg-white px-3 py-3 font-bold text-sky-950 transition hover:border-sky-950 hover:bg-sky-50 hover:text-sky-950">
+              <Link to="/live-results" onClick={() => setMobileMenuOpen(false)} className="inline-flex items-center gap-2 rounded-xl border border-sky-950/20 bg-white px-3 py-3 font-bold text-sky-950 transition hover:border-sky-950 hover:text-sky-950">
                 <span className="relative flex h-2.5 w-2.5" aria-hidden="true"><span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"/><span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-500"/></span>
                 Live results
               </Link>
               <a
                 href="#updates"
                 onClick={() => setMobileMenuOpen(false)}
-                className="rounded-lg px-3 py-3 transition hover:bg-sky-50 hover:text-sky-800"
+                className="rounded-lg px-3 py-3 transition hover:text-sky-800"
               >
                 <span style={{color:lt("nav_updates").color}}>{lt("nav_updates").text}</span>
               </a>
               <a
                 href="#methodology"
                 onClick={() => setMobileMenuOpen(false)}
-                className="rounded-lg px-3 py-3 transition hover:bg-sky-50 hover:text-sky-800"
+                className="rounded-lg px-3 py-3 transition hover:text-sky-800"
               >
                 <span style={{color:lt("nav_methodology").color}}>{lt("nav_methodology").text}</span>
               </a>
@@ -632,7 +632,7 @@ export default function LandingPage() {
                   aria-label="Refresh election data"
                   title="Refresh election data"
                   disabled={loading}
-                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 transition hover:border-sky-300 hover:bg-sky-50 hover:text-sky-800 disabled:cursor-wait disabled:opacity-60"
+                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 transition hover:border-sky-300 hover:text-sky-800 disabled:cursor-wait disabled:opacity-60"
                 >
                   <RefreshCw size={18} className={loading ? "animate-spin" : ""} />
                 </button>
