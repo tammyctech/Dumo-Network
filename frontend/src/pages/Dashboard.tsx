@@ -373,8 +373,7 @@ const [refreshing, setRefreshing] = useState(false);
 const [error, setError] = useState("");
 
 const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
-const [coverageSearch, setCoverageSearch] = useState("");
-const [coverageSort, setCoverageSort] = useState("lowest");
+const [coverageLga, setCoverageLga] = useState("");
 
   // ========================================
 
@@ -632,16 +631,8 @@ const coverageTotals = lgaAgentCoverage.reduce(
 );
 const coverageUnitCount = coverageTotals.assigned + coverageTotals.unassigned;
 const overallCoverage = coverageUnitCount > 0 ? (coverageTotals.assigned / coverageUnitCount) * 100 : null;
-const visibleCoverage = lgaAgentCoverage.map(row => {
-  const total = row.assigned_polling_units + row.unassigned_polling_units;
-  return { ...row, coverage: total > 0 ? (row.assigned_polling_units / total) * 100 : null };
-}).filter(row => row.lga.toLowerCase().includes(coverageSearch.trim().toLowerCase()))
-  .sort((a, b) => {
-    const byName = a.lga.localeCompare(b.lga);
-    if (coverageSort === "name") return byName;
-    if (coverageSort === "unassigned") return b.unassigned_polling_units - a.unassigned_polling_units || byName;
-    return (a.coverage ?? Infinity) - (b.coverage ?? Infinity) || byName;
-  });
+const coverageOptions = [...lgaAgentCoverage].sort((a, b) => a.lga.localeCompare(b.lga));
+const selectedCoverage = coverageOptions.find(row => row.lga === coverageLga) ?? coverageOptions[0];
 
 const sortedLgaData = [...lgaData].sort(
 
@@ -1551,28 +1542,20 @@ const workflowUnavailableMessage = statistics?.election
                 ))}
               </dl>
               </div>
-              <div className="mt-5 grid gap-3 sm:grid-cols-2">
-                <label className="text-sm font-semibold">Find an LGA
-                  <input type="search" className="input mt-1" value={coverageSearch} onChange={event => setCoverageSearch(event.target.value)} placeholder="Search by name" />
-                </label>
-                <label className="text-sm font-semibold">Sort by
-                  <select className="input mt-1" value={coverageSort} onChange={event => setCoverageSort(event.target.value)}>
-                    <option value="lowest">Lowest coverage</option>
-                    <option value="unassigned">Most unassigned units</option>
-                    <option value="name">LGA name</option>
-                  </select>
-                </label>
-              </div>
-              <p role="status" className="mt-3 text-xs text-slate-500">Showing {visibleCoverage.length} of {lgaAgentCoverage.length} LGAs</p>
-              {visibleCoverage.length === 0 && <p className="mt-4 text-sm text-slate-600">No LGAs match your search.</p>}
-              <ul aria-label="Agent coverage by LGA" className="mt-5 grid gap-3 lg:grid-cols-2">
-                {visibleCoverage.map(row => {
-                  const assigned = row.assigned_polling_units;
-                  const unassigned = row.unassigned_polling_units;
-                  const coverage = row.coverage;
+              <label className="mt-5 block max-w-sm text-sm font-semibold">Select an LGA
+                <select className="input mt-1" value={selectedCoverage?.lga ?? ""} onChange={event => setCoverageLga(event.target.value)}>
+                  {coverageOptions.map(row => <option key={row.lga} value={row.lga}>{row.lga}</option>)}
+                </select>
+              </label>
+              {selectedCoverage && (() => {
+                const row = selectedCoverage;
+                const assigned = row.assigned_polling_units;
+                const unassigned = row.unassigned_polling_units;
+                const total = assigned + unassigned;
+                const coverage = total > 0 ? (assigned / total) * 100 : null;
 
-                  return (
-                    <li key={row.lga} className="min-w-0 rounded-xl border border-slate-200 bg-slate-50 p-3 sm:p-4">
+                return (
+                    <div aria-live="polite" className="mt-3 min-w-0 rounded-xl border border-slate-200 bg-slate-50 p-3 sm:p-4">
                       <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
                         <h3 className="break-words text-sm font-bold text-slate-900">{row.lga}</h3>
                         <span className="text-xs font-semibold tabular-nums text-slate-600">
@@ -1589,10 +1572,9 @@ const workflowUnavailableMessage = statistics?.election
                         <span><strong>{assigned.toLocaleString("en-NG")}</strong> assigned</span>
                         <span><strong>{unassigned.toLocaleString("en-NG")}</strong> unassigned</span>
                       </div>
-                    </li>
-                  );
-                })}
-              </ul>
+                    </div>
+                );
+              })()}
               </>
             )}
           </section>
