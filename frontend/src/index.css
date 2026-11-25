@@ -1190,12 +1190,12 @@ html.dark body #root :is(main, header, section, article, aside, dialog, [role="d
 
 .app-sidebar-link {
   border-color: transparent;
-  color: #cbd5e1;
+  color: #334155;
 }
 
 .app-sidebar-link:hover {
-  background: rgb(255 255 255 / 0.1);
-  color: #fff;
+  background: #e0f2fe;
+  color: #0f172a;
 }
 
 .app-sidebar-link.is-active {
