@@ -1860,6 +1860,10 @@ html.dark body #root :is(main, header, section, article, aside, dialog, [role="d
 
 html.dark { background: #10131c; }
 .app-loading-screen, .app-loading-surface { background: var(--brand-background); }
+:root.dark .app-loading-screen { background: var(--dark-surface-base); }
+:root.dark .app-loading-screen .app-loading-name { color: var(--dark-text-primary) !important; }
+:root.dark .app-loading-screen .app-loading-subtitle { color: var(--dark-text-secondary) !important; }
+:root.dark .app-loading-screen .app-loading-track { background: var(--dark-surface-overlay) !important; }
 
 :root.dark :is(.app-shell, .app-topbar, .landing-page > header, .app-sidebar) {
   background: var(--dark-nav) !important;
@@ -1963,7 +1967,8 @@ html.dark { background: #10131c; }
 
 .landing-page .landing-heading-accent { color: #0369a1; }
 :root.dark .landing-page main .landing-heading-accent { color: #7dd3fc !important; }
-.landing-page main .landing-hero-heading-accent { color: #005b8f !important; }
+.landing-page main .landing-brand-blue-text,
+:root.dark .landing-page main .landing-brand-blue-text { color: #005b8f !important; }
 
 :root.dark .landing-page footer { background: var(--dark-deep) !important; }
 :root.dark .landing-page main > section:first-of-type h1 { font-size: clamp(2.2rem, 5vw, 4rem); }

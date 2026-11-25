@@ -224,14 +224,14 @@ function LoadingScreen() {
       className="app-loading-screen fixed inset-0 z-[200] flex min-h-screen items-center justify-center px-5"
     >
       <div className="flex flex-col items-center text-center">
-        <p className="text-sm font-extrabold uppercase tracking-[0.12em] text-slate-900">
+        <p className="app-loading-name text-sm font-extrabold uppercase tracking-[0.12em] text-slate-900">
           Dumo Youth Network
         </p>
-        <p className="mt-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-emerald-800">
+        <p className="app-loading-subtitle mt-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-emerald-800">
           Election Monitoring System
         </p>
         <div
-          className="mt-6 h-1.5 w-48 overflow-hidden rounded-full bg-emerald-100"
+          className="app-loading-track mt-6 h-1.5 w-48 overflow-hidden rounded-full bg-emerald-100"
           role="progressbar"
           aria-label="Loading application"
           aria-valuemin={0}

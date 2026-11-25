@@ -587,7 +587,7 @@ export default function LandingPage() {
               </div>
               <h1 className="mt-7 max-w-2xl text-[2.8rem] font-semibold leading-[1.04] tracking-[-0.055em] text-slate-950 sm:text-6xl lg:text-[4.2rem]">
                 <span className="block text-slate-950">{lt("hero_line_1").text}</span>
-                <span className="landing-hero-heading-accent block">{lt("hero_line_2").text}</span>
+                <span className="landing-brand-blue-text block">{lt("hero_line_2").text}</span>
                 <span className="block text-slate-950">{lt("hero_line_3").text}</span>
               </h1>
               <p className="mt-6 max-w-xl text-base leading-7 text-slate-600 sm:text-lg sm:leading-8">
@@ -751,7 +751,7 @@ export default function LandingPage() {
           <div className="mx-auto max-w-7xl px-5 lg:px-8">
             <div className="grid gap-10 lg:grid-cols-[0.72fr_1.28fr] lg:gap-16">
               <div className="lg:sticky lg:top-28 lg:self-start">
-                <p className="flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.2em]" style={{color:lt("totals_eyebrow").color}}><BarChart3 size={15} /> {lt("totals_eyebrow").text}</p>
+                <p className="landing-brand-blue-text flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.2em]"><BarChart3 size={15} /> {lt("totals_eyebrow").text}</p>
                 <h2 className="mt-4 text-4xl font-black leading-[1.08] tracking-[-0.045em] sm:text-5xl" style={{color:lt("totals_heading").color}}>{lt("totals_heading").text}</h2>
                 <p className="mt-5 max-w-md text-sm leading-7" style={{color:lt("totals_description").color}}>
                   {lt("totals_description").text}
