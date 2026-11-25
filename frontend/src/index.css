@@ -1951,6 +1951,24 @@ html.dark { background: #10131c; }
   color: inherit !important;
 }
 
+.landing-page a.landing-dashboard-link,
+:root.dark .landing-page a.landing-dashboard-link {
+  background: #064e3b !important;
+  border-color: #064e3b !important;
+  color: #dce0e7 !important;
+}
+
+.landing-page a.landing-dashboard-link:is(:hover, :active),
+:root.dark .landing-page a.landing-dashboard-link:is(:hover, :active) {
+  background: #dce0e7 !important;
+  border-color: #dce0e7 !important;
+  color: #064e3b !important;
+}
+
+.landing-page a.landing-dashboard-link :is(span, svg) {
+  color: inherit !important;
+}
+
 :root.dark .landing-page footer { background: var(--dark-deep) !important; }
 :root.dark .landing-page main > section:first-of-type h1 { font-size: clamp(2.2rem, 5vw, 4rem); }
 :root.dark .recharts-cartesian-grid line { stroke: var(--dark-border); }

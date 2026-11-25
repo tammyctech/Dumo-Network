@@ -373,7 +373,7 @@ export default function LandingPage() {
   const branding = useBranding();
   const {user}=useAuth();
   const accountPath=user?"/dashboard":"/login";
-  const accountLabel=user?"Go to dashboard":"Sign in";
+  const accountLabel=user?"Go to Dashboard":"Sign in";
   const lt = (key: string) => branding.landing_text[key];
   const [overview, setOverview] = useState<PublicOverview | null>(null);
   const [geoJson, setGeoJson] = useState<GeoJson | null>(null);
@@ -520,7 +520,7 @@ export default function LandingPage() {
             <button type="button" onClick={toggleTheme} className="grid h-11 w-11 place-items-center rounded-xl border border-slate-200 bg-white text-sky-950 transition hover:border-sky-950" aria-label={`Turn ${themeMode==="dark"?"on light":"on dark"} mode`}>{themeMode==="dark"?<Sun size={19}/>:<Moon size={19}/>}</button>
             <Link
               to={accountPath}
-              className="nav-sign-in group inline-flex min-h-11 items-center gap-2 rounded-xl bg-sky-700 px-4 text-sm font-bold text-white shadow-md transition hover:bg-sky-800"
+              className={`nav-sign-in group inline-flex min-h-11 items-center gap-2 rounded-xl bg-sky-700 px-4 text-sm font-bold text-white shadow-md transition hover:bg-sky-800 ${user ? "landing-dashboard-link" : ""}`}
             >
               {user?<LayoutDashboard size={17} aria-hidden="true"/>:<LogIn size={17} aria-hidden="true"/>}
               <span>{accountLabel}</span>
@@ -563,7 +563,7 @@ export default function LandingPage() {
               <button type="button" onClick={toggleTheme} className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 font-bold text-sky-950"><span>{themeMode==="dark"?<Sun size={18}/>:<Moon size={18}/>}</span>{themeMode==="dark"?"Light mode":"Dark mode"}</button>
               <Link
                 to={accountPath}
-                className="nav-sign-in mt-2 inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-sky-700 px-5 font-bold text-white shadow-md transition hover:bg-sky-800"
+                className={`nav-sign-in mt-2 inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-sky-700 px-5 font-bold text-white shadow-md transition hover:bg-sky-800 ${user ? "landing-dashboard-link" : ""}`}
               >
                 {user?<LayoutDashboard size={18} aria-hidden="true"/>:<LogIn size={18} aria-hidden="true"/>}
                 <span>{accountLabel}</span>
@@ -606,7 +606,7 @@ export default function LandingPage() {
                 </a>
                 <Link
                   to={accountPath}
-                  className="landing-hero-cta landing-hero-cta-secondary group inline-flex min-h-12 items-center gap-2 rounded-lg border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-800 transition hover:border-sky-300 hover:text-sky-800"
+                  className={`landing-hero-cta landing-hero-cta-secondary group inline-flex min-h-12 items-center gap-2 rounded-lg border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-800 transition hover:border-sky-300 hover:text-sky-800 ${user ? "landing-dashboard-link" : ""}`}
                 >
                   {user?<LayoutDashboard size={18} aria-hidden="true"/>:<LogIn size={18} aria-hidden="true"/>}
                   <span>{user?accountLabel:lt("hero_login_button").text}</span>
@@ -891,7 +891,7 @@ export default function LandingPage() {
               </div>
               <Link
                 to={accountPath}
-                className="group inline-flex min-h-13 shrink-0 items-center justify-center gap-2 rounded-full bg-sky-800 px-6 py-3.5 font-black text-white shadow-xl shadow-sky-950/20 transition duration-200 hover:-translate-y-0.5 hover:bg-sky-700 hover:shadow-sky-950/30 active:translate-y-0"
+                className={`group inline-flex min-h-13 shrink-0 items-center justify-center gap-2 rounded-full bg-sky-800 px-6 py-3.5 font-black text-white shadow-xl shadow-sky-950/20 transition duration-200 hover:-translate-y-0.5 hover:bg-sky-700 hover:shadow-sky-950/30 active:translate-y-0 ${user ? "landing-dashboard-link" : ""}`}
               >
                 {user?<LayoutDashboard size={18} aria-hidden="true"/>:<LogIn size={18} aria-hidden="true"/>}
                 <span style={{color:lt("cta_button").color}}>{user?accountLabel:lt("cta_button").text}</span>
