@@ -1935,16 +1935,16 @@ html.dark { background: #10131c; }
 
 :is(.landing-page, :root.dark .landing-page) :is(button, a.landing-action, a.nav-sign-in, a.landing-hero-cta, a.landing-dashboard-link, a.bg-sky-800),
 :is(.landing-page, :root.dark .landing-page) input[type="file"]::file-selector-button {
-  background: #7dd3fc !important;
-  border-color: #7dd3fc !important;
-  color: #0c4a6e !important;
+  background: #0000ff !important;
+  border-color: #0000ff !important;
+  color: #fff !important;
 }
 
 :is(.landing-page, :root.dark .landing-page) :is(button, a.landing-action, a.nav-sign-in, a.landing-hero-cta, a.landing-dashboard-link, a.bg-sky-800):is(:hover, :active):not(:disabled),
 :is(.landing-page, :root.dark .landing-page) input[type="file"]:hover::file-selector-button {
-  background: #bae6fd !important;
-  border-color: #bae6fd !important;
-  color: #0c4a6e !important;
+  background: #0000ff !important;
+  border-color: #7dd3fc !important;
+  color: #fff !important;
 }
 
 :is(.landing-page, :root.dark .landing-page) :is(button, a.landing-action, a.nav-sign-in, a.landing-hero-cta, a.landing-dashboard-link, a.bg-sky-800) :is(span, svg) {
