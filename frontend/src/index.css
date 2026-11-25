@@ -1925,25 +1925,6 @@ html.dark { background: #10131c; }
   color: var(--dark-text-primary) !important;
 }
 
-:root.dark .landing-page .landing-hero-cta {
-  --hero-light-blue: #7dd3fc;
-  --hero-blue-ink: #0c4a6e;
-}
-
-:root.dark .landing-page a.landing-hero-cta-primary,
-:root.dark .landing-page a.landing-hero-cta-secondary:is(:hover, :active) {
-  background: var(--landing-copy) !important;
-  border-color: var(--landing-copy) !important;
-  color: var(--hero-blue-ink) !important;
-}
-
-:root.dark .landing-page a.landing-hero-cta-secondary,
-:root.dark .landing-page a.landing-hero-cta-primary:is(:hover, :active) {
-  background: var(--hero-light-blue) !important;
-  border-color: var(--hero-light-blue) !important;
-  color: var(--hero-blue-ink) !important;
-}
-
 :root.dark .landing-page .landing-hero-cta-primary:not(:focus-visible) {
   box-shadow: none !important;
 }
@@ -1952,21 +1933,21 @@ html.dark { background: #10131c; }
   color: inherit !important;
 }
 
-.landing-page a.landing-dashboard-link,
-:root.dark .landing-page a.landing-dashboard-link {
+:is(.landing-page, :root.dark .landing-page) :is(button, a.landing-action, a.nav-sign-in, a.landing-hero-cta, a.landing-dashboard-link, a.bg-sky-800),
+:is(.landing-page, :root.dark .landing-page) input[type="file"]::file-selector-button {
   background: #7dd3fc !important;
   border-color: #7dd3fc !important;
   color: #0c4a6e !important;
 }
 
-.landing-page a.landing-dashboard-link:is(:hover, :active),
-:root.dark .landing-page a.landing-dashboard-link:is(:hover, :active) {
-  background: #dce0e7 !important;
-  border-color: #dce0e7 !important;
+:is(.landing-page, :root.dark .landing-page) :is(button, a.landing-action, a.nav-sign-in, a.landing-hero-cta, a.landing-dashboard-link, a.bg-sky-800):is(:hover, :active):not(:disabled),
+:is(.landing-page, :root.dark .landing-page) input[type="file"]:hover::file-selector-button {
+  background: #bae6fd !important;
+  border-color: #bae6fd !important;
   color: #0c4a6e !important;
 }
 
-.landing-page a.landing-dashboard-link :is(span, svg) {
+:is(.landing-page, :root.dark .landing-page) :is(button, a.landing-action, a.nav-sign-in, a.landing-hero-cta, a.landing-dashboard-link, a.bg-sky-800) :is(span, svg) {
   color: inherit !important;
 }
 
