@@ -1933,21 +1933,31 @@ html.dark { background: #10131c; }
   color: inherit !important;
 }
 
-:is(.landing-page, :root.dark .landing-page) :is(button, a.landing-action, a.nav-sign-in, a.landing-hero-cta, a.landing-dashboard-link, a.bg-sky-800),
-:is(.landing-page, :root.dark .landing-page) input[type="file"]::file-selector-button {
+:root.dark .landing-page a.landing-hero-cta-primary {
+  background: var(--landing-copy) !important;
+  border-color: var(--landing-copy) !important;
+  color: #0c4a6e !important;
+}
+
+:root.dark .landing-page a.landing-hero-cta-primary:is(:hover, :active) {
+  background: #7dd3fc !important;
+  border-color: #7dd3fc !important;
+  color: #0c4a6e !important;
+}
+
+:is(.landing-page, :root.dark .landing-page) :is(a.nav-sign-in, a.landing-hero-cta-secondary, a.landing-action, button.landing-action) {
   background: #0000ff !important;
   border-color: #0000ff !important;
   color: #fff !important;
 }
 
-:is(.landing-page, :root.dark .landing-page) :is(button, a.landing-action, a.nav-sign-in, a.landing-hero-cta, a.landing-dashboard-link, a.bg-sky-800):is(:hover, :active):not(:disabled),
-:is(.landing-page, :root.dark .landing-page) input[type="file"]:hover::file-selector-button {
+:is(.landing-page, :root.dark .landing-page) :is(a.nav-sign-in, a.landing-hero-cta-secondary, a.landing-action, button.landing-action):is(:hover, :active):not(:disabled) {
   background: #0000ff !important;
   border-color: #7dd3fc !important;
   color: #fff !important;
 }
 
-:is(.landing-page, :root.dark .landing-page) :is(button, a.landing-action, a.nav-sign-in, a.landing-hero-cta, a.landing-dashboard-link, a.bg-sky-800) :is(span, svg) {
+:is(.landing-page, :root.dark .landing-page) :is(a.nav-sign-in, a.landing-hero-cta-secondary, a.landing-action, button.landing-action) :is(span, svg) {
   color: inherit !important;
 }
 
