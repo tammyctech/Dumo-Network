@@ -487,6 +487,7 @@ header h3 {
   --brand-background: #10131c;
   --brand-text: #f5f6fa;
   --dark-surface-base: #10131c;
+  --dark-canvas-glow: radial-gradient(ellipse at 76% 15%, rgb(64 93 251 / 0.18), transparent 34rem);
   --dark-surface-card: #1c202b;
   --dark-surface-raised: #222632;
   --dark-surface-overlay: #282d3a;
@@ -507,8 +508,8 @@ header h3 {
   color: var(--dark-text-primary);
 }
 
-:root.dark .dashboard-canvas {
-  background-image: radial-gradient(circle at 84% 0%, rgb(255 255 255 / 0.045), transparent 28rem);
+:root.dark .app-shell .dashboard-canvas {
+  background-image: var(--dark-canvas-glow);
 }
 
 :root.dark :is(.bg-white, .bg-white\/95, .bg-white\/90, .bg-white\/80, .bg-slate-50, .bg-slate-50\/70, .bg-slate-50\/80) {
@@ -843,11 +844,11 @@ html.dark body #root :is(main, header, section, article, aside, dialog, [role="d
 
 /* Termii-inspired landing page: layered navy surfaces and restrained contrast. */
 :root.dark .landing-page {
-  --landing-bg: #10131c;
+  --landing-bg: var(--dark-surface-base);
   --landing-section: #141720;
-  --landing-card: #1c202b;
-  --landing-card-hover: #222632;
-  --landing-border: #2b2f3b;
+  --landing-card: var(--dark-surface-card);
+  --landing-card-hover: var(--dark-surface-raised);
+  --landing-border: var(--dark-border);
   --landing-copy: #a2afff;
   --landing-heading: #f8fafc;
   --landing-accent: #a2afff;
@@ -891,12 +892,6 @@ html.dark body #root :is(main, header, section, article, aside, dialog, [role="d
 
 :root.dark .landing-page main > section:nth-of-type(even) {
   background-color: var(--landing-section) !important;
-}
-
-:root.dark .landing-page main > section:first-of-type {
-  background-image:
-    radial-gradient(circle at 78% 18%, rgb(64 93 251 / 0.13), transparent 26rem),
-    linear-gradient(180deg, #141720 0%, var(--landing-bg) 100%) !important;
 }
 
 :root.dark .landing-page :is(article, form, .bg-white, .bg-white\/70, .bg-white\/95, .bg-slate-50, .bg-slate-50\/70, [class*="bg-[#f8faf8]"]) {
@@ -1928,7 +1923,7 @@ html.dark { background: #10131c; }
 }
 
 :root.dark .landing-page main > section:first-of-type {
-  background-image: radial-gradient(ellipse at 76% 15%, rgb(64 93 251 / .18), transparent 34rem) !important;
+  background-image: var(--dark-canvas-glow) !important;
 }
 
 :root.dark .landing-page footer { background: var(--dark-deep) !important; }
