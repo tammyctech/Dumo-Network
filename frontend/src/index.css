@@ -1946,14 +1946,14 @@ html.dark { background: #10131c; }
 }
 
 :is(.landing-page, :root.dark .landing-page) :is(a.nav-sign-in, a.landing-hero-cta-secondary, a.landing-action, button.landing-action) {
-  background: #0000ff !important;
-  border-color: #0000ff !important;
+  background: #005b8f !important;
+  border-color: #005b8f !important;
   color: #fff !important;
 }
 
 :is(.landing-page, :root.dark .landing-page) :is(a.nav-sign-in, a.landing-hero-cta-secondary, a.landing-action, button.landing-action):is(:hover, :active):not(:disabled) {
   background: #0000ff !important;
-  border-color: #7dd3fc !important;
+  border-color: #0000ff !important;
   color: #fff !important;
 }
 
