@@ -849,8 +849,8 @@ html.dark body #root :is(main, header, section, article, aside, dialog, [role="d
   --landing-card: var(--dark-surface-card);
   --landing-card-hover: var(--dark-surface-raised);
   --landing-border: var(--dark-border);
-  --landing-copy: #a2afff;
-  --landing-heading: #f8fafc;
+  --landing-copy: #dce0e7;
+  --landing-heading: #eceef2;
   --landing-accent: #a2afff;
   background: var(--landing-bg) !important;
 }
@@ -936,21 +936,21 @@ html.dark body #root :is(main, header, section, article, aside, dialog, [role="d
   color: #fda4af !important;
 }
 
-:root.dark .landing-page :is(.text-sky-600, .text-sky-700, .text-sky-800) {
-  color: var(--landing-accent) !important;
+:root.dark .landing-page :is(.text-sky-100, .text-sky-200, .text-sky-600, .text-sky-700, .text-sky-800, .text-sky-950):not(svg) {
+  color: var(--landing-copy) !important;
 }
 
-:root.dark .landing-page main :is(.bg-sky-600, .bg-sky-700, .bg-sky-800):not(.landing-hero-cta) {
+:root.dark .landing-page main :is(.bg-sky-600, .bg-sky-700, .bg-sky-800):not(.landing-hero-cta):where(:not(a, button)) {
   border-color: var(--landing-accent) !important;
   background-color: var(--landing-accent) !important;
   color: var(--landing-bg) !important;
 }
 
-:root.dark .landing-page main :is(.bg-sky-600, .bg-sky-700, .bg-sky-800):not(.landing-hero-cta) :is(span, svg) {
+:root.dark .landing-page main :is(.bg-sky-600, .bg-sky-700, .bg-sky-800):not(.landing-hero-cta):where(:not(a, button)) :is(span, svg) {
   color: var(--landing-bg) !important;
 }
 
-:root.dark .landing-page main :is(.bg-sky-600, .bg-sky-700, .bg-sky-800):not(.landing-hero-cta):hover {
+:root.dark .landing-page main :is(.bg-sky-600, .bg-sky-700, .bg-sky-800):not(.landing-hero-cta):where(:not(a, button)):hover {
   background-color: var(--dark-accent) !important;
 }
 
@@ -1914,19 +1914,23 @@ html.dark { background: #10131c; }
   background: var(--dark-accent-hover) !important;
 }
 
-:root.dark .landing-page :is(.nav-sign-in, .landing-hero-cta-primary):hover {
-  background: var(--dark-accent) !important;
-}
-
 :root.dark :is(a, button):is(.bg-sky-600, .bg-sky-700, .bg-emerald-600, .bg-emerald-700):active:not(:disabled) {
   background: var(--dark-accent-pressed) !important;
 }
 
-:root.dark .landing-page .landing-hero-cta-secondary,
-:root.dark .landing-page .landing-hero-cta-secondary:hover {
-  background: var(--dark-surface-raised) !important;
+:root.dark .landing-page :is(a, button):is(.nav-sign-in, .landing-hero-cta, .bg-sky-600, .bg-sky-700, .bg-sky-800),
+:root.dark .landing-page :is(a, button):is(.nav-sign-in, .landing-hero-cta, .bg-sky-600, .bg-sky-700, .bg-sky-800):is(:hover, :active) {
+  background: var(--dark-surface-overlay) !important;
   border-color: var(--dark-border) !important;
   color: var(--dark-text-primary) !important;
+}
+
+:root.dark .landing-page .landing-hero-cta-primary:not(:focus-visible) {
+  box-shadow: none !important;
+}
+
+:root.dark .landing-page main :is(a, button):is(.landing-hero-cta, .bg-sky-600, .bg-sky-700, .bg-sky-800) :is(span, svg) {
+  color: inherit !important;
 }
 
 :root.dark .landing-page footer { background: var(--dark-deep) !important; }
