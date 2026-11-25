@@ -373,6 +373,8 @@ const [refreshing, setRefreshing] = useState(false);
 const [error, setError] = useState("");
 
 const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+const [coverageSearch, setCoverageSearch] = useState("");
+const [coverageSort, setCoverageSort] = useState("lowest");
 
   // ========================================
 
@@ -622,6 +624,24 @@ const partyData = statistics?.party_totals ?? [];
 const lgaData = statistics?.lga_progress ?? [];
 const lgaAgentCoverage = statistics?.lga_agent_coverage ?? [];
 const maxLgaUnits = Math.max(1, ...lgaAgentCoverage.map(row => row.assigned_polling_units + row.unassigned_polling_units));
+const coverageTotals = lgaAgentCoverage.reduce(
+  (totals, row) => ({
+    assigned: totals.assigned + row.assigned_polling_units,
+    unassigned: totals.unassigned + row.unassigned_polling_units,
+  }),
+  { assigned: 0, unassigned: 0 },
+);
+const coverageUnitCount = coverageTotals.assigned + coverageTotals.unassigned;
+const visibleCoverage = lgaAgentCoverage.map(row => {
+  const total = row.assigned_polling_units + row.unassigned_polling_units;
+  return { ...row, coverage: total > 0 ? (row.assigned_polling_units / total) * 100 : null };
+}).filter(row => row.lga.toLowerCase().includes(coverageSearch.trim().toLowerCase()))
+  .sort((a, b) => {
+    const byName = a.lga.localeCompare(b.lga);
+    if (coverageSort === "name") return byName;
+    if (coverageSort === "unassigned") return b.unassigned_polling_units - a.unassigned_polling_units || byName;
+    return (a.coverage ?? Infinity) - (b.coverage ?? Infinity) || byName;
+  });
 
 const sortedLgaData = [...lgaData].sort(
 
@@ -1503,12 +1523,38 @@ const workflowUnavailableMessage = statistics?.election
               <div className="flex flex-wrap gap-4 text-xs font-semibold"><span className="flex items-center gap-2"><span className="h-3 w-3 rounded-sm bg-[var(--chart-blue,#059669)]" aria-hidden="true"/>Assigned</span><span className="flex items-center gap-2"><span className="h-3 w-3 rounded-sm bg-amber-400" aria-hidden="true"/>Unassigned</span></div>
             </div>
             {lgaAgentCoverage.length === 0 ? <div className="py-12 text-center text-sm text-slate-500">No LGA agent coverage data is available.</div> : (
+              <>
+              <dl className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-3">
+                {[
+                  ["Overall coverage", coverageUnitCount ? `${(coverageTotals.assigned / coverageUnitCount * 100).toFixed(1)}%` : "—"],
+                  ["Assigned units", coverageTotals.assigned.toLocaleString("en-NG")],
+                  ["Unassigned units", coverageTotals.unassigned.toLocaleString("en-NG")],
+                ].map(([label, value]) => (
+                  <div key={label} className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                    <dt className="text-xs font-semibold text-slate-600">{label}</dt>
+                    <dd className="mt-1 text-2xl font-bold tabular-nums text-slate-900">{value}</dd>
+                  </div>
+                ))}
+              </dl>
+              <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                <label className="text-sm font-semibold">Find an LGA
+                  <input type="search" className="input mt-1" value={coverageSearch} onChange={event => setCoverageSearch(event.target.value)} placeholder="Search by name" />
+                </label>
+                <label className="text-sm font-semibold">Sort by
+                  <select className="input mt-1" value={coverageSort} onChange={event => setCoverageSort(event.target.value)}>
+                    <option value="lowest">Lowest coverage</option>
+                    <option value="unassigned">Most unassigned units</option>
+                    <option value="name">LGA name</option>
+                  </select>
+                </label>
+              </div>
+              <p role="status" className="mt-3 text-xs text-slate-500">Showing {visibleCoverage.length} of {lgaAgentCoverage.length} LGAs</p>
+              {visibleCoverage.length === 0 && <p className="mt-4 text-sm text-slate-600">No LGAs match your search.</p>}
               <ul aria-label="Agent coverage by LGA" className="mt-5 grid gap-3 lg:grid-cols-2">
-                {lgaAgentCoverage.map(row => {
+                {visibleCoverage.map(row => {
                   const assigned = row.assigned_polling_units;
                   const unassigned = row.unassigned_polling_units;
-                  const total = assigned + unassigned;
-                  const coverage = total > 0 ? (assigned / total) * 100 : null;
+                  const coverage = row.coverage;
 
                   return (
                     <li key={row.lga} className="min-w-0 rounded-xl border border-slate-200 bg-slate-50 p-3 sm:p-4">
@@ -1530,6 +1576,7 @@ const workflowUnavailableMessage = statistics?.election
                   );
                 })}
               </ul>
+              </>
             )}
           </section>
 
