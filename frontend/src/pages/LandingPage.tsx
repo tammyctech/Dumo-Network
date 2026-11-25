@@ -594,8 +594,8 @@ export default function LandingPage() {
                 {lt("hero_description").text}
               </p>
               <div className="mt-8 flex flex-wrap gap-3">
-                <a
-                  href="#results"
+                <Link
+                  to="/live-results"
                   className="landing-hero-cta landing-hero-cta-primary group inline-flex min-h-12 items-center gap-2 rounded-lg bg-sky-700 px-5 py-3 text-sm font-bold text-white shadow-md transition hover:bg-sky-800"
                 >
                   <span aria-hidden="true" className="relative inline-flex h-2.5 w-2.5 shrink-0">
@@ -603,7 +603,7 @@ export default function LandingPage() {
                     <span className="relative h-full w-full rounded-full bg-emerald-500 ring-1 ring-emerald-950/25" />
                   </span>
                   <span>See Live Results</span>
-                </a>
+                </Link>
                 <Link
                   to={accountPath}
                   className={`landing-hero-cta landing-hero-cta-secondary group inline-flex min-h-12 items-center gap-2 rounded-lg border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-800 transition hover:border-sky-300 hover:text-sky-800 ${user ? "landing-dashboard-link" : ""}`}

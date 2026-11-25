@@ -4,6 +4,8 @@ const API_URL = import.meta.env.DEV
   ? (import.meta.env.VITE_API_URL || "http://127.0.0.1:8000").replace(/\/$/, "")
   : "";
 
+const DEFAULT_LOGO_URL = "/ems-mark.svg";
+
 export type Branding = {
   organization_name: string;
   logo_data_url: string | null;
@@ -34,7 +36,7 @@ export const defaultLandingText: Record<string, { text: string; color: string }>
 
 export const defaultBranding: Branding = {
   organization_name: "Dumo Youth Network",
-  logo_data_url: null,
+  logo_data_url: DEFAULT_LOGO_URL,
   logo_title: "Dumo Youth Network",
   logo_subtitle: "Election Monitoring System",
   login_heading: "Welcome back.",
@@ -54,7 +56,12 @@ let currentBranding = defaultBranding;
 const BRANDING_EVENT = "dumo-branding-change";
 
 export function applyBranding(value: Partial<Branding>) {
-  currentBranding = { ...defaultBranding, ...value, landing_text: { ...defaultLandingText, ...(value.landing_text || {}) } };
+  currentBranding = {
+    ...defaultBranding,
+    ...value,
+    logo_data_url: value.logo_data_url || DEFAULT_LOGO_URL,
+    landing_text: { ...defaultLandingText, ...(value.landing_text || {}) },
+  };
   const root = document.documentElement;
   root.dataset.customBrand = "true";
   root.style.setProperty("--brand-primary", currentBranding.primary_color);
@@ -72,7 +79,7 @@ export function applyBranding(value: Partial<Branding>) {
     favicon.rel = "icon";
     document.head.appendChild(favicon);
   }
-  favicon.href = currentBranding.favicon_data_url || currentBranding.logo_data_url || "/dyn-favicon-192.png";
+  favicon.href = currentBranding.favicon_data_url || currentBranding.logo_data_url || DEFAULT_LOGO_URL;
   window.dispatchEvent(new CustomEvent(BRANDING_EVENT, { detail: currentBranding }));
   return currentBranding;
 }

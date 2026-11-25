@@ -17,10 +17,9 @@ export default defineConfig({
       // Automatically update the installed application
       registerType: "autoUpdate",
 
-      // Include the DYN favicon
+      // Include the default EMS mark in the offline assets.
       includeAssets: [
-        "favicon.ico",
-        "dyn-favicon-32.png",
+        "ems-mark.svg",
       ],
 
       // Dumo Youth Network Election Monitoring System app configuration
