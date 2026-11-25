@@ -27,7 +27,7 @@ export default function MandatoryPasswordChange() {
     finally { setLoading(false); }
   }
 
-  return <main className="flex min-h-screen items-center justify-center bg-slate-50 p-5">
+  return <main className="auth-screen flex min-h-screen items-center justify-center bg-slate-50 p-5">
     <section className="w-full max-w-lg rounded-3xl border border-slate-200 bg-white p-7 shadow-xl sm:p-10">
       <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-700"><KeyRound /></div>
       <h1 className="mt-6 text-3xl font-black text-slate-950">Create your private password</h1>

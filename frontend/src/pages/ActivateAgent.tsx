@@ -87,7 +87,7 @@ export default function ActivateAgent() {
   }
 
   return (
-    <main className="min-h-screen bg-canvas px-4 py-12 text-slate-900 sm:px-6">
+    <main className="auth-screen min-h-screen bg-canvas px-4 py-12 text-slate-900 sm:px-6">
       <div className="mx-auto w-full max-w-md">
         <header className="mb-8 text-center">
           <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl border border-emerald-200 bg-emerald-50">

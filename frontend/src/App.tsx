@@ -4,7 +4,7 @@ import {
   Route,
   Routes,
 } from "react-router-dom";
-import { lazy, Suspense, useEffect, useState } from "react";
+import { lazy, Suspense } from "react";
 
 // Authentication
 import { AuthProvider } from "./context/AuthContext";
@@ -54,23 +54,13 @@ const AdminSms = lazy(() => import("./pages/AdminSms"));
 const BulkImport = lazy(() => import("./pages/BulkImport"));
 
 export default function App() {
-  const [showInitialLoading, setShowInitialLoading] = useState(true);
-
-  useEffect(() => {
-    const timer = window.setTimeout(() => {
-      setShowInitialLoading(false);
-    }, 2000);
-
-    return () => window.clearTimeout(timer);
-  }, []);
-
   return (
     <>
       <BrowserRouter>
         <SeoMetadata />
         <SiteVisitTracker />
         <AuthProvider>
-          <Suspense fallback={<div className="app-loading-surface min-h-screen" />}>
+          <Suspense fallback={<LoadingScreen />}>
             <Routes>
 
           {/* ============================================
@@ -222,7 +212,6 @@ export default function App() {
           </Suspense>
         </AuthProvider>
       </BrowserRouter>
-      {showInitialLoading && <LoadingScreen />}
     </>
   );
 }

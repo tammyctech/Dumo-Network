@@ -250,11 +250,11 @@ function MapPanel({
                 <path
                   key={name}
                   d={featurePath(feature)}
-                  fill={result?.leader ? partyColor(result.leader.party) : "#e0f2fe"}
+                  fill={result?.leader ? partyColor(result.leader.party) : "var(--map-idle, #e0f2fe)"}
                   fillOpacity={
                     result?.leader ? 0.5 + leaderVoteShare(result) * 0.5 : 1
                   }
-                  stroke={active ? "#0369a1" : "#7dd3fc"}
+                  stroke={active ? "var(--map-active, #0369a1)" : "var(--map-border, #7dd3fc)"}
                   strokeWidth={active ? 3 : 1.5}
                   className="cursor-pointer outline-none transition hover:brightness-125 focus-visible:stroke-sky-900 focus-visible:[stroke-width:3]"
                   onMouseEnter={() => setSelected(name)}

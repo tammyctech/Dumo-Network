@@ -1506,11 +1506,11 @@ const workflowUnavailableMessage = statistics?.election
                 <div className="h-[390px] min-w-[1150px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={lgaAgentCoverage} margin={{top:10,right:20,left:0,bottom:90}}>
-                      <CartesianGrid stroke="#e2e8f0" strokeDasharray="3 3" vertical={false}/>
+                      <CartesianGrid stroke="var(--chart-grid, #e2e8f0)" strokeDasharray="3 3" vertical={false}/>
                       <XAxis dataKey="lga" interval={0} angle={-45} textAnchor="end" height={100} tick={{fill:"#64748b",fontSize:11}} axisLine={{stroke:"#cbd5e1"}} tickLine={false}/>
                       <YAxis allowDecimals={false} tick={{fill:"#64748b",fontSize:12}} axisLine={false} tickLine={false}/>
                       <Tooltip cursor={{fill:"rgba(148, 163, 184, 0.10)"}} formatter={(value,name)=>[Number(value).toLocaleString("en-NG"),name]} labelFormatter={(label)=>`${label} LGA`}/>
-                      <Bar dataKey="assigned_polling_units" name="Assigned polling units" stackId="coverage" fill="#059669" radius={[0,0,0,0]}/>
+                      <Bar dataKey="assigned_polling_units" name="Assigned polling units" stackId="coverage" fill="var(--chart-blue, #059669)" radius={[0,0,0,0]}/>
                       <Bar dataKey="unassigned_polling_units" name="Unassigned polling units" stackId="coverage" fill="#fbbf24" radius={[5,5,0,0]}/>
                     </BarChart>
                   </ResponsiveContainer>
@@ -1577,7 +1577,7 @@ const workflowUnavailableMessage = statistics?.election
 
                   >
 
-                    <CartesianGrid stroke="#e2e8f0" strokeDasharray="3 3" vertical={false} />
+                    <CartesianGrid stroke="var(--chart-grid, #e2e8f0)" strokeDasharray="3 3" vertical={false} />
 
                     <XAxis dataKey="party" tick={<PartyAxisTick />} height={58} axisLine={{ stroke: "#cbd5e1" }} tickLine={false} />
 
@@ -1603,7 +1603,7 @@ const workflowUnavailableMessage = statistics?.election
                     <Bar
                       dataKey="votes"
                       name="Agent-Submitted Votes"
-                      fill="#0f766e"
+                      fill="var(--chart-blue, #0f766e)"
                       radius={[6, 6, 0, 0]}
                     />
 

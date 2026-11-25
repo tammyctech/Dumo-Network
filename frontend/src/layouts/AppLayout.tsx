@@ -181,6 +181,7 @@ const CURRENT_YEAR = new Date().getFullYear();
 
 export default function AppLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const { mode: themeMode, toggleTheme } = useTheme();
@@ -270,6 +271,9 @@ export default function AppLayout() {
     return true;
   });
   const currentPage = navigation.find((item) => item.path === pathname);
+  const mobileLinks = visibleNavigation.filter(({ path }) =>
+    ["/dashboard", "/agent-results", "/analytics", "/settings"].includes(path)
+  );
 
   // ===================================================
   // MAIN LAYOUT
@@ -278,6 +282,7 @@ export default function AppLayout() {
   return (
     <div
       className="app-shell min-h-screen bg-canvas"
+      data-compact={sidebarCollapsed}
     >
 
       {/* MOBILE BACKDROP */}
@@ -385,6 +390,7 @@ export default function AppLayout() {
                 )}
                 <NavLink
                   to={item.path}
+                  title={item.name}
                   onClick={() => setSidebarOpen(false)}
                   className={({ isActive }) => `
                     app-sidebar-link ${isActive ? "is-active" : ""}
@@ -473,7 +479,7 @@ export default function AppLayout() {
           MAIN APPLICATION
       ================================================= */}
 
-      <div className="flex min-h-screen min-w-0 flex-col lg:pl-72">
+      <div className="app-workspace flex min-h-screen min-w-0 flex-col lg:pl-72">
 
         {/* TOP HEADER */}
 
@@ -496,6 +502,14 @@ export default function AppLayout() {
             </button>
 
             {/* HEADER TITLE */}
+            <button
+              type="button"
+              className="hidden min-h-11 min-w-11 items-center justify-center rounded-xl hover:bg-slate-100 lg:flex"
+              aria-label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+              onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+            >
+              <Menu size={19} />
+            </button>
 
             <div className="min-w-0">
 
@@ -530,7 +544,7 @@ export default function AppLayout() {
 
             {/* NOTIFICATIONS */}
 
-            {false && <div ref={notificationsRef} className="relative">
+            {<div ref={notificationsRef} className="relative">
               <button
                 type="button"
                 title="Notification options"
@@ -715,6 +729,15 @@ export default function AppLayout() {
         </footer>
 
       </div>
+
+      <nav aria-label="Quick navigation" className="app-mobile-nav lg:hidden">
+        {mobileLinks.map(({ path, icon: Icon, name }) => (
+          <NavLink key={path} to={path} onClick={() => setSidebarOpen(false)}>
+            <Icon size={19} aria-hidden="true" />
+            {path === "/dashboard" ? "Home" : path === "/agent-results" ? "Submit" : name}
+          </NavLink>
+        ))}
+      </nav>
 
     </div>
   );
