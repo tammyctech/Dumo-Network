@@ -621,6 +621,7 @@ const partyData = statistics?.party_totals ?? [];
 
 const lgaData = statistics?.lga_progress ?? [];
 const lgaAgentCoverage = statistics?.lga_agent_coverage ?? [];
+const maxLgaUnits = Math.max(1, ...lgaAgentCoverage.map(row => row.assigned_polling_units + row.unassigned_polling_units));
 
 const sortedLgaData = [...lgaData].sort(
 
@@ -1499,23 +1500,36 @@ const workflowUnavailableMessage = statistics?.election
                 <div className="flex items-center gap-3"><span className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-50 text-emerald-800"><Users size={21}/></span><h2 className="text-lg font-bold text-slate-900">Polling-Unit Agent Coverage by LGA</h2></div>
                 <p className="mt-2 text-sm text-slate-500">Assigned and unassigned polling units across every Local Government Area.</p>
               </div>
-              <div className="flex flex-wrap gap-4 text-xs font-semibold"><span className="flex items-center gap-2"><span className="h-3 w-3 rounded-sm bg-emerald-600"/>Assigned</span><span className="flex items-center gap-2"><span className="h-3 w-3 rounded-sm bg-amber-400"/>Unassigned</span></div>
+              <div className="flex flex-wrap gap-4 text-xs font-semibold"><span className="flex items-center gap-2"><span className="h-3 w-3 rounded-sm bg-[var(--chart-blue,#059669)]" aria-hidden="true"/>Assigned</span><span className="flex items-center gap-2"><span className="h-3 w-3 rounded-sm bg-amber-400" aria-hidden="true"/>Unassigned</span></div>
             </div>
             {lgaAgentCoverage.length === 0 ? <div className="py-12 text-center text-sm text-slate-500">No LGA agent coverage data is available.</div> : (
-              <div className="mt-6 w-full overflow-x-auto pb-2">
-                <div className="h-[390px] min-w-[1150px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={lgaAgentCoverage} margin={{top:10,right:20,left:0,bottom:90}}>
-                      <CartesianGrid stroke="var(--chart-grid, #e2e8f0)" strokeDasharray="3 3" vertical={false}/>
-                      <XAxis dataKey="lga" interval={0} angle={-45} textAnchor="end" height={100} tick={{fill:"#64748b",fontSize:11}} axisLine={{stroke:"#cbd5e1"}} tickLine={false}/>
-                      <YAxis allowDecimals={false} tick={{fill:"#64748b",fontSize:12}} axisLine={false} tickLine={false}/>
-                      <Tooltip cursor={{fill:"rgba(148, 163, 184, 0.10)"}} formatter={(value,name)=>[Number(value).toLocaleString("en-NG"),name]} labelFormatter={(label)=>`${label} LGA`}/>
-                      <Bar dataKey="assigned_polling_units" name="Assigned polling units" stackId="coverage" fill="var(--chart-blue, #059669)" radius={[0,0,0,0]}/>
-                      <Bar dataKey="unassigned_polling_units" name="Unassigned polling units" stackId="coverage" fill="#fbbf24" radius={[5,5,0,0]}/>
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              </div>
+              <ul aria-label="Agent coverage by LGA" className="mt-5 grid gap-3 lg:grid-cols-2">
+                {lgaAgentCoverage.map(row => {
+                  const assigned = row.assigned_polling_units;
+                  const unassigned = row.unassigned_polling_units;
+                  const total = assigned + unassigned;
+                  const coverage = total > 0 ? (assigned / total) * 100 : null;
+
+                  return (
+                    <li key={row.lga} className="min-w-0 rounded-xl border border-slate-200 bg-slate-50 p-3 sm:p-4">
+                      <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
+                        <h3 className="break-words text-sm font-bold text-slate-900">{row.lga}</h3>
+                        <span className="text-xs font-semibold tabular-nums text-slate-600">
+                          {coverage === null ? "No polling units" : `${coverage.toFixed(1)}% assigned`}
+                        </span>
+                      </div>
+                      <div aria-hidden="true" className="mt-2 flex h-2.5 overflow-hidden rounded-full bg-slate-200">
+                        <span className="bg-[var(--chart-blue,#059669)]" style={{ width: `${(assigned / maxLgaUnits) * 100}%` }} />
+                        <span className="bg-amber-400" style={{ width: `${(unassigned / maxLgaUnits) * 100}%` }} />
+                      </div>
+                      <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs tabular-nums text-slate-600">
+                        <span><strong>{assigned.toLocaleString("en-NG")}</strong> assigned</span>
+                        <span><strong>{unassigned.toLocaleString("en-NG")}</strong> unassigned</span>
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
             )}
           </section>
 
