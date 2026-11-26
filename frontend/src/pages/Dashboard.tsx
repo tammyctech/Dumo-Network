@@ -1004,7 +1004,7 @@ const workflowUnavailableMessage = statistics?.election
 
               <div className="mt-6">
                 <div
-                  className="dashboard-assignment-meter h-4 overflow-hidden rounded-full bg-amber-100"
+                  className="h-4 overflow-hidden rounded-full bg-amber-100"
                   role="progressbar"
                   aria-label="Polling-unit agent coverage"
                   aria-valuemin={0}
@@ -1505,21 +1505,20 @@ const workflowUnavailableMessage = statistics?.election
 
           {/* LGA AGENT COVERAGE */}
 
-          <div className="dashboard-analysis-grid">
           <section className="dashboard-lga-coverage rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_1px_2px_rgba(15,23,42,0.03)] sm:p-6">
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div>
                 <div className="flex items-center gap-3"><span className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-50 text-emerald-800"><Users size={21}/></span><h2 className="text-lg font-bold text-slate-900">Polling-Unit Agent Coverage by LGA</h2></div>
                 <p className="mt-2 text-sm text-slate-500">Assigned and unassigned polling units across every Local Government Area.</p>
               </div>
-              <div className="flex flex-wrap gap-4 text-xs font-semibold"><span className="flex items-center gap-2"><span className="h-3 w-3 rounded-sm bg-[var(--chart-blue,#059669)]" aria-hidden="true"/>Assigned</span><span className="flex items-center gap-2"><span className="h-3 w-3 rounded-sm bg-[var(--chart-orange,#fbbf24)]" aria-hidden="true"/>Unassigned</span></div>
+              <div className="flex flex-wrap gap-4 text-xs font-semibold"><span className="flex items-center gap-2"><span className="h-3 w-3 rounded-sm bg-[var(--chart-blue,#059669)]" aria-hidden="true"/>Assigned</span><span className="flex items-center gap-2"><span className="h-3 w-3 rounded-sm bg-amber-400" aria-hidden="true"/>Unassigned</span></div>
             </div>
             {lgaAgentCoverage.length === 0 ? <div className="py-12 text-center text-sm text-slate-500">No LGA agent coverage data is available.</div> : (
               <>
               <div className="mt-5 flex flex-col items-center gap-5 rounded-2xl border border-slate-200 bg-slate-50 p-4 sm:flex-row sm:gap-8 sm:p-6">
                 <div className="relative grid h-32 w-32 shrink-0 place-items-center">
                   <svg viewBox="0 0 120 120" aria-hidden="true" className="absolute inset-0 h-full w-full -rotate-90">
-                    <circle cx="60" cy="60" r="52" fill="none" stroke={overallCoverage === null ? "var(--chart-grid, #cbd5e1)" : "var(--chart-orange, #fbbf24)"} strokeWidth="10" />
+                    <circle cx="60" cy="60" r="52" fill="none" stroke={overallCoverage === null ? "var(--chart-grid, #cbd5e1)" : "#fbbf24"} strokeWidth="10" />
                     {overallCoverage !== null && (
                       <circle cx="60" cy="60" r="52" fill="none" stroke="var(--chart-blue, #059669)" strokeWidth="10"
                         pathLength="100" strokeDasharray={`${overallCoverage} 100`} />
@@ -1566,7 +1565,7 @@ const workflowUnavailableMessage = statistics?.election
                       <div aria-hidden="true" className="mt-2 flex h-2.5 overflow-hidden rounded-full bg-slate-200">
                         {coverage !== null && <>
                           <span className="bg-[var(--chart-blue,#059669)]" style={{ width: `${coverage}%` }} />
-                          <span className="bg-amber-400" style={{ width: `${100 - coverage}%`, backgroundColor: "var(--chart-orange, #fbbf24)" }} />
+                          <span className="bg-amber-400" style={{ width: `${100 - coverage}%` }} />
                         </>}
                       </div>
                       <dl className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3">
@@ -1685,7 +1684,6 @@ const workflowUnavailableMessage = statistics?.election
             )}
 
           </section>
-          </div>
 
           {/* LGA MONITORING */}
 

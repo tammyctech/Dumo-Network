@@ -575,9 +575,9 @@ export default function LandingPage() {
       </header>
 
       <main>
-        <section className="landing-hero relative isolate overflow-hidden border-b border-slate-200 bg-[#eef2f6] pb-12 pt-12 text-slate-950 sm:pb-20 sm:pt-20">
-          <div className="landing-hero-layout relative mx-auto grid max-w-7xl gap-12 px-5 lg:grid-cols-[1.02fr_0.98fr] lg:items-center lg:gap-16 lg:px-8">
-            <div className="landing-hero-copy min-w-0">
+        <section className="relative isolate overflow-hidden border-b border-slate-200 bg-[#eef2f6] pb-12 pt-12 text-slate-950 sm:pb-20 sm:pt-20">
+          <div className="relative mx-auto grid max-w-7xl gap-12 px-5 lg:grid-cols-[1.02fr_0.98fr] lg:items-center lg:gap-16 lg:px-8">
+            <div>
               <div className="inline-flex items-center gap-2.5 rounded-lg border border-sky-200 bg-white px-3.5 py-2 text-[11px] font-bold uppercase tracking-[0.15em] text-sky-800 shadow-sm">
                 <span className={`relative flex h-2 w-2 ${loading ? "animate-pulse" : ""}`}>
                   <span className="absolute inline-flex h-full w-full rounded-full bg-sky-600 opacity-40" />
@@ -593,7 +593,7 @@ export default function LandingPage() {
               <p className="mt-6 max-w-xl text-base leading-7 text-slate-600 sm:text-lg sm:leading-8">
                 {lt("hero_description").text}
               </p>
-              <div className="landing-hero-actions mt-8 flex flex-wrap gap-3">
+              <div className="mt-8 flex flex-wrap gap-3">
                 <Link
                   to="/live-results"
                   className="landing-hero-cta landing-hero-cta-primary group inline-flex min-h-12 items-center gap-2 rounded-lg bg-sky-700 px-5 py-3 text-sm font-bold text-white shadow-md transition hover:bg-sky-800"
@@ -612,14 +612,14 @@ export default function LandingPage() {
                   <span>{user?accountLabel:lt("hero_login_button").text}</span>
                 </Link>
               </div>
-              <div className="landing-hero-notice mt-8 flex max-w-xl items-start gap-3 border-l-2 border-amber-500 pl-4 text-sm leading-6 text-slate-600">
+              <div className="mt-8 flex max-w-xl items-start gap-3 border-l-2 border-amber-500 pl-4 text-sm leading-6 text-slate-600">
                 <ShieldCheck size={18} className="mt-0.5 shrink-0 text-amber-600" aria-hidden="true" />
                 <p>{lt("hero_disclaimer").text}</p>
               </div>
             </div>
 
-            <div className="landing-hero-preview relative min-w-0 rounded-2xl border border-sky-800/70 bg-white p-5 shadow-[0_32px_90px_-35px_rgba(0,0,0,0.65)] sm:p-7">
-              <div className="landing-preview-edge absolute inset-x-0 top-0 h-1 rounded-t-2xl bg-gradient-to-r from-sky-600 via-sky-400 to-amber-400" />
+            <div className="relative rounded-2xl border border-sky-800/70 bg-white p-5 shadow-[0_32px_90px_-35px_rgba(0,0,0,0.65)] sm:p-7">
+              <div className="absolute inset-x-0 top-0 h-1 rounded-t-2xl bg-gradient-to-r from-sky-600 via-sky-400 to-amber-400" />
               <div className="relative flex items-start justify-between gap-4">
                 <div>
                   <p className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.18em] text-sky-800">

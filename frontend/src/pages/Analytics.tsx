@@ -12,8 +12,6 @@ import {
 import {
   ResponsiveContainer,
   BarChart,
-  LineChart,
-  Line,
   Bar,
   XAxis,
   YAxis,
@@ -21,7 +19,6 @@ import {
   Tooltip,
 } from "recharts";
 import { useAuth } from "../context/AuthContext";
-import { useTheme } from "../context/theme";
 
 interface DashboardStats {
   total_polling_units: number;
@@ -75,7 +72,6 @@ async function readJson<T>(response: Response, label: string): Promise<T> {
 }
 
 export default function Analytics() {
-  const { mode: themeMode } = useTheme();
   const { token, user } = useAuth();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [pollingUnits, setPollingUnits] = useState<PollingUnit[]>([]);
@@ -329,7 +325,7 @@ export default function Analytics() {
             <StatCard title="Views today" value={visits?.views_today.toLocaleString() ?? "—"} subtitle="Since midnight UTC" icon={BarChart3}/>
           </div>
           <div className="grid gap-5 lg:grid-cols-2">
-            <div className="rounded-xl border border-slate-200 p-4"><h3 className="font-bold">Daily visits</h3><div className="mt-4 h-64">{visits?.daily.length?<ResponsiveContainer width="100%" height="100%">{themeMode === "dark" ? <LineChart data={visits.daily}><CartesianGrid stroke="var(--chart-grid)" strokeDasharray="3 3" vertical={false}/><XAxis dataKey="date" tick={{fontSize:10}} minTickGap={24}/><YAxis allowDecimals={false}/><Tooltip/><Line type="monotone" dataKey="views" name="Page views" stroke="var(--chart-blue)" strokeWidth={3} dot={false} activeDot={{ fill: "var(--chart-orange)", r: 5 }} isAnimationActive={false}/></LineChart> : <BarChart data={visits.daily}><CartesianGrid strokeDasharray="3 3" vertical={false}/><XAxis dataKey="date" tick={{fontSize:10}}/><YAxis allowDecimals={false}/><Tooltip/><Bar dataKey="views" fill="var(--chart-blue, #059669)" radius={[5,5,0,0]}/></BarChart>}</ResponsiveContainer>:<div className="flex h-full items-center justify-center text-sm text-slate-500">No visit data yet.</div>}</div></div>
+            <div className="rounded-xl border border-slate-200 p-4"><h3 className="font-bold">Daily visits</h3><div className="mt-4 h-64">{visits?.daily.length?<ResponsiveContainer width="100%" height="100%"><BarChart data={visits.daily}><CartesianGrid strokeDasharray="3 3" vertical={false}/><XAxis dataKey="date" tick={{fontSize:10}}/><YAxis allowDecimals={false}/><Tooltip/><Bar dataKey="views" fill="var(--chart-blue, #059669)" radius={[5,5,0,0]}/></BarChart></ResponsiveContainer>:<div className="flex h-full items-center justify-center text-sm text-slate-500">No visit data yet.</div>}</div></div>
             <div className="overflow-hidden rounded-xl border border-slate-200"><div className="border-b px-4 py-3"><h3 className="font-bold">Visitor locations</h3></div>{visits?.locations.length?<div className="max-h-72 overflow-auto">{visits.locations.map((item,index)=><div key={`${item.country}-${item.region}-${item.city}-${index}`} className="flex items-center justify-between border-b px-4 py-3 last:border-0"><span><strong className="block text-sm">{[item.city,item.region,item.country].filter(Boolean).join(", ")}</strong><span className="text-xs text-slate-500">Approximate location</span></span><span className="font-bold text-emerald-700">{item.views.toLocaleString()}</span></div>)}</div>:<p className="p-5 text-sm text-slate-500">No location data yet.</p>}</div>
           </div>
           {visits?.pages.length?<div><h3 className="font-bold">Top public pages</h3><div className="mt-3 flex flex-wrap gap-2">{visits.pages.map(page=><span key={page.path} className="rounded-full bg-slate-100 px-3 py-1.5 text-sm"><strong>{page.path}</strong> · {page.views}</span>)}</div></div>:null}

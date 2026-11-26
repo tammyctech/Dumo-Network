@@ -490,14 +490,15 @@ header h3 {
   --dark-surface-secondary: #0e121b;
   --dark-action: #ff7a1a;
   --dark-action-hover: #ff913d;
-  --dark-action-surface: #302015;
+  --dark-action-ink: var(--dark-surface-base);
+  --dark-canvas-glow: radial-gradient(ellipse at 76% 15%, rgb(36 92 255 / 0.18), transparent 34rem);
   --dark-surface-card: #111722;
   --dark-surface-raised: #171e2d;
   --dark-surface-overlay: #111c35;
   --dark-border: #252d3d;
-  --dark-text-primary: #f8fafc;
-  --dark-text-secondary: #a1aabb;
-  --dark-text-muted: #707b8f;
+  --dark-text-primary: #f5f6fa;
+  --dark-text-secondary: #b1b5c3;
+  --dark-text-muted: #8b8f9e;
   color: var(--dark-text-primary);
   background-color: var(--dark-surface-base);
   color-scheme: dark;
@@ -509,6 +510,10 @@ header h3 {
 :root.dark .dashboard-canvas {
   background-color: var(--dark-surface-base) !important;
   color: var(--dark-text-primary);
+}
+
+:root.dark .app-shell .dashboard-canvas {
+  background-image: var(--dark-canvas-glow);
 }
 
 :root.dark :is(.bg-white, .bg-white\/95, .bg-white\/90, .bg-white\/80, .bg-slate-50, .bg-slate-50\/70, .bg-slate-50\/80) {
@@ -544,15 +549,15 @@ header h3 {
 }
 
 :root.dark :is(.bg-emerald-50, .bg-emerald-50\/70) {
-  background-color: color-mix(in srgb, var(--dark-success) 14%, var(--dark-surface-card)) !important;
+  background-color: rgb(94 158 133 / 0.16) !important;
 }
 
 :root.dark :is(.bg-amber-50, .bg-yellow-50) {
-  background-color: color-mix(in srgb, var(--dark-warning) 14%, var(--dark-surface-card)) !important;
+  background-color: rgb(246 197 111 / 0.14) !important;
 }
 
 :root.dark :is(.bg-red-50, .bg-rose-50) {
-  background-color: color-mix(in srgb, var(--dark-error) 14%, var(--dark-surface-card)) !important;
+  background-color: rgb(242 139 130 / 0.14) !important;
 }
 
 :root.dark :is(.text-slate-950, .text-slate-900, .text-slate-800),
@@ -806,7 +811,7 @@ header h3 {
 :root.dark .app-sidebar nav a[aria-current="page"] {
   border-color: #86cdb2 !important;
   background-color: var(--dark-surface-overlay) !important;
-  color: var(--dark-text-primary) !important;
+  color: #faf5ef !important;
 }
 
 :root.dark :is(.bg-emerald-700, .bg-emerald-600) {
@@ -826,11 +831,11 @@ header h3 {
 }
 
 :root.dark :is(.text-amber-600, .text-amber-700, .text-amber-800, .text-amber-950, .text-yellow-600, .text-yellow-700, .text-yellow-800, .text-yellow-950) {
-  color: var(--dark-warning) !important;
+  color: #f6c56f !important;
 }
 
 :root.dark :is(.text-blue-600, .text-blue-700, .text-blue-800) {
-  color: var(--dark-link) !important;
+  color: #8ab4f8 !important;
 }
 
 :root.dark .landing-page main .command-center-title {
@@ -838,7 +843,7 @@ header h3 {
 }
 
 html.dark body #root :is(main, header, section, article, aside, dialog, [role="dialog"]) :is(h1, h2, h3, h4, h5, h6) {
-  color: var(--dark-text-primary) !important;
+  color: #faf5ef !important;
 }
 
 /* Termii-inspired landing page: layered navy surfaces and restrained contrast. */
@@ -848,15 +853,15 @@ html.dark body #root :is(main, header, section, article, aside, dialog, [role="d
   --landing-card: var(--dark-surface-card);
   --landing-card-hover: var(--dark-surface-raised);
   --landing-border: var(--dark-border);
-  --landing-copy: var(--dark-text-secondary);
-  --landing-heading: var(--dark-text-primary);
+  --landing-copy: #dce0e7;
+  --landing-heading: #eceef2;
   --landing-accent: var(--dark-link);
   background: var(--landing-bg) !important;
 }
 
 :root.dark .landing-page > header {
   border-color: rgb(36 92 255 / 0.18) !important;
-  background: rgb(18 21 31 / 0.88) !important;
+  background: color-mix(in srgb, var(--dark-nav) 88%, transparent) !important;
   box-shadow: 0 1px 0 rgb(255 255 255 / 0.03), 0 12px 32px rgb(0 0 0 / 0.2) !important;
 }
 
@@ -932,7 +937,7 @@ html.dark body #root :is(main, header, section, article, aside, dialog, [role="d
 }
 
 :root.dark .landing-page main :is(.text-red-600, .text-red-700, .text-red-800) {
-  color: var(--dark-error) !important;
+  color: #fda4af !important;
 }
 
 :root.dark .landing-page :is(.text-sky-100, .text-sky-200, .text-sky-600, .text-sky-700, .text-sky-800, .text-sky-950):not(svg) {
@@ -1362,7 +1367,7 @@ html.dark body #root :is(main, header, section, article, aside, dialog, [role="d
 }
 
 :root.dark .results-unofficial-notice-icon {
-  color: var(--dark-warning) !important;
+  color: #fbbf24 !important;
 }
 
 :root.dark .results-unofficial-notice-text {
@@ -1445,7 +1450,7 @@ html.dark body #root :is(main, header, section, article, aside, dialog, [role="d
 }
 
 :root.dark .nav-sign-out {
-  color: var(--dark-error) !important;
+  color: #fda4af !important;
 }
 
 :root.dark .nav-sign-out:hover {
@@ -1454,7 +1459,7 @@ html.dark body #root :is(main, header, section, article, aside, dialog, [role="d
 }
 
 :root.dark .nav-sign-out:hover svg {
-  color: var(--dark-error) !important;
+  color: #fda4af !important;
 }
 
 .settings-profile-summary {
@@ -1844,10 +1849,10 @@ html.dark body #root :is(main, header, section, article, aside, dialog, [role="d
   --dark-deep: var(--dark-surface-base);
   --dark-input: var(--dark-surface-secondary);
   --dark-modal: var(--dark-surface-raised);
-  --dark-success: #22c55e;
-  --dark-warning: #eab308;
-  --dark-error: #ef4444;
-  --dark-info: var(--dark-link);
+  --dark-success: #32d74b;
+  --dark-warning: #ff9f43;
+  --dark-error: #ff7890;
+  --dark-info: #67b5ff;
   --chart-blue: var(--dark-accent);
   --chart-orange: var(--dark-action);
   --chart-grid: var(--dark-border);
@@ -2008,169 +2013,75 @@ html.dark { background: var(--dark-surface-base); }
 :root.dark .app-loading-screen .loading-progress { background: var(--dark-accent); }
 :root.dark .landing-page .nav-logo-mark { background: var(--dark-accent) !important; color: white !important; }
 
-/* Dark compositions use the same surfaces as the shared controls. */
-:root.dark .app-shell {
-  background: var(--dark-surface-base) !important;
+/* Dark-only color overrides for surfaces and controls with legacy utilities. */
+:root.dark :is(.auth-screen, .app-shell, .landing-page, #root > div:has(#spread-analysis)) {
+  color: var(--dark-text-primary);
+}
+
+:root.dark #root > div:has(#spread-analysis) {
+  background-color: var(--dark-surface-base) !important;
+}
+
+:root.dark #root > div:has(#spread-analysis) > header {
+  background-color: var(--dark-nav) !important;
+}
+
+:root.dark #root :is([class*="bg-[#071722]"], .bg-slate-950) {
+  background-color: var(--dark-surface-secondary) !important;
+}
+
+:root.dark #root :is(thead, .bg-slate-200, .bg-slate-50\/50, .bg-slate-50\/60) {
+  background-color: var(--dark-surface-raised) !important;
+}
+
+:root.dark #root :is(.bg-blue-50, .bg-purple-50, .bg-sky-100) {
+  background-color: var(--dark-surface-overlay) !important;
+}
+
+:root.dark #root :is(.text-purple-700, .text-blue-700, .text-blue-800),
+:root.dark .landing-page main :is(.landing-brand-blue-text, .landing-heading-accent) {
+  color: var(--dark-link) !important;
 }
 
 :root.dark[data-custom-brand] :is(.dashboard-canvas, .bg-canvas) :is(.text-slate-950, .text-slate-900, .text-slate-800) {
   color: var(--dark-text-primary) !important;
 }
 
-:root.dark .app-shell :is(.text-slate-500, .text-slate-400) {
+:root.dark #root :is(.text-slate-400, .text-slate-500) {
   color: var(--dark-text-secondary) !important;
 }
 
-:root.dark :is(.app-shell, .public-results-page) :is(thead, .bg-slate-50\/50, .bg-slate-50\/60, .bg-slate-50\/80) {
-  background-color: var(--dark-surface-raised) !important;
+:root.dark #root :is(a.nav-sign-in, a.landing-hero-cta-secondary, a.landing-action),
+:root.dark #root :is(a, button):is(.bg-sky-600, .bg-sky-700, .bg-sky-800, .bg-emerald-600, .bg-emerald-700, .bg-emerald-800) {
+  background-color: var(--dark-accent) !important;
+  border-color: var(--dark-accent) !important;
+  color: #fff !important;
 }
 
-:root.dark .app-shell :is(input, textarea, select)::placeholder {
-  color: var(--dark-text-muted);
-}
-
-:root.dark .app-shell .bg-purple-50 { background: var(--dark-surface-overlay) !important; }
-:root.dark .app-shell .text-purple-700 { color: var(--dark-link) !important; }
-
-:root.dark .app-shell [role="alert"] {
-  border-color: color-mix(in srgb, var(--dark-error) 45%, var(--dark-border));
-}
-
-:root.dark .app-shell :is(.rounded-xl, .rounded-2xl, .rounded-3xl).border {
-  border-color: var(--dark-border) !important;
-}
-
-:root.dark .app-sidebar nav a[aria-current="page"] {
-  background: var(--dark-surface-overlay) !important;
+:root.dark #root :is(a.nav-sign-in, a.landing-hero-cta-secondary, a.landing-action, :is(a, button):is(.bg-sky-600, .bg-sky-700, .bg-sky-800, .bg-emerald-600, .bg-emerald-700, .bg-emerald-800)):hover:not(:disabled) {
+  background-color: var(--dark-accent-pressed) !important;
   border-color: var(--dark-accent-hover) !important;
 }
 
-:root.dark .app-sidebar nav a[aria-current="page"] svg {
-  color: var(--dark-link) !important;
-}
-
-:root.dark .landing-page main > .landing-hero {
-  background: var(--dark-surface-base) !important;
-  padding-block: clamp(2.75rem, 7vw, 6rem) 2.5rem;
-}
-
-:root.dark .landing-hero-layout {
-  grid-template-columns: minmax(0, 1fr);
-  gap: clamp(2rem, 5vw, 4rem);
-}
-
-:root.dark .landing-hero-copy {
-  margin-inline: auto;
-  text-align: center;
-}
-
-:root.dark .landing-page .landing-hero-copy h1 {
-  margin-inline: auto;
-  max-width: 16ch;
-  font-size: clamp(2.25rem, 6.5vw, 5rem);
-  line-height: 1.04;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  :root.dark .landing-page .landing-hero h1 > span,
-  :root.dark .landing-page .landing-hero h1 + p,
-  :root.dark .landing-page .landing-hero h1 + p + div {
-    opacity: 1;
-    animation: landing-fade-up 240ms ease-out both;
-  }
-}
-
-:root.dark .landing-hero-copy > p {
-  margin-inline: auto;
-}
-
-:root.dark .landing-hero-actions { justify-content: center; }
-:root.dark .landing-hero-notice { margin-inline: auto; text-align: start; }
-:root.dark .landing-page main :is(.landing-brand-blue-text, .landing-heading-accent) {
-  color: var(--dark-link) !important;
-}
-
-:root.dark .landing-hero-preview {
-  width: min(100%, 53rem);
-  margin-inline: auto;
-  border-color: var(--dark-border) !important;
-  background: var(--dark-surface-card) !important;
-  box-shadow: 0 -14px 80px rgb(36 92 255 / .12) !important;
-}
-
-:root.dark .landing-preview-edge {
-  background: linear-gradient(90deg, var(--dark-accent-pressed), var(--dark-accent-hover), var(--dark-accent-pressed));
-}
-
-:root.dark .landing-page a.landing-hero-cta-secondary,
-:root.dark .landing-page a.landing-hero-cta-secondary:is(:hover, :active):not(:disabled) {
-  background: var(--dark-surface-raised) !important;
-  border-color: var(--dark-border) !important;
-  color: var(--dark-text-primary) !important;
-}
-
-:root.dark :is(.landing-page, .app-shell) :is(a.landing-hero-cta-primary, button.landing-action, .dark-priority-action, .submit-unofficial-result),
-:root.dark :is(.landing-page, .app-shell) :is(a.landing-hero-cta-primary, button.landing-action, .dark-priority-action, .submit-unofficial-result):is(:hover, :active):not(:disabled) {
-  background: var(--dark-action) !important;
+:root.dark #root :is(a.landing-hero-cta-primary, button.landing-action, button.submit-unofficial-result, .auth-screen button[class*="bg-[#005b8f]"], button[type="submit"]:is(.bg-emerald-600, .bg-emerald-700, .bg-sky-700)):not(:disabled) {
+  background-color: var(--dark-action) !important;
   border-color: var(--dark-action) !important;
-  color: var(--dark-surface-base) !important;
+  color: var(--dark-action-ink) !important;
 }
 
-:root.dark :is(.landing-page, .app-shell) :is(a.landing-hero-cta-primary, button.landing-action, .dark-priority-action, .submit-unofficial-result):is(:hover, :active):not(:disabled) {
-  background: var(--dark-action-hover) !important;
+:root.dark #root :is(a.landing-hero-cta-primary, button.landing-action, button.submit-unofficial-result, .auth-screen button[class*="bg-[#005b8f]"], button[type="submit"]:is(.bg-emerald-600, .bg-emerald-700, .bg-sky-700)):hover:not(:disabled) {
+  background-color: var(--dark-action-hover) !important;
   border-color: var(--dark-action-hover) !important;
 }
 
-:root.dark .app-shell .submit-unofficial-result:disabled {
-  background: var(--dark-action-surface) !important;
-  border-color: var(--dark-border) !important;
-  color: var(--dark-text-secondary) !important;
+:root.dark #root .landing-page :is(.landing-hero-cta, .nav-sign-in, .landing-action) :is(span, svg) {
+  color: inherit !important;
 }
 
-:root.dark .landing-page :is(a.nav-sign-in, a.landing-action),
-:root.dark .landing-page :is(a.nav-sign-in, a.landing-action):is(:hover, :active):not(:disabled) {
-  background: var(--dark-accent-pressed) !important;
-  border-color: var(--dark-accent) !important;
-  color: var(--dark-text-primary) !important;
-}
-
-:root.dark .landing-page :is(a.nav-sign-in, a.landing-action):is(:hover, :active):not(:disabled) {
-  background: var(--dark-accent) !important;
-  border-color: var(--dark-accent-hover) !important;
-}
-
-:root:not(.dark) .results-map-legend { display: none; }
-
-:root.dark .public-results-page { background: var(--dark-surface-base) !important; }
-:root.dark .public-results-page > header { background: var(--dark-nav) !important; }
-:root.dark .public-results-page [class*="bg-[#071722]"] { background: var(--dark-surface-secondary) !important; }
-:root.dark .public-results-page .bg-slate-200 { background: var(--dark-border) !important; }
-:root.dark .public-results-page :is(.text-slate-400, .text-slate-500) { color: var(--dark-text-secondary) !important; }
-:root.dark .public-results-page .results-map-panel { background: var(--dark-surface-secondary) !important; }
-:root.dark .results-map-region {
-  fill: color-mix(in srgb, var(--dark-accent) var(--coverage, 0%), var(--map-idle));
-  stroke: var(--map-border);
-}
-:root.dark .results-map-region[data-selected="true"] {
-  fill: var(--map-active);
-  stroke: var(--dark-action-hover);
-}
-:root.dark .results-map-region:is(:hover, :focus-visible) { stroke: var(--dark-text-primary); }
-
-.dashboard-analysis-grid { display: grid; gap: 1.5rem; }
-:root.dark .dashboard-analysis-grid { display: grid; min-width: 0; gap: 1.25rem; }
-:root.dark .dashboard-analysis-grid > section { min-width: 0; }
-:root.dark .dashboard-assignment-meter { background: var(--dark-action-surface) !important; }
-:root.dark .dashboard-assignment-meter > div { background: var(--chart-blue) !important; }
-@media (min-width: 80rem) {
-  :root.dark .dashboard-analysis-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr); }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  :root.dark :is(.landing-page, .app-shell, .public-results-page) :is(a, button, [tabindex]) {
-    transition-duration: 0s !important;
-  }
-}
+:root.dark .dashboard-lga-coverage circle[stroke="#fbbf24"] { stroke: var(--chart-orange); }
+:root.dark .dashboard-lga-coverage .bg-amber-400 { background-color: var(--chart-orange) !important; }
+:root.dark #root > div:has(#spread-analysis) svg path[fill="#dbeafe"] { fill: var(--map-idle); stroke: var(--map-border); }
+:root.dark #root > div:has(#spread-analysis) svg path[fill="#0284c7"] { fill: var(--map-active); stroke: var(--dark-action-hover); }
 
 @media (width >= 64rem) {
   .app-shell[data-compact="true"] .app-sidebar { width: 4.75rem; }

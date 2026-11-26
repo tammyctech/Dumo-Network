@@ -268,7 +268,7 @@ export default function BulkImport() {
             {canImport && (
               <div className="border-t border-slate-200 pt-6">
                 <button type="button" onClick={handleImport} disabled={busy}
-                  className="dark-priority-action rounded-xl bg-emerald-600 px-6 py-3 font-semibold text-white hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-50">
+                  className="rounded-xl bg-emerald-600 px-6 py-3 font-semibold text-white hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-50">
                   {importing ? "Importing..." : "Confirm & Import"}
                 </button>
               </div>
