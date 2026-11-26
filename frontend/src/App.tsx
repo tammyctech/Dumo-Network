@@ -4,7 +4,7 @@ import {
   Route,
   Routes,
 } from "react-router-dom";
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect } from "react";
 
 // Authentication
 import { AuthProvider } from "./context/AuthContext";
@@ -54,6 +54,26 @@ const AdminSms = lazy(() => import("./pages/AdminSms"));
 const BulkImport = lazy(() => import("./pages/BulkImport"));
 
 export default function App() {
+  useEffect(() => {
+    let frame: number | undefined;
+
+    function scrollAfterSubmit(event: SubmitEvent) {
+      if (!(event.target instanceof HTMLFormElement)) return;
+      if (frame !== undefined) window.cancelAnimationFrame(frame);
+      frame = window.requestAnimationFrame(() => {
+        frame = undefined;
+        const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        window.scrollTo({ top: 0, behavior: reducedMotion ? "instant" : "smooth" });
+      });
+    }
+
+    document.addEventListener("submit", scrollAfterSubmit, true);
+    return () => {
+      document.removeEventListener("submit", scrollAfterSubmit, true);
+      if (frame !== undefined) window.cancelAnimationFrame(frame);
+    };
+  }, []);
+
   return (
     <>
       <BrowserRouter>
