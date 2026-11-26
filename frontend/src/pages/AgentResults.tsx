@@ -45,6 +45,7 @@ type AssignmentsResponse = {
   state: string;
   total_assignments: number;
   assignments: AgentAssignment[];
+  active_election: AgentAssignment["election"] | null;
 };
 
 type AdminElection = AgentAssignment["election"];
@@ -83,6 +84,7 @@ export default function AgentResults() {
   const { token, user } = useAuth();
 
   const [assignments, setAssignments] = useState<AgentAssignment[]>([]);
+  const [activeElection, setActiveElection] = useState<AgentAssignment["election"] | null>(null);
   const [selectedAssignmentId, setSelectedAssignmentId] = useState("");
   const [adminElections, setAdminElections] = useState<AdminElection[]>([]);
   const [adminPollingUnits, setAdminPollingUnits] = useState<AdminPollingUnit[]>([]);
@@ -180,6 +182,7 @@ export default function AgentResults() {
   useEffect(() => {
     if (!token || !user || !["agent", "admin"].includes(user.role)) {
       setAssignments([]);
+      setActiveElection(null);
       setSelectedAssignmentId("");
       setLoadingAssignments(false);
       return;
@@ -227,9 +230,13 @@ export default function AgentResults() {
           if (!response.ok) throw new Error(await getApiError(response));
           const data: AssignmentsResponse = await response.json();
           if (data.state !== "Rivers") throw new Error("Only Rivers State assignments are supported.");
-          setAssignments(data.assignments);
+          const activeAssignments = data.assignments.filter(
+            (assignment) => assignment.election.id === data.active_election?.id
+          );
+          setActiveElection(data.active_election ?? null);
+          setAssignments(activeAssignments);
           setSelectedAssignmentId(
-            data.assignments.length === 1 ? String(data.assignments[0].assignment_id) : ""
+            activeAssignments.length === 1 ? String(activeAssignments[0].assignment_id) : ""
           );
         }
       } catch (err) {
@@ -325,7 +332,7 @@ export default function AgentResults() {
     }
 
     if (!selectedAssignment) {
-      setError(user.role === "admin" ? "Please select an election and polling unit." : "Please select your assigned election and polling unit.");
+      setError(user.role === "admin" ? "Please select an election and polling unit." : "An active election and an assigned polling unit are required.");
       return;
     }
 
@@ -647,8 +654,22 @@ export default function AgentResults() {
             </div>
           )}
 
-          {user?.role === "agent" && <label className="block text-sm font-medium text-slate-700">
-            Select Assignment
+          {user?.role === "agent" && loadingAssignments && <p role="status" className="text-sm text-slate-600">Loading the active election and your polling-unit assignment…</p>}
+
+          {user?.role === "agent" && !loadingAssignments && !assignmentError && !activeElection && (
+            <p role="status" className="text-sm text-amber-700">
+              An administrator must activate an election before you can submit results.
+            </p>
+          )}
+
+          {user?.role === "agent" && !loadingAssignments && activeElection && !selectedAssignment && (
+            <p className="mb-4 text-sm text-[var(--workspace-ink)]">
+              Active election <strong>{activeElection.name}</strong>
+            </p>
+          )}
+
+          {user?.role === "agent" && assignments.length > 1 && <label className="block text-sm font-medium text-slate-700">
+            Select an assigned polling unit
 
             <select
               required
@@ -674,7 +695,6 @@ export default function AgentResults() {
                   key={assignment.assignment_id}
                   value={assignment.assignment_id}
                 >
-                  {assignment.election.name} —{" "}
                   {assignment.polling_unit.lga} /{" "}
                   {assignment.polling_unit.ward} /{" "}
                   {assignment.polling_unit.name}
@@ -684,7 +704,7 @@ export default function AgentResults() {
           </label>}
 
           {user?.role === "agent" && !loadingAssignments &&
-            !assignmentError &&
+            !assignmentError && activeElection &&
             assignments.length === 0 && (
               <p className="mt-3 text-sm text-amber-700">
                 No polling units are assigned to your account yet.

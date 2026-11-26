@@ -61,6 +61,7 @@ def get_my_assignments(
     elections = db.scalars(
         select(Election).where(Election.state == "Rivers").order_by(Election.election_date.desc())
     ).all()
+    active_election = next((election for election in elections if election.is_active), None)
 
     assignments = []
 
@@ -87,5 +88,10 @@ def get_my_assignments(
         "state": "Rivers",
         "data_type": "unofficial_agent_submitted",
         "total_assignments": len(assignments),
+        "active_election": {
+            "id": active_election.id,
+            "name": active_election.name,
+            "election_date": active_election.election_date,
+        } if active_election else None,
         "assignments": assignments,
     }
