@@ -401,7 +401,7 @@ export default function Analytics() {
 
       {/* DATA AVAILABILITY */}
 
-      <section className="rounded-2xl border border-blue-200 bg-blue-50 p-6">
+      <section className="analytics-availability rounded-2xl border border-blue-200 bg-blue-50 p-6">
         <h3 className="font-bold text-blue-900">
           Analytics Data Availability
         </h3>

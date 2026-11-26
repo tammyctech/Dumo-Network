@@ -807,7 +807,7 @@ export default function AgentResults() {
                 </div>
               </div>
 
-              <label className="mt-6 block text-sm font-semibold text-slate-800">
+              <label className="mt-6 block text-sm font-semibold text-[var(--workspace-ink)]">
                 Number of votes
                 <input
                   key={currentPartyIndex}

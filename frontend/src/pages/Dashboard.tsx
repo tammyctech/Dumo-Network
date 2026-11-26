@@ -1231,7 +1231,7 @@ const workflowUnavailableMessage = statistics?.election
                         <ClipboardList size={17} />
                       </span>
                       <div className="min-w-0">
-                        <p className="break-words text-sm font-semibold text-slate-900">
+                        <p className="break-words text-sm font-semibold text-[var(--workspace-ink)]">
                           {submission.polling_unit_name}
                         </p>
                         <p className="mt-1 break-words text-xs text-slate-500">
