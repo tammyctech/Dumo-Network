@@ -1,5 +1,6 @@
 import { useState, type ChangeEvent } from "react";
 import { useAuth } from "../context/AuthContext";
+import { useAppPrompt } from "../context/AppPrompt";
 
 const API_URL = import.meta.env.DEV ? (import.meta.env.VITE_API_URL || "http://127.0.0.1:8000").replace(/\/$/, "") : "";
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
@@ -74,6 +75,7 @@ function StatCard({ title, value }: { title: string; value: number }) {
 }
 
 export default function BulkImport() {
+  const ask = useAppPrompt();
   const { token } = useAuth();
   const [mode, setMode] = useState<Mode>("electoral-register");
   const [file, setFile] = useState<File | null>(null);
@@ -146,7 +148,7 @@ export default function BulkImport() {
     const description = isWardPreview(preview)
       ? `${preview.ready_count} new wards`
       : `${preview.new_wards} new wards and ${preview.new_polling_units} new polling units`;
-    if (!window.confirm(`Import ${description} into Dumo Youth Network Election Monitoring System?`)) return;
+    if ((await ask({ title: "Confirm import", message: `Import ${description} into Dumo Youth Network Election Monitoring System?`, confirmLabel: "Import records" })) === null) return;
     setImporting(true);
     setError("");
     try {

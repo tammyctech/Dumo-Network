@@ -1886,6 +1886,11 @@ html.dark { background: #10131c; }
 
 :root.dark .viewport-popup { --workspace-ink: var(--dark-text-primary); }
 
+.app-prompt { color: #0f172a; }
+.app-prompt-description { color: #475569; }
+:root.dark .app-prompt { color: var(--dark-text-primary); }
+:root.dark .app-prompt-description { color: var(--dark-text-secondary); }
+
 .viewport-popup-panel {
   min-width: 0;
   max-height: calc(100vh - 2rem);

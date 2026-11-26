@@ -13,6 +13,7 @@ window.fetch = (input, init = {}) => nativeFetch(input, {
 });
 import { initializeTheme, ThemeProvider } from "./context/theme";
 import { loadBranding } from "./context/branding";
+import { AppPromptProvider } from "./context/AppPrompt";
 
 initializeTheme();
 void loadBranding();
@@ -20,7 +21,9 @@ void loadBranding();
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <ThemeProvider>
-      <App />
+      <AppPromptProvider>
+        <App />
+      </AppPromptProvider>
     </ThemeProvider>
   </React.StrictMode>
 );
