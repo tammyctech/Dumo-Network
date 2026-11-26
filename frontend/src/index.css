@@ -2128,6 +2128,11 @@ html.dark { background: var(--dark-surface-base); }
   box-shadow: 0 6px 26px color-mix(in srgb, var(--dark-action) 22%, transparent) !important;
 }
 
+:root.dark #root .landing-hero a.landing-hero-cta-primary:not(:disabled) {
+  color: #fff !important;
+  text-shadow: 0 1px 2px rgb(0 0 0 / 0.7);
+}
+
 :root.dark #root .landing-hero a.landing-hero-cta-secondary {
   background-color: var(--dark-surface-base) !important;
   border-color: var(--dark-accent) !important;
