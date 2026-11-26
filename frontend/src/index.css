@@ -1263,11 +1263,14 @@ html.dark body #root :is(main, header, section, article, aside, dialog, [role="d
 
 .form-submission-popup {
   position: fixed;
-  top: 1.25rem;
-  right: 1.25rem;
+  inset: 0;
+  margin: auto;
   z-index: 100;
   display: flex;
   width: min(26rem, calc(100vw - 2rem));
+  height: fit-content;
+  max-height: calc(100dvh - 2rem);
+  overflow: auto;
   align-items: flex-start;
   gap: 0.75rem;
   border: 1px solid;
@@ -1337,13 +1340,6 @@ html.dark body #root :is(main, header, section, article, aside, dialog, [role="d
   to {
     opacity: 1;
     transform: translateY(0) scale(1);
-  }
-}
-
-@media (max-width: 640px) {
-  .form-submission-popup {
-    top: 0.75rem;
-    right: 1rem;
   }
 }
 

@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 
 import { useAuth } from "../context/AuthContext";
+import ViewportPortal from "../components/ViewportPortal";
 import { PartyLogo } from "../constants/partyLogos";
 
 const API_URL = import.meta.env.DEV
@@ -486,6 +487,7 @@ export default function AgentResults() {
   return (
     <div className="space-y-6">
       {submissionPopup && (
+        <ViewportPortal>
         <div
           role={submissionPopup.kind === "error" ? "alert" : "status"}
           aria-live={submissionPopup.kind === "error" ? "assertive" : "polite"}
@@ -511,6 +513,7 @@ export default function AgentResults() {
             <X size={18} aria-hidden="true" />
           </button>
         </div>
+        </ViewportPortal>
       )}
       <div>
         <h1 className="text-2xl font-bold text-slate-900">
@@ -919,7 +922,7 @@ export default function AgentResults() {
           </button>
         ) : (
           <div className="rounded-xl border border-emerald-200 bg-white p-5">
-            <p className="text-sm font-semibold text-slate-900">
+            <p role="status" className="text-sm font-semibold text-[var(--workspace-ink)]">
               Result figures saved as submission #{savedSubmissionId}.
             </p>
 
