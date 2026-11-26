@@ -169,13 +169,6 @@ export default function LiveResults() {
         <div className="mx-auto grid max-w-7xl gap-6 px-5 lg:grid-cols-[.8fr_1.2fr] lg:px-8"><div><p className="live-results-countdown-label text-xs font-black uppercase tracking-[.18em]">Until election day</p><h2 className="live-results-countdown-heading mt-2 text-3xl font-black">Time remaining before polling opens</h2><span className="live-results-countdown-badge mt-4 inline-flex rounded-full border px-3 py-1.5 text-xs font-bold">Pre-election</span></div><div className="grid grid-cols-4 gap-2 sm:gap-3">{Object.entries(countdown).map(([label,value])=><div key={label} className="live-results-countdown-card rounded-2xl border p-3 text-center shadow-sm sm:p-5"><strong className="live-results-countdown-value block text-2xl font-black tabular-nums sm:text-4xl">{String(value).padStart(2,"0")}</strong><span className="live-results-countdown-unit mt-1 block text-xs capitalize">{label}</span></div>)}</div></div>
       </section>
 
-      <section className="border-b border-slate-200 bg-white py-14">
-        <div className="mx-auto max-w-7xl px-5 lg:px-8"><div className="grid gap-8 lg:grid-cols-[.7fr_1.3fr]"><div><p className="text-xs font-black uppercase tracking-[.18em] text-sky-700">Election readiness</p><h2 className="mt-2 text-3xl font-black">Official preparation milestones</h2></div><div className="space-y-3"><Readiness ready label="Official candidate lists" status="Published"/><Readiness ready label="Registered voters" status="3,537,190 · INEC official figure"/><Readiness label="PVC figures" status="Awaiting official update"/><Readiness label="Live collation" status="Activates after polls close"/></div></div></div>
-      </section>
-
-      {candidates.length > 0 && <section className="border-b border-slate-200 bg-[#f4f6f8] py-14">
-        <div className="mx-auto max-w-7xl px-5 lg:px-8"><p className="text-xs font-black uppercase tracking-[.18em] text-sky-700">{race==="governorship"?"Governorship candidates":"Presidential candidates"}</p><div className="mt-2 flex items-end justify-between gap-4"><h2 className="text-4xl font-black">Candidates</h2><span className="text-sm font-bold text-slate-500">{candidates.length} published</span></div><CandidateCarousel candidates={candidates} totals={overview.party_totals} label="Published candidates" /><button onClick={()=>document.getElementById("spread-analysis")?.scrollIntoView({behavior:"smooth"})} className="mt-6 rounded-xl border border-slate-300 bg-white px-5 py-3 text-sm font-black hover:border-sky-300 hover:text-sky-800">View live candidate scores</button></div>
-      </section>}
       <section className="border-b border-slate-200 bg-white py-14 sm:py-20">
         <div className="mx-auto max-w-7xl px-5 lg:px-8">
           <div className="max-w-4xl"><p className="text-sm font-black uppercase tracking-[.2em] text-sky-700">Explore Rivers State</p><h1 className="mt-4 text-4xl font-black tracking-[-.05em] sm:text-6xl">Open any LGA result</h1><p className="mt-5 max-w-2xl text-lg leading-8 text-slate-600">Select one of the 23 local government areas to see its wards, polling units, live score and leading candidate percentage.</p></div>
@@ -337,9 +330,6 @@ function DeskMetric({label,value,note,icon}:{label:string;value:string;note:stri
   return <div className="bg-white p-5"><span className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.08em] text-slate-500">{icon}{label}</span><strong className="mt-3 block text-xl">{value}</strong><small className="mt-1 block text-slate-500">{note}</small></div>;
 }
 
-function Readiness({label,status,ready=false}:{label:string;status:string;ready?:boolean}) {
-  return <div className="flex items-center gap-4 rounded-2xl border border-slate-200 bg-[#f7f9fb] p-4"><span className={`grid h-9 w-9 shrink-0 place-items-center rounded-full ${ready?"bg-sky-100 text-sky-700":"border border-slate-300 bg-white text-slate-400"}`}>{ready?<CheckCircle2 size={18}/>:<span className="h-2.5 w-2.5 rounded-full border-2 border-current"/>}</span><div className="min-w-0 flex-1"><strong className="block">{label}</strong><span className="mt-0.5 block text-sm text-slate-500">{status}</span></div></div>;
-}
 
 function PollingUnitReports({ electionId, lga, lastUpdated }: { electionId: number; lga: string; lastUpdated: string | null }) {
   const [open, setOpen] = useState(false);
