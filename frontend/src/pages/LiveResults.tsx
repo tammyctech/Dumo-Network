@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { Activity, CalendarDays, CheckCircle2, MapPin, Radio, Share2, ShieldCheck } from "lucide-react";
 import { PartyLogo } from "../constants/partyLogos";
+import { partyColor } from "../constants/partyColors";
 import { useBranding } from "../context/branding";
 
 const RIVERS_LGAS = ["Abua/Odual", "Ahoada East", "Ahoada West", "Akuku-Toru", "Andoni", "Asari-Toru", "Bonny", "Degema", "Eleme", "Emohua", "Etche", "Gokana", "Ikwerre", "Khana", "Obio/Akpor", "Ogba/Egbema/Ndoni", "Ogu/Bolo", "Okrika", "Omuma", "Opobo/Nkoro", "Oyigbo", "Port Harcourt", "Tai"];
@@ -38,8 +39,18 @@ const RIVERS_MAP_URL = "/data/rivers-lgas.geojson";
 type MapFeature = { properties: { shapeName: string }; geometry: { type: "Polygon" | "MultiPolygon"; coordinates: number[][][] | number[][][][] } };
 type MapData = { features: MapFeature[] };
 type PartyTotal={party:string;votes:number};
+type PollingUnitReport = {
+  id: number;
+  code: string;
+  name: string;
+  ward: string;
+  valid_votes: number;
+  rejected_votes: number;
+  party_totals: PartyTotal[];
+};
+type PollingUnitPage = { reports: PollingUnitReport[]; next_offset: number | null };
 type LgaResult={lga:string;total_wards:number;total_polling_units:number;submitted_polling_units:number;coverage_percent:number|null;leader:PartyTotal|null;leader_percentage:number;party_totals:PartyTotal[]};
-type Overview={election:{id:number;name:string;election_date:string}|null;total_polling_units:number;submitted_polling_units:number;submission_coverage_percent:number|null;party_totals:PartyTotal[];lga_results:LgaResult[];last_updated:string|null};
+type Overview={election:{id:number;name:string;election_date:string}|null;available_elections?:{id:number;name:string}[];total_polling_units:number;submitted_polling_units:number;submission_coverage_percent:number|null;party_totals:PartyTotal[];lga_results:LgaResult[];last_updated:string|null};
 const API=import.meta.env.DEV?(import.meta.env.VITE_API_URL||"http://127.0.0.1:8000").replace(/\/$/,""):"";
 const normalize=(value:string)=>{
   const normalized=value.toLowerCase().replace(/[^a-z]/g,"");
@@ -54,14 +65,39 @@ function initials(name: string) {
 export default function LiveResults() {
   const branding = useBranding();
   const [race,setRace]=useState<"governorship"|"presidential">("governorship");
-  const [selectedZone] = useState("Rivers State");
+  const [selectedElectionId, setSelectedElectionId] = useState("");
+  const [availableElections, setAvailableElections] = useState<NonNullable<Overview["available_elections"]>>([]);
+  const [overviewStatus, setOverviewStatus] = useState<"loading" | "ready" | "error">("loading");
   const [selectedState, setSelectedState] = useState("Port Harcourt");
   const [overview,setOverview]=useState<Overview>({election:null,total_polling_units:0,submitted_polling_units:0,submission_coverage_percent:0,party_totals:[],lga_results:[],last_updated:null});
   const [mapData, setMapData] = useState<MapData | null>(null);
   const [mapError, setMapError] = useState("");
   const [now, setNow] = useState(()=>new Date());
   useEffect(() => { const controller = new AbortController(); void fetch(RIVERS_MAP_URL, {signal:controller.signal}).then(response => response.ok ? response.json() : Promise.reject(new Error("Map boundaries could not be loaded."))).then(setMapData).catch(error=>{if(!controller.signal.aborted)setMapError(error instanceof Error?error.message:"Map boundaries could not be loaded.");}); return ()=>controller.abort(); }, []);
-  useEffect(()=>{const controller=new AbortController();const load=()=>void fetch(`${API}/api/public/election-overview`,{signal:controller.signal}).then(response=>response.ok?response.json():Promise.reject()).then((data:Overview)=>{setOverview(data);setRace(data.election?.name.toLowerCase().includes("president")?"presidential":"governorship")}).catch(()=>undefined);load();const timer=window.setInterval(load,60000);return()=>{controller.abort();window.clearInterval(timer)}},[]);
+  useEffect(() => {
+    const controller = new AbortController();
+    const query = selectedElectionId ? `?election_id=${encodeURIComponent(selectedElectionId)}` : "";
+    async function load() {
+      try {
+        const response = await fetch(`${API}/api/public/election-overview${query}`, {
+          cache: "no-store",
+          signal: controller.signal,
+        });
+        if (!response.ok) throw new Error("Results could not be loaded.");
+        const data: Overview = await response.json();
+        if (controller.signal.aborted) return;
+        setOverview(data);
+        setAvailableElections(data.available_elections ?? []);
+        setRace(data.election?.name.toLowerCase().includes("president") ? "presidential" : "governorship");
+        setOverviewStatus("ready");
+      } catch {
+        if (!controller.signal.aborted) setOverviewStatus("error");
+      }
+    }
+    void load();
+    const timer = window.setInterval(load, 60000);
+    return () => { controller.abort(); window.clearInterval(timer); };
+  }, [selectedElectionId]);
   useEffect(() => { const timer=window.setInterval(()=>setNow(new Date()),1000); return ()=>window.clearInterval(timer); }, []);
   const visibleStates = useMemo(
     () => RIVERS_LGAS,
@@ -70,10 +106,13 @@ export default function LiveResults() {
   const lgaByName=useMemo(()=>new Map(overview.lga_results.map(row=>[normalize(row.lga),row])),[overview.lga_results]);
   const activeLga=lgaByName.get(normalize(selectedState));
   const totalVotes=overview.party_totals.reduce((sum,row)=>sum+row.votes,0);
-  const candidatePriority:Record<string,number>={NDC:0,ADC:1,APC:2};
-  const candidates=[...(race==="governorship"?GOVERNORSHIP_candidates:PRESIDENTIAL_candidates)]
-    .sort((left,right)=>(candidatePriority[left[1]]??99)-(candidatePriority[right[1]]??99));
   const electionDay=overview.election?.election_date?new Date(overview.election.election_date):(race==="governorship"?GOVERNORSHIP_ELECTION_DAY:PRESIDENTIAL_ELECTION_DAY);
+  const hasKnownRoster = overview.election
+    ? /president|governor/i.test(overview.election.name) && electionDay.getUTCFullYear() === 2027
+    : !selectedElectionId;
+  const candidatePriority:Record<string,number>={NDC:0,ADC:1,APC:2};
+  const candidates=(hasKnownRoster ? [...(race==="governorship"?GOVERNORSHIP_candidates:PRESIDENTIAL_candidates)] : [])
+    .sort((left,right)=>(candidatePriority[left[1]]??99)-(candidatePriority[right[1]]??99));
   const remaining=Math.max(0,electionDay.getTime()-now.getTime());
   const countdown={days:Math.floor(remaining/86400000),hours:Math.floor(remaining/3600000)%24,mins:Math.floor(remaining/60000)%60,secs:Math.floor(remaining/1000)%60};
 
@@ -92,8 +131,26 @@ export default function LiveResults() {
       <section className="border-b border-slate-200 bg-[#071722] text-white">
         <div className="mx-auto max-w-7xl px-5 py-6 lg:px-8">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-            <div className="text-sm font-bold text-slate-300">Active election<span className="ml-0 mt-2 block min-h-11 rounded-xl border border-white/15 bg-white/10 px-4 py-3 text-sm font-bold text-white sm:ml-3 sm:mt-0 sm:inline-flex">{overview.election?.name || "No active election"}</span></div>
-            <span className="rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-left text-slate-200"><strong className="block text-sm capitalize">{race}</strong><span className="text-xs opacity-60">Selected by administrator</span></span>
+            <div>
+              <label className="block text-sm font-bold text-white">
+                Election results
+                <select className="ml-0 mt-2 block min-h-11 max-w-full rounded-xl border border-white/15 bg-[#071722] px-3 text-sm font-semibold text-white sm:ml-3 sm:mt-0 sm:inline-block"
+                  value={selectedElectionId} onChange={event => {
+                    setOverviewStatus("loading");
+                    setOverview({ election: null, total_polling_units: 0, submitted_polling_units: 0, submission_coverage_percent: null, party_totals: [], lga_results: [], last_updated: null });
+                    setSelectedElectionId(event.target.value);
+                  }}>
+                  <option value="">Current active election</option>
+                  {availableElections.map(election => <option key={election.id} value={election.id}>{election.name}</option>)}
+                </select>
+              </label>
+              <p role="status" className="mt-2 text-sm text-slate-300">
+                {overviewStatus === "loading" ? "Loading election results…" :
+                  overviewStatus === "error" ? (overview.election ? "Could not refresh. Showing last loaded results." : "Public results could not be loaded.") :
+                  overview.election?.name ?? "No public election available"}
+              </p>
+            </div>
+            <span className="rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-left text-slate-200"><strong className="block text-sm capitalize">{race}</strong><span className="text-xs opacity-60">{selectedElectionId ? "Viewing selected election" : "Selected by administrator"}</span></span>
           </div>
         </div>
       </section>
@@ -116,9 +173,9 @@ export default function LiveResults() {
         <div className="mx-auto max-w-7xl px-5 lg:px-8"><div className="grid gap-8 lg:grid-cols-[.7fr_1.3fr]"><div><p className="text-xs font-black uppercase tracking-[.18em] text-sky-700">Election readiness</p><h2 className="mt-2 text-3xl font-black">Official preparation milestones</h2></div><div className="space-y-3"><Readiness ready label="Official candidate lists" status="Published"/><Readiness ready label="Registered voters" status="3,537,190 · INEC official figure"/><Readiness label="PVC figures" status="Awaiting official update"/><Readiness label="Live collation" status="Activates after polls close"/></div></div></div>
       </section>
 
-      <section className="border-b border-slate-200 bg-[#f4f6f8] py-14">
+      {candidates.length > 0 && <section className="border-b border-slate-200 bg-[#f4f6f8] py-14">
         <div className="mx-auto max-w-7xl px-5 lg:px-8"><p className="text-xs font-black uppercase tracking-[.18em] text-sky-700">{race==="governorship"?"Governorship candidates":"Presidential candidates"}</p><div className="mt-2 flex items-end justify-between gap-4"><h2 className="text-4xl font-black">Candidates</h2><span className="text-sm font-bold text-slate-500">{candidates.length} published</span></div><CandidateCarousel candidates={candidates} totals={overview.party_totals} label="Published candidates" /><button onClick={()=>document.getElementById("spread-analysis")?.scrollIntoView({behavior:"smooth"})} className="mt-6 rounded-xl border border-slate-300 bg-white px-5 py-3 text-sm font-black hover:border-sky-300 hover:text-sky-800">View live candidate scores</button></div>
-      </section>
+      </section>}
       <section className="border-b border-slate-200 bg-white py-14 sm:py-20">
         <div className="mx-auto max-w-7xl px-5 lg:px-8">
           <div className="max-w-4xl"><p className="text-sm font-black uppercase tracking-[.2em] text-sky-700">Explore Rivers State</p><h1 className="mt-4 text-4xl font-black tracking-[-.05em] sm:text-6xl">Open any LGA result</h1><p className="mt-5 max-w-2xl text-lg leading-8 text-slate-600">Select one of the 23 local government areas to see its wards, polling units, live score and leading candidate percentage.</p></div>
@@ -130,20 +187,41 @@ export default function LiveResults() {
           <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-xl shadow-slate-950/5 sm:p-8">
             <div className="flex flex-wrap items-center justify-between gap-3"><div><p className="text-xs font-black uppercase tracking-[.16em] text-sky-700">Rivers State map</p><h2 className="mt-2 text-2xl font-black">Select an LGA</h2></div><span className="rounded-full bg-sky-50 px-3 py-1.5 text-xs font-bold text-sky-800">23 LGAs</span></div>
             <div className="mt-7 rounded-2xl border border-sky-100 bg-gradient-to-br from-sky-50 to-white p-4 sm:p-7">
-              {mapData?<NigeriaMap data={mapData} selectedZone={selectedZone} selectedState={selectedState} onSelect={setSelectedState}/>:<div className="mb-7 flex h-[300px] items-center justify-center rounded-xl border border-dashed border-sky-200 bg-white px-6 text-center text-sm font-semibold text-slate-500 sm:h-[390px]">{mapError||"Loading Rivers State map…"}</div>}
+              {mapData?<NigeriaMap data={mapData} resultsByLga={lgaByName} selectedState={selectedState} onSelect={setSelectedState}/>:<div className="mb-7 flex h-[300px] items-center justify-center rounded-xl border border-dashed border-sky-200 bg-white px-6 text-center text-sm font-semibold text-slate-500 sm:h-[390px]">{mapError||"Loading Rivers State map…"}</div>}
+              <p className="mb-4 text-sm text-slate-600">Colors show the leading party from submitted results. Gray means no party has recorded votes yet.</p>
               <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-5">{visibleStates.map(state=>{const row=lgaByName.get(normalize(state));return <button key={state} onClick={()=>setSelectedState(state)} className={`min-h-14 rounded-xl border px-3 py-2 text-left text-sm font-bold transition ${selectedState===state?"border-sky-700 bg-sky-700 text-white shadow-lg shadow-sky-900/15":"border-slate-200 bg-white text-slate-700 hover:-translate-y-0.5 hover:border-sky-300 hover:text-sky-800"}`}>{state}<small className="mt-1 block font-medium opacity-70">{row?.total_wards??0} wards · {row?.total_polling_units??0} units</small></button>})}</div>
             </div>
           </div>
           <aside className="rounded-3xl border border-slate-200 bg-[#071722] p-6 text-white shadow-xl shadow-slate-950/10 sm:p-8">
-            <MapPin className="text-sky-400"/><p className="mt-6 text-xs font-black uppercase tracking-[.18em] text-sky-300">LGA result summary</p><h2 className="mt-3 text-4xl font-black !text-white">{selectedState}</h2><p className="mt-3 leading-7 text-slate-300">Live ${race==="governorship"?"governorship":"presidential"} result from submitted polling units.</p><div className="mt-8 grid grid-cols-2 gap-3"><Metric label="Wards" value={String(activeLga?.total_wards??0)}/><Metric label="Polling units" value={String(activeLga?.total_polling_units??0)}/><Metric label="Units reporting" value={String(activeLga?.submitted_polling_units??0)}/><Metric label="Coverage" value={`${activeLga?.coverage_percent??0}%`}/><Metric label="Leading party" value={activeLga?.leader?.party??"—"}/><Metric label="Winning share" value={`${activeLga?.leader_percentage??0}%`}/></div></aside>
+            <MapPin className="text-sky-400" />
+            <p className="mt-6 text-xs font-black uppercase tracking-[.18em] text-sky-300">LGA result summary</p>
+            <h2 className="mt-3 text-4xl font-black !text-white">{selectedState}</h2>
+            <p className="mt-3 leading-7 text-slate-300">Unofficial totals from submitted polling-unit results.</p>
+            <div className="mt-6 grid grid-cols-2 gap-3">
+              <Metric label="Units reporting" value={String(activeLga?.submitted_polling_units ?? 0)} />
+              <Metric label="Coverage" value={activeLga?.coverage_percent == null ? "—" : `${activeLga.coverage_percent}%`} />
+              <Metric label="Wards" value={String(activeLga?.total_wards ?? "—")} />
+              <Metric label="Polling units" value={String(activeLga?.total_polling_units ?? "—")} />
+              <Metric label="Leading party" value={activeLga?.leader?.party ?? "—"} />
+              <Metric label="Share of reported votes" value={activeLga?.leader ? `${activeLga.leader_percentage}%` : "—"} />
+            </div>
+            <ReportedPartyTotals totals={activeLga?.party_totals ?? []} />
+          </aside>
+          {overview.election && activeLga && (
+            <PollingUnitReports key={`${overview.election.id}:${activeLga.lga}`}
+              electionId={overview.election.id} lga={activeLga.lga} lastUpdated={overview.last_updated} />
+          )}
         </div>
       </section>
 
       <section id="spread-analysis" className="scroll-mt-24 border-y border-slate-200 bg-white py-16 sm:py-24">
         <div className="mx-auto max-w-7xl px-5 lg:px-8">
-          <div className="grid gap-8 lg:grid-cols-[.75fr_1.25fr] lg:items-end"><div><p className="text-sm font-black uppercase tracking-[.18em] text-sky-700">Live {race==="governorship"?"governorship":"presidential"} score</p><h2 className="mt-3 text-4xl font-black tracking-[-.04em] sm:text-5xl">Statewide candidate results</h2></div><p className="rounded-2xl border border-sky-100 bg-sky-50 p-5 leading-7 text-slate-700">Vote totals and percentages update automatically from submitted polling-unit reports across Rivers State.</p></div>
-          <div className="mt-8 flex gap-3"><span className="rounded-full bg-slate-950 px-4 py-2 text-sm font-bold text-white">{overview.submitted_polling_units} units reporting</span><span className="rounded-full border border-slate-200 px-4 py-2 text-sm font-bold text-slate-600">{candidates.length} candidates</span></div>
-          <CandidateCarousel candidates={candidates} totals={overview.party_totals} totalVotes={totalVotes} lgaResults={overview.lga_results} label="Statewide candidate scores" />
+          <div className="grid gap-8 lg:grid-cols-[.75fr_1.25fr] lg:items-end"><div><p className="text-sm font-black uppercase tracking-[.18em] text-sky-700">Unofficial results</p><h2 className="mt-3 text-4xl font-black tracking-[-.04em] sm:text-5xl">{candidates.length ? "Statewide candidate results" : "Statewide party results"}</h2></div><p className="rounded-2xl border border-sky-100 bg-sky-50 p-5 leading-7 text-slate-700">Vote totals and percentages update automatically from submitted polling-unit reports across Rivers State.</p></div>
+          <div className="mt-8 flex gap-3"><span className="rounded-full bg-slate-950 px-4 py-2 text-sm font-bold text-white">{overview.submitted_polling_units} units reporting</span>{candidates.length > 0 && <span className="rounded-full border border-slate-200 px-4 py-2 text-sm font-bold text-slate-600">{candidates.length} candidates</span>}</div>
+          {candidates.length > 0 && <CandidateCarousel candidates={candidates} totals={overview.party_totals} totalVotes={totalVotes} lgaResults={overview.lga_results} label="Statewide candidate scores" />}
+          <div className="mt-6 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+            <ReportedPartyTotals totals={overview.party_totals} />
+          </div>
         </div>
       </section>
 
@@ -263,7 +341,94 @@ function Readiness({label,status,ready=false}:{label:string;status:string;ready?
   return <div className="flex items-center gap-4 rounded-2xl border border-slate-200 bg-[#f7f9fb] p-4"><span className={`grid h-9 w-9 shrink-0 place-items-center rounded-full ${ready?"bg-sky-100 text-sky-700":"border border-slate-300 bg-white text-slate-400"}`}>{ready?<CheckCircle2 size={18}/>:<span className="h-2.5 w-2.5 rounded-full border-2 border-current"/>}</span><div className="min-w-0 flex-1"><strong className="block">{label}</strong><span className="mt-0.5 block text-sm text-slate-500">{status}</span></div></div>;
 }
 
-function NigeriaMap({data,selectedZone:_selectedZone,selectedState,onSelect}:{data:MapData;selectedZone:string;selectedState:string;onSelect:(state:string)=>void}) {
+function PollingUnitReports({ electionId, lga, lastUpdated }: { electionId: number; lga: string; lastUpdated: string | null }) {
+  const [open, setOpen] = useState(false);
+  const [offset, setOffset] = useState(0);
+  const [page, setPage] = useState<PollingUnitPage | null>(null);
+  const [error, setError] = useState(false);
+  const [retry, setRetry] = useState(0);
+
+  useEffect(() => {
+    if (!open) return;
+    const controller = new AbortController();
+    const query = new URLSearchParams({ election_id: String(electionId), lga, offset: String(offset) });
+    fetch(`${API}/api/public/polling-unit-results?${query}`, { cache: "no-store", signal: controller.signal })
+      .then(response => {
+        if (!response.ok) throw new Error("Polling-unit results unavailable");
+        return response.json() as Promise<PollingUnitPage>;
+      })
+      .then(data => { if (!controller.signal.aborted) { setPage(data); setError(false); } })
+      .catch(() => { if (!controller.signal.aborted) setError(true); });
+    return () => controller.abort();
+  }, [open, electionId, lga, offset, lastUpdated, retry]);
+
+  function changePage(nextOffset: number) {
+    setPage(null);
+    setError(false);
+    setOffset(nextOffset);
+  }
+
+  return (
+    <details className="rounded-2xl border border-slate-200 bg-white p-4 lg:col-span-2"
+      onToggle={event => setOpen(event.currentTarget.open)}>
+      <summary className="cursor-pointer py-2 font-bold">Polling-unit results for {lga}</summary>
+      {error ? (
+        <p role="alert" className="mt-3 text-sm">
+          Polling-unit results could not be loaded.{" "}
+          <button type="button" className="font-semibold underline" onClick={() => { setError(false); setRetry(value => value + 1); }}>Try again</button>
+        </p>
+      ) : !page ? <p role="status" className="mt-3 text-sm">Loading polling-unit results…</p> : page.reports.length === 0 ? (
+        <p className="mt-3 text-sm">No polling-unit results have been submitted for this LGA.</p>
+      ) : (
+        <>
+          <ul className="mt-3 divide-y divide-slate-400/25">
+            {page.reports.map(report => (
+              <li key={report.id} className="py-3">
+                <details>
+                  <summary className="cursor-pointer font-semibold">{report.name}</summary>
+                  <p className="mt-1 text-sm">{report.code} · {report.ward}</p>
+                  <p className="mt-2 text-sm">{report.valid_votes.toLocaleString("en-NG")} valid votes · {report.rejected_votes.toLocaleString("en-NG")} rejected votes</p>
+                  <ReportedPartyTotals totals={report.party_totals} />
+                </details>
+              </li>
+            ))}
+          </ul>
+          <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
+            <button type="button" disabled={offset === 0} onClick={() => changePage(Math.max(0, offset - 25))}
+              className="min-h-11 rounded-lg border px-3 text-sm font-semibold disabled:opacity-50">Previous</button>
+            <span className="text-sm">Reports {offset + 1}–{offset + page.reports.length}</span>
+            <button type="button" disabled={page.next_offset === null} onClick={() => {
+              if (page.next_offset !== null) changePage(page.next_offset);
+            }} className="min-h-11 rounded-lg border px-3 text-sm font-semibold disabled:opacity-50">Next</button>
+          </div>
+        </>
+      )}
+    </details>
+  );
+}
+
+function ReportedPartyTotals({ totals }: { totals: PartyTotal[] }) {
+  return (
+    <div className="mt-4">
+      <h3 className="text-sm font-bold">Reported votes by party</h3>
+      {totals.length === 0 ? <p className="mt-2 text-sm">No party totals reported yet.</p> : (
+        <ul className="mt-2 divide-y divide-slate-400/25 text-sm">
+          {totals.map(({ party, votes }) => (
+            <li key={party} className="flex justify-between gap-2 py-2">
+              <span className="flex items-center gap-2">
+                <span className="h-3 w-3 rounded-sm" style={{ backgroundColor: partyColor(party) }} aria-hidden="true" />
+                {party}
+              </span>
+              <span className="font-semibold tabular-nums">{votes.toLocaleString("en-NG")}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+function NigeriaMap({data,resultsByLga,selectedState,onSelect}:{data:MapData;resultsByLga:Map<string,LgaResult>;selectedState:string;onSelect:(state:string)=>void}) {
   const riversFeatures=useMemo(()=>{const wanted=new Set(RIVERS_LGAS.map(normalize));return data.features.filter(feature=>wanted.has(normalize(feature.properties.shapeName)));},[data]);
   const projection = useMemo(()=>{
     const points=riversFeatures.flatMap(feature=>feature.geometry.type==="Polygon"?(feature.geometry.coordinates as number[][][]).flat(1):(feature.geometry.coordinates as number[][][][]).flat(2));
@@ -271,5 +436,33 @@ function NigeriaMap({data,selectedZone:_selectedZone,selectedState,onSelect}:{da
   },[riversFeatures]);
   function stateName(raw:string){return raw==="Abuja Federal Capital Territory"?"FCT":raw;}
   function path(feature:MapFeature){const polygons=feature.geometry.type==="Polygon"?[feature.geometry.coordinates as number[][][]]:feature.geometry.coordinates as number[][][][];return polygons.flatMap(polygon=>polygon.map(ring=>ring.map((point,index)=>{const [x,y]=projection.project(point);return `${index?"L":"M"}${x.toFixed(1)},${y.toFixed(1)}`;}).join(" ")+" Z")).join(" ");}
-  return <svg viewBox={`0 0 ${projection.width} ${projection.height}`} role="img" aria-label="Rivers State map. Select an LGA to open its result" className="mb-7 h-[300px] w-full sm:h-[390px]">{riversFeatures.map(feature=>{const state=stateName(feature.properties.shapeName);const active=normalize(selectedState)===normalize(state);return <path key={state} d={path(feature)} onClick={()=>onSelect(state)} tabIndex={0} onKeyDown={event=>{if(event.key==="Enter"||event.key===" ")onSelect(state);}} aria-label={`Open ${state} result`} fill={active?"#0284c7":"#dbeafe"} stroke={active?"#075985":"#94a3b8"} strokeWidth={active?2.5:1} className="cursor-pointer outline-none transition hover:fill-sky-200 focus:stroke-sky-700"/>;})}</svg>;
+  return (
+    <svg viewBox={`0 0 ${projection.width} ${projection.height}`} role="group"
+      aria-label="Rivers State map. Select an LGA to open its result" className="mb-7 h-[300px] w-full sm:h-[390px]">
+      {riversFeatures.map(feature => {
+        const mapName = stateName(feature.properties.shapeName);
+        const key = normalize(mapName);
+        const result = resultsByLga.get(key);
+        const name = RIVERS_LGAS.find(lga => normalize(lga) === key) ?? mapName;
+        const active = normalize(selectedState) === key;
+        const leader = result?.leader && result.leader.votes > 0 ? result.leader : null;
+        const label = `${name}: ${result?.submitted_polling_units ?? 0} polling units reporting${leader ? `, ${leader.party} leads` : ""}`;
+        return (
+          <path key={key} d={path(feature)} onClick={() => onSelect(name)} tabIndex={0}
+            onKeyDown={event => {
+              if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                onSelect(name);
+              }
+            }}
+            role="button" aria-pressed={active} aria-label={label}
+            fill={leader ? partyColor(leader.party) : "var(--map-idle, #d5dde7)"}
+            stroke={active ? "var(--map-active, #0c4a6e)" : "var(--map-border, #75859a)"}
+            strokeWidth={active ? 3 : 1.75} className="cursor-pointer">
+            <title>{label}</title>
+          </path>
+        );
+      })}
+    </svg>
+  );
 }
