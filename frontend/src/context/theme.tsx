@@ -14,7 +14,7 @@ export function setTheme(mode: ThemeMode, remember = true): void {
   root.classList.toggle("dark", mode === "dark");
   root.dataset.theme = mode;
   root.style.colorScheme = mode;
-  root.querySelector('meta[name="theme-color"]')?.setAttribute("content", mode === "dark" ? "#10131C" : "#f6f8f7");
+  root.querySelector('meta[name="theme-color"]')?.setAttribute("content", mode === "dark" ? "#090B11" : "#f6f8f7");
   if (remember) {
     window.localStorage.setItem(THEME_KEY, mode);
     window.localStorage.setItem(USER_SET_KEY, "true");
