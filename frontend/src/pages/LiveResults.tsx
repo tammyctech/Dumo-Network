@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode, type CSSProperties } from "react";
 import { Link } from "react-router-dom";
 import { Activity, CalendarDays, CheckCircle2, MapPin, Radio, Share2, ShieldCheck } from "lucide-react";
 import { PartyLogo } from "../constants/partyLogos";
@@ -77,7 +77,7 @@ export default function LiveResults() {
   const remaining=Math.max(0,electionDay.getTime()-now.getTime());
   const countdown={days:Math.floor(remaining/86400000),hours:Math.floor(remaining/3600000)%24,mins:Math.floor(remaining/60000)%60,secs:Math.floor(remaining/1000)%60};
 
-  return <div className="min-h-screen bg-[#f4f6f8] text-slate-950">
+  return <div className="public-results-page min-h-screen bg-[#f4f6f8] text-slate-950">
     <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/95 backdrop-blur-xl">
       <div className="mx-auto flex h-18 max-w-7xl items-center justify-between px-5 lg:px-8">
         <Link to="/" className="flex items-center gap-3">
@@ -129,8 +129,11 @@ export default function LiveResults() {
         <div className="mx-auto grid max-w-7xl gap-6 px-5 lg:grid-cols-[1.35fr_.65fr] lg:px-8">
           <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-xl shadow-slate-950/5 sm:p-8">
             <div className="flex flex-wrap items-center justify-between gap-3"><div><p className="text-xs font-black uppercase tracking-[.16em] text-sky-700">Rivers State map</p><h2 className="mt-2 text-2xl font-black">Select an LGA</h2></div><span className="rounded-full bg-sky-50 px-3 py-1.5 text-xs font-bold text-sky-800">23 LGAs</span></div>
-            <div className="mt-7 rounded-2xl border border-sky-100 bg-gradient-to-br from-sky-50 to-white p-4 sm:p-7">
-              {mapData?<NigeriaMap data={mapData} selectedZone={selectedZone} selectedState={selectedState} onSelect={setSelectedState}/>:<div className="mb-7 flex h-[300px] items-center justify-center rounded-xl border border-dashed border-sky-200 bg-white px-6 text-center text-sm font-semibold text-slate-500 sm:h-[390px]">{mapError||"Loading Rivers State map…"}</div>}
+            <div className="results-map-panel mt-7 rounded-2xl border border-sky-100 bg-gradient-to-br from-sky-50 to-white p-4 sm:p-7">
+              <p className="results-map-legend mb-3 text-sm text-slate-600">
+                Brighter blue means higher polling-unit reporting coverage. Orange marks the selected LGA.
+              </p>
+              {mapData?<NigeriaMap data={mapData} coverageByLga={lgaByName} selectedZone={selectedZone} selectedState={selectedState} onSelect={setSelectedState}/>:<div className="mb-7 flex h-[300px] items-center justify-center rounded-xl border border-dashed border-sky-200 bg-white px-6 text-center text-sm font-semibold text-slate-500 sm:h-[390px]">{mapError||"Loading Rivers State map…"}</div>}
               <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-5">{visibleStates.map(state=>{const row=lgaByName.get(normalize(state));return <button key={state} onClick={()=>setSelectedState(state)} className={`min-h-14 rounded-xl border px-3 py-2 text-left text-sm font-bold transition ${selectedState===state?"border-sky-700 bg-sky-700 text-white shadow-lg shadow-sky-900/15":"border-slate-200 bg-white text-slate-700 hover:-translate-y-0.5 hover:border-sky-300 hover:text-sky-800"}`}>{state}<small className="mt-1 block font-medium opacity-70">{row?.total_wards??0} wards · {row?.total_polling_units??0} units</small></button>})}</div>
             </div>
           </div>
@@ -263,7 +266,7 @@ function Readiness({label,status,ready=false}:{label:string;status:string;ready?
   return <div className="flex items-center gap-4 rounded-2xl border border-slate-200 bg-[#f7f9fb] p-4"><span className={`grid h-9 w-9 shrink-0 place-items-center rounded-full ${ready?"bg-sky-100 text-sky-700":"border border-slate-300 bg-white text-slate-400"}`}>{ready?<CheckCircle2 size={18}/>:<span className="h-2.5 w-2.5 rounded-full border-2 border-current"/>}</span><div className="min-w-0 flex-1"><strong className="block">{label}</strong><span className="mt-0.5 block text-sm text-slate-500">{status}</span></div></div>;
 }
 
-function NigeriaMap({data,selectedZone:_selectedZone,selectedState,onSelect}:{data:MapData;selectedZone:string;selectedState:string;onSelect:(state:string)=>void}) {
+function NigeriaMap({data,coverageByLga,selectedZone:_selectedZone,selectedState,onSelect}:{data:MapData;coverageByLga:Map<string,LgaResult>;selectedZone:string;selectedState:string;onSelect:(state:string)=>void}) {
   const riversFeatures=useMemo(()=>{const wanted=new Set(RIVERS_LGAS.map(normalize));return data.features.filter(feature=>wanted.has(normalize(feature.properties.shapeName)));},[data]);
   const projection = useMemo(()=>{
     const points=riversFeatures.flatMap(feature=>feature.geometry.type==="Polygon"?(feature.geometry.coordinates as number[][][]).flat(1):(feature.geometry.coordinates as number[][][][]).flat(2));
@@ -271,5 +274,31 @@ function NigeriaMap({data,selectedZone:_selectedZone,selectedState,onSelect}:{da
   },[riversFeatures]);
   function stateName(raw:string){return raw==="Abuja Federal Capital Territory"?"FCT":raw;}
   function path(feature:MapFeature){const polygons=feature.geometry.type==="Polygon"?[feature.geometry.coordinates as number[][][]]:feature.geometry.coordinates as number[][][][];return polygons.flatMap(polygon=>polygon.map(ring=>ring.map((point,index)=>{const [x,y]=projection.project(point);return `${index?"L":"M"}${x.toFixed(1)},${y.toFixed(1)}`;}).join(" ")+" Z")).join(" ");}
-  return <svg viewBox={`0 0 ${projection.width} ${projection.height}`} role="img" aria-label="Rivers State map. Select an LGA to open its result" className="mb-7 h-[300px] w-full sm:h-[390px]">{riversFeatures.map(feature=>{const state=stateName(feature.properties.shapeName);const active=normalize(selectedState)===normalize(state);return <path key={state} d={path(feature)} onClick={()=>onSelect(state)} tabIndex={0} onKeyDown={event=>{if(event.key==="Enter"||event.key===" ")onSelect(state);}} aria-label={`Open ${state} result`} fill={active?"#0284c7":"#dbeafe"} stroke={active?"#075985":"#94a3b8"} strokeWidth={active?2.5:1} className="cursor-pointer outline-none transition hover:fill-sky-200 focus:stroke-sky-700"/>;})}</svg>;
+  return (
+    <svg viewBox={`0 0 ${projection.width} ${projection.height}`} role="img"
+      aria-label="Rivers State map. Select an LGA to open its result" className="mb-7 h-[300px] w-full sm:h-[390px]">
+      {riversFeatures.map(feature => {
+        const state = stateName(feature.properties.shapeName);
+        const active = normalize(selectedState) === normalize(state);
+        const coverage = coverageByLga.get(normalize(state))?.coverage_percent;
+        const colorWeight = Math.max(0, Math.min(100, coverage ?? 0));
+        return (
+          <path key={state} data-selected={active} d={path(feature)}
+            style={{ "--coverage": `${colorWeight}%` } as CSSProperties}
+            onClick={() => onSelect(state)} tabIndex={0}
+            onKeyDown={event => {
+              if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                onSelect(state);
+              }
+            }}
+            aria-label={`Open ${state} result`}
+            fill={active ? "#0284c7" : "#dbeafe"} stroke={active ? "#075985" : "#94a3b8"} strokeWidth={active ? 2.5 : 1}
+            className="results-map-region cursor-pointer outline-none transition hover:fill-sky-200 focus:stroke-sky-700">
+            <title>{state}{coverage != null ? ` · ${coverage}% reporting` : ""}</title>
+          </path>
+        );
+      })}
+    </svg>
+  );
 }

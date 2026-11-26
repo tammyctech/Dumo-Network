@@ -2,7 +2,8 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="theme-color" content="#10131C" />
+    <meta name="theme-color" content="#090B11" />
+    <style>html.dark { background-color: #090B11; }</style>
     <script>
       (() => {
         const saved = localStorage.getItem("dumo-theme");
@@ -11,6 +12,7 @@
         document.documentElement.classList.toggle("dark", dark);
         document.documentElement.dataset.theme = dark ? "dark" : "light";
         document.documentElement.style.colorScheme = dark ? "dark" : "light";
+        document.querySelector('meta[name="theme-color"]').content = dark ? "#090B11" : "#f6f8f7";
       })();
     </script>
     <link rel="icon" href="/ems-mark.svg" />

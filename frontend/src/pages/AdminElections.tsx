@@ -702,7 +702,7 @@ const Icon = card.icon;
 
           </label>
 
-          <button type="submit" disabled={creating || !token} className="flex items-center gap-2 rounded-xl bg-emerald-600 px-5 py-3 text-sm font-semibold text-white hover:bg-emerald-700 disabled:opacity-50"><PlusCircle size={18} />{creating ? "Creating..." : "Create Election"}</button>
+          <button type="submit" disabled={creating || !token} className="dark-priority-action flex items-center gap-2 rounded-xl bg-emerald-600 px-5 py-3 text-sm font-semibold text-white hover:bg-emerald-700 disabled:opacity-50"><PlusCircle size={18} />{creating ? "Creating..." : "Create Election"}</button>
 
         </form>
 
