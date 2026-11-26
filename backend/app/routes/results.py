@@ -154,18 +154,18 @@ def submit_election_result(
     # administrator may submit for any Rivers State polling unit.
     if current_user.role not in {"agent", "admin"}:
         raise HTTPException(status_code=403, detail="Only agents and administrators can submit results.")
-    if current_user.role == "agent":
-        active_election_id = db.scalar(
-            select(Election.id)
-            .where(Election.id == election.id, Election.is_active.is_(True))
-            .with_for_update()
+    active_election_id = db.scalar(
+        select(Election.id)
+        .where(Election.id == election.id, Election.is_active.is_(True))
+        .with_for_update()
+    )
+    if active_election_id is None:
+        raise HTTPException(
+            status_code=409,
+            detail="This election is no longer active. Refresh the page and confirm the active election before submitting.",
         )
-        if active_election_id is None:
-            raise HTTPException(
-                status_code=409,
-                detail="This election is no longer active. Refresh the page and confirm the active election before submitting.",
-            )
 
+    if current_user.role == "agent":
         assignment = db.scalar(
             select(AgentAssignment).where(
                 AgentAssignment.agent_id == current_user.id,

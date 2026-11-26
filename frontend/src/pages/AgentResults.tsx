@@ -48,7 +48,7 @@ type AssignmentsResponse = {
   active_election: AgentAssignment["election"] | null;
 };
 
-type AdminElection = AgentAssignment["election"];
+type AdminElection = AgentAssignment["election"] & { is_active: boolean };
 type AdminPollingUnit = AgentAssignment["polling_unit"] & { ward_number?: number | null };
 
 type SubmissionResponse = {
@@ -86,9 +86,7 @@ export default function AgentResults() {
   const [assignments, setAssignments] = useState<AgentAssignment[]>([]);
   const [activeElection, setActiveElection] = useState<AgentAssignment["election"] | null>(null);
   const [selectedAssignmentId, setSelectedAssignmentId] = useState("");
-  const [adminElections, setAdminElections] = useState<AdminElection[]>([]);
   const [adminPollingUnits, setAdminPollingUnits] = useState<AdminPollingUnit[]>([]);
-  const [selectedElectionId, setSelectedElectionId] = useState("");
   const [selectedPollingUnitId, setSelectedPollingUnitId] = useState("");
   const [selectedLga, setSelectedLga] = useState("");
   const [selectedWard, setSelectedWard] = useState("");
@@ -136,7 +134,7 @@ export default function AgentResults() {
 
   const selectedAssignment = user?.role === "admin"
     ? (() => {
-        const election = adminElections.find((item) => String(item.id) === selectedElectionId);
+        const election = activeElection;
         const pollingUnit = adminPollingUnits.find((item) => String(item.id) === selectedPollingUnitId);
         return election && pollingUnit
           ? { assignment_id: `admin:${election.id}:${pollingUnit.id}`, election, polling_unit: pollingUnit }
@@ -218,9 +216,9 @@ export default function AgentResults() {
           ]);
           if (!electionsResponse.ok) throw new Error(await getApiError(electionsResponse));
           if (!unitsResponse.ok) throw new Error(await getApiError(unitsResponse));
-          const electionsData = await electionsResponse.json();
+          const electionsData: { elections: AdminElection[] } = await electionsResponse.json();
           const unitsData = await unitsResponse.json();
-          setAdminElections(electionsData.elections ?? []);
+          setActiveElection(electionsData.elections.find((election) => election.is_active) ?? null);
           setAdminPollingUnits(unitsData.polling_units ?? []);
         } else {
           const response = await fetch(`${API_URL}/api/agent/assignments`, {
@@ -332,7 +330,7 @@ export default function AgentResults() {
     }
 
     if (!selectedAssignment) {
-      setError(user.role === "admin" ? "Please select an election and polling unit." : "An active election and an assigned polling unit are required.");
+      setError(!activeElection ? "An administrator must activate an election from the dashboard before results can be submitted." : "A polling unit is required.");
       return;
     }
 
@@ -577,24 +575,22 @@ export default function AgentResults() {
             {user?.role === "admin" ? "Election and Polling Unit" : "Assigned Election and Polling Unit"}
           </h2>
 
+          {loadingAssignments && <p role="status" className="mb-4 text-sm text-slate-600">Loading the active election and polling units…</p>}
+
+          {!loadingAssignments && !assignmentError && !activeElection && (
+            <p role="status" className="mb-4 text-sm text-amber-700">
+              An administrator must activate an election from the dashboard before results can be submitted.
+            </p>
+          )}
+
+          {!loadingAssignments && activeElection && !selectedAssignment && (
+            <p className="mb-4 text-sm text-[var(--workspace-ink)]">
+              Active election <strong>{activeElection.name}</strong>
+            </p>
+          )}
+
           {user?.role === "admin" && (
             <div className="grid gap-5 md:grid-cols-2">
-              <label className="block text-sm font-medium text-slate-700">
-                Election
-                <select
-                  required
-                  value={selectedElectionId}
-                  disabled={loadingAssignments || submitting || savedSubmissionId !== null}
-                  onChange={(event) => setSelectedElectionId(event.target.value)}
-                  className="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3"
-                >
-                  <option value="">{loadingAssignments ? "Loading elections..." : "Select election"}</option>
-                  {adminElections.map((election) => (
-                    <option key={election.id} value={election.id}>{election.name}</option>
-                  ))}
-                </select>
-              </label>
-
               <label className="block text-sm font-medium text-slate-700">
                 LGA
                 <select
@@ -652,20 +648,6 @@ export default function AgentResults() {
                 </select>
               </label>
             </div>
-          )}
-
-          {user?.role === "agent" && loadingAssignments && <p role="status" className="text-sm text-slate-600">Loading the active election and your polling-unit assignment…</p>}
-
-          {user?.role === "agent" && !loadingAssignments && !assignmentError && !activeElection && (
-            <p role="status" className="text-sm text-amber-700">
-              An administrator must activate an election before you can submit results.
-            </p>
-          )}
-
-          {user?.role === "agent" && !loadingAssignments && activeElection && !selectedAssignment && (
-            <p className="mb-4 text-sm text-[var(--workspace-ink)]">
-              Active election <strong>{activeElection.name}</strong>
-            </p>
           )}
 
           {user?.role === "agent" && assignments.length > 1 && <label className="block text-sm font-medium text-slate-700">

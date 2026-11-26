@@ -87,21 +87,23 @@ class AdminResultSubmissionTests(unittest.TestCase):
             db.add_all([admin, election, unit])
             db.commit()
 
-            result = submit_election_result(
-                ResultSubmissionInput(
-                    election_id=election.id,
-                    polling_unit_id=unit.id,
-                    accredited_voters=110,
-                    valid_votes=100,
-                    rejected_votes=10,
-                    party_results=[
-                        PartyVoteInput(party=acronym, votes=100 if index == 0 else 0)
-                        for index, (acronym, _) in enumerate(REGISTERED_POLITICAL_PARTIES)
-                    ],
-                ),
-                db,
-                admin,
+            payload = ResultSubmissionInput(
+                election_id=election.id,
+                polling_unit_id=unit.id,
+                accredited_voters=110,
+                valid_votes=100,
+                rejected_votes=10,
+                party_results=[
+                    PartyVoteInput(party=acronym, votes=100 if index == 0 else 0)
+                    for index, (acronym, _) in enumerate(REGISTERED_POLITICAL_PARTIES)
+                ],
             )
+            with self.assertRaises(HTTPException) as inactive:
+                submit_election_result(payload, db, admin)
+            self.assertEqual(inactive.exception.status_code, 409)
+
+            activate_election(election.id, db, admin)
+            result = submit_election_result(payload, db, admin)
 
             submission = db.get(ResultSubmission, result.submission_id)
             self.assertEqual(submission.agent_id, admin.id)
