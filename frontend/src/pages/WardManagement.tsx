@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 
+import ViewportPortal from "../components/ViewportPortal";
 const API_URL = import.meta.env.DEV ? (import.meta.env.VITE_API_URL || "http://127.0.0.1:8000").replace(/\/$/, "") : "";
 
 // ============================================================
@@ -352,7 +353,7 @@ export default function WardManagement() {
                 {stat.label}
               </p>
 
-              <p className="mt-2 text-3xl font-bold text-slate-900">
+              <p className="mt-2 text-3xl font-bold tabular-nums text-[var(--workspace-ink)]">
                 {stat.value}
               </p>
             </div>
@@ -479,7 +480,7 @@ export default function WardManagement() {
                         {ward.ward_number}
                       </td>
 
-                      <td className="p-4 font-medium text-slate-900">
+                      <td className="p-4 font-medium text-[var(--workspace-ink)]">
                         {ward.name}
                       </td>
 
@@ -548,23 +549,28 @@ export default function WardManagement() {
         {/* WARD DETAILS */}
 
         {(detailsLoading || selectedWard || detailsError) && (
+          <ViewportPortal>
+          <div className="viewport-popup z-50 bg-slate-950/60">
           <section
-            className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm"
-            aria-label="Ward details"
+            className="viewport-popup-panel w-full max-w-2xl rounded-xl border border-slate-200 bg-white p-5 shadow-xl"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="ward-details-title"
           >
             <div className="flex items-start justify-between gap-4">
 
-              <h2 className="text-xl font-semibold text-slate-900">
+              <h2 id="ward-details-title" className="text-xl font-semibold text-slate-900">
                 Ward Details
               </h2>
 
               <button
                 type="button"
+                disabled={detailsLoading}
                 onClick={() => {
                   setSelectedWard(null);
                   setDetailsError("");
                 }}
-                className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm"
+                className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm disabled:opacity-50"
               >
                 Close
               </button>
@@ -646,6 +652,8 @@ export default function WardManagement() {
             )}
 
           </section>
+          </div>
+          </ViewportPortal>
         )}
 
       </div>

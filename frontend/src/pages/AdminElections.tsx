@@ -15,11 +15,13 @@ import {
   AlertCircle,
 
   RefreshCw,
+  LoaderCircle,
   Trash2,
 
 
 } from "lucide-react";
 
+import ViewportPortal from "../components/ViewportPortal";
 import { useAuth } from "../context/AuthContext";
 
 
@@ -148,6 +150,7 @@ const [loadingOptions, setLoadingOptions] = useState(true);
 const [creating, setCreating] = useState(false);
 
 const [assigning, setAssigning] = useState(false);
+const [assignmentFeedback, setAssignmentFeedback] = useState<{ type: "error" | "success"; message: string } | null>(null);
 
 const [refreshKey, setRefreshKey] = useState(0);
 
@@ -368,16 +371,15 @@ const election: ElectionResponse = await response.json();
   async function assignAgent(event: FormEvent<HTMLFormElement>) {
 
     event.preventDefault();
+    if (assigning) return;
 
-    setError("");
+    setAssignmentFeedback(null);
 
-    setSuccess("");
-
-    if (!token || !isAdmin) return setError("Administrator access required.");
+    if (!token || !isAdmin) return setAssignmentFeedback({ type: "error", message: "Administrator access required." });
 
     if (!selectedElection || !selectedLga || !selectedWard || !selectedPollingUnit || !selectedAgent) {
 
-      return setError("Select an election, LGA, ward, polling unit, and agent.");
+      return setAssignmentFeedback({ type: "error", message: "Select an election, LGA, ward, polling unit, and agent." });
 
     }
 
@@ -385,7 +387,7 @@ const unit = pollingUnits.find((item) => item.id === Number(selectedPollingUnit)
 
     if (!unit || unit.lga?.trim().toLowerCase() !== selectedLga.toLowerCase() || unit.ward?.trim() !== selectedWard) {
 
-      return setError("The polling unit does not belong to the selected LGA and ward.");
+      return setAssignmentFeedback({ type: "error", message: "The polling unit does not belong to the selected LGA and ward." });
 
     }
 
@@ -419,7 +421,7 @@ const agent = agents.find((item) => item.id === assignment.agent_id);
 
 const assignedUnit = pollingUnits.find((item) => item.id === assignment.polling_unit_id);
 
-      setSuccess(`${agent?.full_name || "Agent"} successfully assigned to ${assignedUnit?.name || "polling unit"}.`);
+      setAssignmentFeedback({ type: "success", message: `${agent?.full_name || "Agent"} successfully assigned to ${assignedUnit?.name || "polling unit"}.` });
 
       setSelectedPollingUnit("");
 
@@ -429,7 +431,7 @@ const assignedUnit = pollingUnits.find((item) => item.id === assignment.polling_
 
     } catch (err) {
 
-      setError(err instanceof Error ? err.message : "Unable to assign agent.");
+      setAssignmentFeedback({ type: "error", message: err instanceof Error ? err.message : "Unable to assign agent." });
 
     } finally {
 
@@ -523,7 +525,7 @@ const inputClass = "mt-2 w-full rounded-xl border border-slate-300 bg-white px-4
 
       <div className="rounded-xl border border-amber-200 bg-amber-50 p-4">
 
-        <div className="flex items-center gap-2 text-sm font-semibold text-amber-900">
+        <div className="flex items-center gap-2 text-sm font-semibold text-amber-950">
 
           <AlertCircle size={18} /> Unofficial — Agent-Submitted Data
 
@@ -561,7 +563,7 @@ const Icon = card.icon;
 
               <div className="flex items-center justify-between"><p className="text-sm text-slate-500">{card.label}</p><Icon size={20} className="text-emerald-600" /></div>
 
-              <p className="mt-3 text-3xl font-bold text-slate-900">{loadingOptions ? "..." : card.value}</p>
+              <p className="mt-3 text-3xl font-bold tabular-nums text-[var(--workspace-ink)]">{loadingOptions ? "..." : card.value}</p>
 
             </div>
 
@@ -599,7 +601,7 @@ const Icon = card.icon;
               : "No Rivers State elections have been created yet."}
           </div>
         ) : (
-          <ul className="divide-y divide-slate-100">
+          <ul className="admin-election-list divide-y divide-slate-100">
             {sortedElections.map((election) => {
               const isSelected =
                 selectedElection === String(election.id);
@@ -610,10 +612,10 @@ const Icon = card.icon;
                   className="flex flex-wrap items-center justify-between gap-3 px-5 py-4 sm:px-6"
                 >
                   <div className="min-w-0">
-                    <p className="break-words text-sm font-semibold text-slate-900">
+                    <p className="break-words text-sm font-semibold text-[var(--workspace-ink)]">
                       {election.name}
                     </p>
-                    <p className="mt-1 text-xs text-slate-500">
+                    <p className="admin-election-date mt-1 text-xs text-slate-600">
                       {new Date(election.election_date).toLocaleString(
                         "en-NG",
                         {
@@ -631,7 +633,7 @@ const Icon = card.icon;
                       className={`min-h-11 rounded-lg border px-4 py-2 text-sm font-semibold transition ${
                         isSelected
                           ? "border-emerald-200 bg-emerald-50 text-emerald-800"
-                          : "border-slate-200 text-slate-700 hover:border-emerald-300 hover:bg-emerald-50"
+                          : "border-slate-200 text-[var(--workspace-ink)] hover:border-emerald-300 hover:bg-emerald-50"
                       }`}
                     >
                       {isSelected ? "Selected for assignment" : "Use for assignments"}
@@ -652,8 +654,9 @@ const Icon = card.icon;
       </section>
 
       {clearTarget && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4" role="dialog" aria-modal="true" aria-labelledby="clear-results-title">
-          <form onSubmit={clearLiveResults} className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl">
+        <ViewportPortal>
+        <div className="viewport-popup z-50 bg-slate-950/60">
+          <form role="dialog" aria-modal="true" aria-labelledby="clear-results-title" onSubmit={clearLiveResults} className="viewport-popup-panel w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl">
             <div className="flex items-center gap-3 text-red-700">
               <Trash2 size={24} />
               <h2 id="clear-results-title" className="text-lg font-bold">Clear live election data</h2>
@@ -681,6 +684,7 @@ const Icon = card.icon;
             </div>
           </form>
         </div>
+        </ViewportPortal>
       )}
 
 
@@ -813,9 +817,22 @@ const Icon = card.icon;
 
           {agents.length === 0 && !loadingOptions && <p className="text-sm text-amber-700">No agent accounts were returned by the administration API.</p>}
 
-          <button type="submit" disabled={assigning || loadingOptions || !selectedElection || !selectedLga || !selectedWard || !selectedPollingUnit || !selectedAgent}
-
-            className="flex items-center gap-2 rounded-xl bg-emerald-600 px-5 py-3 text-sm font-semibold text-white hover:bg-emerald-700 disabled:opacity-50"><Users size={18} />{assigning ? "Assigning..." : "Assign Agent"}</button>
+          <div className="space-y-3">
+            <button type="submit" aria-busy={assigning}
+              disabled={assigning || loadingOptions || !selectedElection || !selectedLga || !selectedWard || !selectedPollingUnit || !selectedAgent}
+              className="assign-agent-button flex min-h-11 items-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold text-white transition-colors disabled:cursor-not-allowed disabled:opacity-60 aria-busy:cursor-wait">
+              {assigning ? <LoaderCircle size={18} aria-hidden="true" className="motion-safe:animate-spin" /> : <Users size={18} aria-hidden="true" />}
+              {assigning ? "Assigning agent…" : "Assign Agent"}
+            </button>
+            <div aria-live="polite">
+              {assigning && <p className="sr-only">Submitting agent assignment.</p>}
+              {assignmentFeedback && (
+                <p className={`text-sm font-medium ${assignmentFeedback.type === "error" ? "text-red-700" : "text-emerald-700"}`}>
+                  {assignmentFeedback.message}
+                </p>
+              )}
+            </div>
+          </div>
 
         </form>
 

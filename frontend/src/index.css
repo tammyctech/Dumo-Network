@@ -1014,6 +1014,17 @@ html.dark body #root :is(main, header, section, article, aside, dialog, [role="d
 
 :root.dark .analytics-availability { background-color: var(--dark-surface-card) !important; }
 :root.dark .analytics-availability p { color: var(--dark-text-secondary) !important; }
+:root.dark .admin-election-list .admin-election-date { color: var(--dark-text-secondary) !important; }
+:root.dark .admin-election-list button.text-red-700 { color: var(--dark-error) !important; }
+:root.dark .admin-election-list button[aria-pressed="true"] { color: var(--dark-success) !important; }
+.assign-agent-button { background-color: #005b8f; }
+.assign-agent-button:enabled:hover { background-color: #00446c; }
+:root.dark .assign-agent-button { background-color: var(--dark-accent); }
+:root.dark .assign-agent-button:enabled:hover { background-color: var(--dark-accent-pressed); }
+:root.dark .result-status-pending {
+  background-color: color-mix(in srgb, var(--dark-warning) 15%, var(--dark-surface-card)) !important;
+  color: var(--dark-warning) !important;
+}
 
 :root.dark .dashboard-lga-coverage .recharts-default-tooltip {
   border: 1px solid #2b2f3b !important;
@@ -1863,6 +1874,25 @@ html.dark body #root :is(main, header, section, article, aside, dialog, [role="d
 
 html.dark { background: #10131c; }
 .app-loading-screen, .app-loading-surface { background: var(--brand-background); }
+
+.viewport-popup {
+  --workspace-ink: #071722;
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+}
+
+:root.dark .viewport-popup { --workspace-ink: var(--dark-text-primary); }
+
+.viewport-popup-panel {
+  min-width: 0;
+  max-height: calc(100vh - 2rem);
+  max-height: calc(100dvh - 2rem);
+  overflow: auto;
+  overscroll-behavior: contain;
+}
 :root.dark .app-loading-screen { background: var(--dark-surface-base); }
 :root.dark .app-loading-screen .app-loading-name { color: var(--dark-text-primary) !important; }
 :root.dark .app-loading-screen .app-loading-subtitle { color: var(--dark-text-secondary) !important; }

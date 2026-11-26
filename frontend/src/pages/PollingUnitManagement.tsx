@@ -13,6 +13,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 
+import ViewportPortal from "../components/ViewportPortal";
 import { useAuth } from "../context/AuthContext";
 
 const API_URL = import.meta.env.DEV ? (import.meta.env.VITE_API_URL || "http://127.0.0.1:8000").replace(/\/$/, "") : "";
@@ -671,7 +672,7 @@ export default function PollingUnitManagement() {
                       {unit.code}
                     </td>
 
-                    <td className="px-5 py-4 font-medium text-slate-900">
+                    <td className="break-words px-5 py-4 font-medium text-[var(--workspace-ink)]">
                       {unit.name}
                     </td>
 
@@ -762,15 +763,16 @@ export default function PollingUnitManagement() {
       {/* POLLING UNIT DETAILS MODAL */}
 
       {selectedUnit && (
+        <ViewportPortal>
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+          className="viewport-popup z-50 bg-black/50"
           onClick={() => setSelectedUnit(null)}
         >
           <div
             role="dialog"
             aria-modal="true"
             aria-labelledby="polling-unit-details-title"
-            className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl"
+            className="viewport-popup-panel w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl"
             onClick={(event) => event.stopPropagation()}
           >
             <div className="mb-6 flex items-center justify-between">
@@ -807,7 +809,7 @@ export default function PollingUnitManagement() {
                     {label}
                   </p>
 
-                  <p className="mt-1 font-medium text-slate-900">
+                  <p className="mt-1 break-words font-medium text-[var(--workspace-ink)]">
                     {value}
                   </p>
                 </div>
@@ -825,6 +827,7 @@ export default function PollingUnitManagement() {
             </div>
           </div>
         </div>
+        </ViewportPortal>
       )}
 
     </div>

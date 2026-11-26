@@ -1,4 +1,5 @@
 import { Fragment, useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 
 import {
   NavLink,
@@ -197,12 +198,15 @@ export default function AppLayout() {
   useEffect(() => {
     function closeMenusOutside(event: PointerEvent) {
       if (!(event.target instanceof Node)) return;
+      const popup = event.target instanceof Element
+        ? event.target.closest("[data-topbar-popup]")?.getAttribute("data-topbar-popup")
+        : null;
 
-      if (notificationsRef.current && !notificationsRef.current.contains(event.target)) {
+      if (notificationsRef.current && !notificationsRef.current.contains(event.target) && popup !== "notifications") {
         setNotificationsOpen(false);
       }
 
-      if (profileRef.current && !profileRef.current.contains(event.target)) {
+      if (profileRef.current && !profileRef.current.contains(event.target) && popup !== "account") {
         setProfileOpen(false);
       }
     }
@@ -564,11 +568,13 @@ export default function AppLayout() {
                 <Bell size={20} />
               </button>
 
-              {notificationsOpen && (
+              {notificationsOpen && createPortal(
+                <div className="viewport-popup z-[100] bg-slate-950/50">
                 <div
                   role="dialog"
                   aria-label="Notifications panel"
-                  className="fixed inset-x-3 top-[4.75rem] z-50 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl shadow-slate-950/20 sm:absolute sm:inset-x-auto sm:right-0 sm:top-14 sm:w-[25rem]"
+                  data-topbar-popup="notifications"
+                  className="viewport-popup-panel w-full max-w-md rounded-2xl border border-slate-200 bg-white shadow-2xl shadow-slate-950/20"
                 >
                   <div className="border-b border-slate-200 bg-white px-5 py-5 text-slate-900">
                     <div className="flex items-start justify-between gap-4">
@@ -639,6 +645,8 @@ export default function AppLayout() {
                     Delivery is reported by the notification service; device receipt is not guaranteed.
                   </div>
                 </div>
+                </div>,
+                document.body
               )}
             </div>}
 
@@ -668,9 +676,13 @@ export default function AppLayout() {
                 </span>
               </button>
 
-              {profileOpen && (
+              {profileOpen && createPortal(
+                <div className="viewport-popup z-[100] bg-slate-950/50">
                 <div
-                  className="absolute right-0 top-14 z-50 w-56 overflow-hidden rounded-xl border border-slate-200 bg-white p-1.5 shadow-xl"
+                  role="dialog"
+                  aria-label="Account options"
+                  data-topbar-popup="account"
+                  className="viewport-popup-panel w-full max-w-xs rounded-xl border border-slate-200 bg-white p-1.5 shadow-xl"
                 >
                   <nav aria-label="Account options">
                     <NavLink
@@ -691,6 +703,8 @@ export default function AppLayout() {
                     </button>
                   </nav>
                 </div>
+                </div>,
+                document.body
               )}
             </div>
 
@@ -722,7 +736,7 @@ export default function AppLayout() {
             © {CURRENT_YEAR} Dumo Youth Network Election Monitoring System.
           </p>
 
-          <p className="mt-1 text-xs font-medium text-amber-700">
+          <p className="mt-1 text-xs font-medium text-amber-950">
             Unofficial — Agent-Submitted Data
           </p>
 

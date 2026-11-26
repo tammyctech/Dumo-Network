@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
 import { AlertTriangle, ArrowRightLeft, Loader2, MapPin, Pencil, Printer, RefreshCw, Search, ShieldCheck, Trash2, UserPlus, Users } from "lucide-react";
+import ViewportPortal from "../components/ViewportPortal";
 import { useAuth } from "../context/AuthContext";
 
 const API=import.meta.env.DEV?(import.meta.env.VITE_API_URL||"http://127.0.0.1:8000").replace(/\/$/,""):"";
@@ -69,4 +70,4 @@ export default function UserManagement(){
  </div>
 }
 function Notice({kind,children}:{kind:"error"|"success";children:React.ReactNode}){return <div className={`rounded-xl border p-4 text-sm ${kind==="error"?"border-red-200 bg-red-50 text-red-700":"border-emerald-200 bg-emerald-50 text-emerald-800"}`}>{children}</div>}
-function Modal({title,onClose,children}:{title:string;onClose:()=>void;children:React.ReactNode}){return <div className="fixed inset-0 z-[300] grid place-items-center bg-slate-950/60 p-4"><div className="max-h-[90vh] w-full max-w-lg overflow-auto rounded-2xl bg-white p-6 shadow-2xl"><div className="mb-5 flex justify-between gap-4"><h2 className="text-xl font-black">{title}</h2><button type="button" onClick={onClose} className="text-slate-500">Close</button></div>{children}</div></div>}
+function Modal({title,onClose,children}:{title:string;onClose:()=>void;children:React.ReactNode}){return <ViewportPortal><div className="viewport-popup z-[300] bg-slate-950/60"><div role="dialog" aria-modal="true" aria-label={title} className="viewport-popup-panel w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl"><div className="mb-5 flex justify-between gap-4"><h2 className="text-xl font-black">{title}</h2><button type="button" onClick={onClose} className="text-slate-500">Close</button></div>{children}</div></div></ViewportPortal>}

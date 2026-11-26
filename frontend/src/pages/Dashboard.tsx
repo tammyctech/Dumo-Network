@@ -745,7 +745,7 @@ const workflowUnavailableMessage = statistics?.election
 
           <div>
 
-            <h2 className="font-bold text-amber-900">
+            <h2 className="font-bold text-amber-950">
 
               Unofficial — Agent-Submitted Data
 
