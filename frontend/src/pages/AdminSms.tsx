@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { CheckSquare, History, MessageSquareText, Search, Send, Square } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
+import { useAppPrompt } from "../context/AppPrompt";
 
 const API = import.meta.env.DEV ? (import.meta.env.VITE_API_URL || "http://127.0.0.1:8000").replace(/\/$/, "") : "";
 type Recipient = { id:number; full_name:string; phone_number:string; role:string; lga?:string|null };
@@ -25,8 +26,7 @@ async function detail(response:Response){try{const body=await response.json();re
 
 export default function AdminSms(){
   const {token}=useAuth();
-  const confirmationDialog = useRef<HTMLDialogElement>(null);
-  const [confirmation, setConfirmation] = useState<{ count: number; request: SmsRequest } | null>(null);
+  const ask = useAppPrompt();
   const [recipients,setRecipients]=useState<Recipient[]>([]),[history,setHistory]=useState<SmsHistory[]>([]),[selected,setSelected]=useState<Set<number>>(new Set()),[sendAll,setSendAll]=useState(false),[lga,setLga]=useState(""),[search,setSearch]=useState(""),[externalPhone,setExternalPhone]=useState(""),[template,setTemplate]=useState(""),[message,setMessage]=useState(""),[loading,setLoading]=useState(true),[sending,setSending]=useState(false),[error,setError]=useState(""),[success,setSuccess]=useState("");
   const headers={Authorization:`Bearer ${token}`};
   async function loadHistory(){const response=await fetch(`${API}/api/admin/sms/history`,{headers});if(!response.ok)throw new Error(await detail(response));const data=await response.json();setHistory(data.history||[])}
@@ -36,7 +36,7 @@ export default function AdminSms(){
   const filtered=useMemo(()=>{const query=search.trim().toLowerCase();return audience.filter(item=>!query||`${item.full_name} ${item.phone_number} ${item.role} ${item.lga||""}`.toLowerCase().includes(query))},[audience,search]);
   function toggle(id:number){setSelected(current=>{const next=new Set(current);if(next.has(id))next.delete(id);else next.add(id);return next})}
   function toggleVisible(){setSelected(current=>{const next=new Set(current),all=filtered.length>0&&filtered.every(item=>next.has(item.id));filtered.forEach(item=>all?next.delete(item.id):next.add(item.id));return next})}
-  function requestConfirmation() {
+  async function requestConfirmation() {
     if (sending) return;
     setError("");
     setSuccess("");
@@ -46,25 +46,21 @@ export default function AdminSms(){
     const count = (sendAll ? audience.length : selected.size) + (typedPhone ? 1 : 0);
     if (!count) return setError("Select a recipient, enter a phone number, or choose send to all.");
 
-    setConfirmation({
-      count,
-      request: {
-        message: template ? "" : message.trim(),
-        template_key: template || null,
-        send_to_all: sendAll,
-        lga: sendAll && lga ? lga : null,
-        user_ids: sendAll ? [] : [...selected],
-        phone_numbers: typedPhone ? [typedPhone] : [],
-      },
+    const request: SmsRequest = {
+      message: template ? "" : message.trim(),
+      template_key: template || null,
+      send_to_all: sendAll,
+      lga: sendAll && lga ? lga : null,
+      user_ids: sendAll ? [] : [...selected],
+      phone_numbers: typedPhone ? [typedPhone] : [],
+    };
+    const confirmed = await ask({
+      title: "Confirm SMS",
+      message: `Send this SMS to ${count} ${count === 1 ? "recipient" : "recipients"}${request.lga ? ` in ${request.lga} LGA` : ""}?`,
+      confirmLabel: "Send SMS",
     });
-    confirmationDialog.current?.showModal();
-  }
-
-  async function sendConfirmedSms() {
-    if (!confirmation || sending) return;
-    const { request } = confirmation;
+    if (confirmed === null) return;
     setSending(true);
-    confirmationDialog.current?.close();
     try {
       const response = await fetch(`${API}/api/admin/sms/send`, {
         method: "POST",
@@ -113,19 +109,5 @@ export default function AdminSms(){
       <div className="border-b p-5"><h2 className="flex items-center gap-2 font-black"><History size={19} className="text-emerald-700"/>SMS history</h2><p className="mt-1 text-sm text-slate-500">The latest 50 sends, including the LGA and delivery result.</p></div>
       {history.length===0?<p className="p-6 text-slate-500">No SMS history yet.</p>:<div className="overflow-x-auto"><table className="w-full text-left text-sm"><thead className="bg-slate-50 text-xs uppercase text-slate-500"><tr><th className="px-5 py-3">Date</th><th className="px-5 py-3">Audience / LGA</th><th className="px-5 py-3">Message</th><th className="px-5 py-3">Recipients</th><th className="px-5 py-3">Status</th></tr></thead><tbody>{history.map(item=><tr key={item.id} className="border-t"><td className="whitespace-nowrap px-5 py-4">{new Intl.DateTimeFormat("en-NG",{dateStyle:"medium",timeStyle:"short",timeZone:"Africa/Lagos"}).format(new Date(item.created_at))}</td><td className="px-5 py-4 font-semibold">{item.lga?`${item.lga} LGA`:item.send_to_all?"All LGAs":"Selected users / direct number"}</td><td className="px-5 py-4">{item.template_key==="vote_awareness"?"Vote awareness":item.template_key==="assignment_login"?"Login details":"Custom message"}</td><td className="px-5 py-4">{item.recipient_count}</td><td className="px-5 py-4"><span className={`rounded-full px-2.5 py-1 text-xs font-bold ${item.failed?"bg-amber-100 text-amber-800":item.status==="completed"?"bg-emerald-100 text-emerald-800":"bg-blue-100 text-blue-800"}`}>{item.status==="queued"?"Queued":item.failed?`${item.sent||0} sent · ${item.failed} failed`:`${item.sent??item.recipient_count} sent`}</span></td></tr>)}</tbody></table></div>}
     </section>
-    <dialog ref={confirmationDialog} onClose={() => setConfirmation(null)} aria-labelledby="sms-confirm-title" aria-describedby="sms-confirm-description"
-      className="fixed inset-0 m-auto max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] max-w-md overflow-auto rounded-2xl border border-slate-200 bg-white p-6 text-[var(--workspace-ink)] shadow-2xl backdrop:bg-slate-950/65">
-      <div className="mb-4 grid h-11 w-11 place-items-center rounded-xl bg-sky-50 text-sky-700">
-        <Send size={20} aria-hidden="true" />
-      </div>
-      <h2 id="sms-confirm-title" className="text-xl font-bold">Confirm SMS</h2>
-      <p id="sms-confirm-description" className="mt-2 text-sm leading-6 text-slate-600">
-        {confirmation && `Send this SMS to ${confirmation.count} ${confirmation.count === 1 ? "recipient" : "recipients"}${confirmation.request.lga ? ` in ${confirmation.request.lga} LGA` : ""}?`}
-      </p>
-      <div className="mt-6 flex flex-wrap justify-end gap-3">
-        <button type="button" onClick={() => confirmationDialog.current?.close()} className="min-h-11 rounded-xl border border-slate-200 px-4 text-sm font-semibold">Cancel</button>
-        <button type="button" onClick={() => void sendConfirmedSms()} disabled={!confirmation || sending} className="min-h-11 rounded-xl bg-emerald-700 px-4 text-sm font-semibold text-white hover:bg-emerald-800 disabled:opacity-50">Send SMS</button>
-      </div>
-    </dialog>
   </div>
 }

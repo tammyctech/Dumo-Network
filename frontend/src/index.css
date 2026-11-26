@@ -1886,10 +1886,56 @@ html.dark { background: #10131c; }
 
 :root.dark .viewport-popup { --workspace-ink: var(--dark-text-primary); }
 
-.app-prompt { color: #0f172a; }
-.app-prompt-description { color: #475569; }
-:root.dark .app-prompt { color: var(--dark-text-primary); }
-:root.dark .app-prompt-description { color: var(--dark-text-secondary); }
+.app-prompt {
+  --prompt-surface: #fdfefe;
+  --prompt-footer: #edf3f9;
+  --prompt-line: #ccd9e7;
+  --prompt-ink: #122138;
+  --prompt-copy: #42546d;
+  --prompt-accent: #005b8f;
+  --prompt-accent-hover: #00456e;
+  --prompt-icon-ink: #005b8f;
+  --prompt-icon-surface: #e1f1fc;
+  border-color: var(--prompt-line);
+  border-top: 3px solid var(--prompt-accent);
+  background: var(--prompt-surface) !important;
+  color: var(--prompt-ink);
+  box-shadow: 0 24px 70px rgb(6 14 29 / .34);
+}
+:root.dark dialog.app-prompt {
+  --prompt-surface: #171f2d;
+  --prompt-footer: #111824;
+  --prompt-line: #344258;
+  --prompt-ink: #f4f7fd;
+  --prompt-copy: #bfccde;
+  --prompt-accent: #2563eb;
+  --prompt-accent-hover: #1d4ed8;
+  --prompt-icon-ink: #a9c8ff;
+  --prompt-icon-surface: #1f355a;
+  border-color: var(--prompt-line) !important;
+  border-top-color: var(--prompt-accent) !important;
+  background: var(--prompt-surface) !important;
+}
+.app-prompt[data-tone="danger"],
+:root.dark dialog.app-prompt[data-tone="danger"] {
+  --prompt-accent: #b91c1c;
+  --prompt-accent-hover: #991b1b;
+  --prompt-icon-ink: #b91c1c;
+  --prompt-icon-surface: #fee8e8;
+}
+:root.dark dialog.app-prompt[data-tone="danger"] {
+  --prompt-icon-ink: #ffb1b1;
+  --prompt-icon-surface: #48272d;
+}
+.app-prompt::backdrop { background: rgb(5 11 23 / .72); backdrop-filter: blur(3px); }
+.app-prompt-description { color: var(--prompt-copy); }
+.app-prompt-icon { color: var(--prompt-icon-ink); background: var(--prompt-icon-surface); }
+.app-prompt-actions { border-top: 1px solid var(--prompt-line); background: var(--prompt-footer); }
+.app-prompt-input.input { border-color: var(--prompt-line); color: var(--prompt-ink); }
+.app-prompt-cancel { border-color: var(--prompt-line); color: var(--prompt-ink); background: var(--prompt-surface); }
+.app-prompt-cancel:hover { background: var(--prompt-icon-surface); }
+.app-prompt-confirm { background: var(--prompt-accent); color: #fff; }
+.app-prompt-confirm:hover { background: var(--prompt-accent-hover); }
 
 .viewport-popup-panel {
   min-width: 0;
