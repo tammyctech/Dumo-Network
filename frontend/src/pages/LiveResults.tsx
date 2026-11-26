@@ -4,6 +4,7 @@ import { Activity, CalendarDays, CheckCircle2, MapPin, Radio, Share2, ShieldChec
 import { PartyLogo } from "../constants/partyLogos";
 import { partyColor } from "../constants/partyColors";
 import { useBranding } from "../context/branding";
+import { useAuth } from "../context/AuthContext";
 
 const RIVERS_LGAS = ["Abua/Odual", "Ahoada East", "Ahoada West", "Akuku-Toru", "Andoni", "Asari-Toru", "Bonny", "Degema", "Eleme", "Emohua", "Etche", "Gokana", "Ikwerre", "Khana", "Obio/Akpor", "Ogba/Egbema/Ndoni", "Ogu/Bolo", "Okrika", "Omuma", "Opobo/Nkoro", "Oyigbo", "Port Harcourt", "Tai"];
 
@@ -64,6 +65,7 @@ function initials(name: string) {
 
 export default function LiveResults() {
   const branding = useBranding();
+  const { isAuthenticated, isLoading } = useAuth();
   const [race,setRace]=useState<"governorship"|"presidential">("governorship");
   const [selectedElectionId, setSelectedElectionId] = useState("");
   const [availableElections, setAvailableElections] = useState<NonNullable<Overview["available_elections"]>>([]);
@@ -123,7 +125,7 @@ export default function LiveResults() {
           {branding.logo_data_url ? <img src={branding.logo_data_url} alt="" className="h-10 w-10 rounded-xl object-contain"/> : <span className="grid h-10 w-10 place-items-center rounded-xl bg-sky-700 text-white"><Activity size={19}/></span>}
           <span><strong className="block text-sm tracking-[.08em]">{branding.logo_title.toUpperCase()}</strong><small className="text-xs text-slate-500">Rivers results explorer</small></span>
         </Link>
-        <div className="flex items-center gap-2 sm:gap-3"><span className="hidden items-center gap-2 rounded-full border border-sky-200 bg-sky-50 px-3 py-1.5 text-xs font-bold text-sky-800 md:inline-flex"><span className="h-2 w-2 rounded-full bg-sky-500"/>Online</span><time className="hidden text-xs font-bold tabular-nums text-slate-500 lg:block">{now.toLocaleTimeString("en-NG",{timeZone:"Africa/Lagos",hour:"2-digit",minute:"2-digit",second:"2-digit"})} WAT</time><button onClick={()=>void navigator.share?.({title:"2027 Presidential Election",url:window.location.href})} className="hidden rounded-xl border border-slate-200 p-2.5 text-slate-600 hover:bg-slate-50 sm:block" aria-label="Share election page"><Share2 size={17}/></button><Link to="/login" className="rounded-xl bg-sky-700 px-4 py-2.5 text-sm font-bold text-white hover:bg-sky-800">Sign in</Link></div>
+        <div className="flex items-center gap-2 sm:gap-3"><span className="hidden items-center gap-2 rounded-full border border-sky-200 bg-sky-50 px-3 py-1.5 text-xs font-bold text-sky-800 md:inline-flex"><span className="h-2 w-2 rounded-full bg-sky-500"/>Online</span><time className="hidden text-xs font-bold tabular-nums text-slate-500 lg:block">{now.toLocaleTimeString("en-NG",{timeZone:"Africa/Lagos",hour:"2-digit",minute:"2-digit",second:"2-digit"})} WAT</time><button onClick={()=>void navigator.share?.({title:"2027 Presidential Election",url:window.location.href})} className="hidden rounded-xl border border-slate-200 p-2.5 text-slate-600 hover:bg-slate-50 sm:block" aria-label="Share election page"><Share2 size={17}/></button>{!isLoading && <Link to={isAuthenticated ? "/dashboard" : "/login"} className="rounded-xl bg-sky-700 px-4 py-2.5 text-sm font-bold text-white hover:bg-sky-800">{isAuthenticated ? "Go to Dashboard" : "Sign in"}</Link>}</div>
       </div>
     </header>
 
