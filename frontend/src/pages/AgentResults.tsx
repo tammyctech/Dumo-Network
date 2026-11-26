@@ -585,7 +585,7 @@ export default function AgentResults() {
 
           {!loadingAssignments && activeElection && !selectedAssignment && (
             <p className="mb-4 text-sm text-[var(--workspace-ink)]">
-              Active election <strong>{activeElection.name}</strong>
+              Active election <strong className="active-election-name">{activeElection.name}</strong>
             </p>
           )}
 
@@ -698,7 +698,7 @@ export default function AgentResults() {
             <div className="mt-5 grid gap-4 rounded-xl bg-slate-50 p-4 text-sm md:grid-cols-2">
               <div>
                 <span className="text-slate-500">Election</span>
-                <p className="font-semibold">
+                <p className="active-election-name font-semibold">
                   {selectedAssignment.election.name}
                 </p>
               </div>

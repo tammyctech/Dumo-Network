@@ -1018,6 +1018,8 @@ html.dark body #root :is(main, header, section, article, aside, dialog, [role="d
 :root.dark .admin-election-list button.text-red-700 { color: var(--dark-error) !important; }
 :root.dark .admin-election-list button[aria-pressed="true"] { color: var(--dark-success) !important; }
 .assign-agent-button { background-color: #005b8f; }
+.active-election-name { color: #005b8f; }
+:root.dark .active-election-name { color: #7dd3fc; }
 .assign-agent-button:enabled:hover { background-color: #00446c; }
 :root.dark .assign-agent-button { background-color: var(--dark-accent); }
 :root.dark .assign-agent-button:enabled:hover { background-color: var(--dark-accent-pressed); }
