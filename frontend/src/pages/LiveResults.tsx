@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
-import { Activity, CalendarDays, CheckCircle2, MapPin, Radio, Share2, ShieldCheck } from "lucide-react";
+import { Activity, CalendarDays, MapPin, Radio, Share2, ShieldCheck } from "lucide-react";
+import LandingFooter from "../components/LandingFooter";
 import { PartyLogo } from "../constants/partyLogos";
 import { partyColor } from "../constants/partyColors";
 import { useBranding } from "../context/branding";
@@ -125,7 +126,7 @@ export default function LiveResults() {
           {branding.logo_data_url ? <img src={branding.logo_data_url} alt="" className="h-10 w-10 rounded-xl object-contain"/> : <span className="grid h-10 w-10 place-items-center rounded-xl bg-sky-700 text-white"><Activity size={19}/></span>}
           <span><strong className="block text-sm tracking-[.08em]">{branding.logo_title.toUpperCase()}</strong><small className="text-xs text-slate-500">Rivers results explorer</small></span>
         </Link>
-        <div className="flex items-center gap-2 sm:gap-3"><span className="hidden items-center gap-2 rounded-full border border-sky-200 bg-sky-50 px-3 py-1.5 text-xs font-bold text-sky-800 md:inline-flex"><span className="h-2 w-2 rounded-full bg-sky-500"/>Online</span><time className="hidden text-xs font-bold tabular-nums text-slate-500 lg:block">{now.toLocaleTimeString("en-NG",{timeZone:"Africa/Lagos",hour:"2-digit",minute:"2-digit",second:"2-digit"})} WAT</time><button onClick={()=>void navigator.share?.({title:"2027 Presidential Election",url:window.location.href})} className="hidden rounded-xl border border-slate-200 p-2.5 text-slate-600 hover:bg-slate-50 sm:block" aria-label="Share election page"><Share2 size={17}/></button>{!isLoading && <Link to={isAuthenticated ? "/dashboard" : "/login"} className="rounded-xl bg-sky-700 px-4 py-2.5 text-sm font-bold text-white hover:bg-sky-800">{isAuthenticated ? "Go to Dashboard" : "Sign in"}</Link>}</div>
+        <div className="flex items-center gap-2 sm:gap-3"><span className="hidden items-center gap-2 rounded-full border border-sky-200 bg-sky-50 px-3 py-1.5 text-xs font-bold text-sky-800 md:inline-flex"><span aria-hidden="true" className="relative inline-flex h-2 w-2 shrink-0"><span className="absolute inset-0 rounded-full bg-emerald-500 motion-safe:animate-ping" /><span className="relative h-full w-full rounded-full bg-emerald-500" /></span>Live</span><time className="hidden text-xs font-bold tabular-nums text-slate-500 lg:block">{now.toLocaleTimeString("en-NG",{timeZone:"Africa/Lagos",hour:"2-digit",minute:"2-digit",second:"2-digit"})} WAT</time><button onClick={()=>void navigator.share?.({title:"2027 Presidential Election",url:window.location.href})} className="hidden rounded-xl border border-slate-200 p-2.5 text-slate-600 hover:bg-slate-50 sm:block" aria-label="Share election page"><Share2 size={17}/></button>{!isLoading && <Link to={isAuthenticated ? "/dashboard" : "/login"} className="rounded-xl bg-sky-700 px-4 py-2.5 text-sm font-bold text-white hover:bg-sky-800">{isAuthenticated ? "Go to Dashboard" : "Sign in"}</Link>}</div>
       </div>
     </header>
 
@@ -220,8 +221,8 @@ export default function LiveResults() {
         </div>
       </section>
 
-      <section className="bg-[#071722] py-10 text-white"><div className="mx-auto flex max-w-7xl flex-col gap-4 px-5 sm:flex-row sm:items-center sm:justify-between lg:px-8"><div className="flex items-center gap-3"><CheckCircle2 className="text-sky-400"/><p><strong>Transparent by design.</strong><span className="ml-2 text-slate-400">Figures remain unofficial until declared by the authorized electoral body.</span></p></div><Link to="/" className="text-sm font-bold text-sky-300 hover:text-white">Return to public dashboard</Link></div></section>
     </main>
+    <LandingFooter branding={branding} />
   </div>;
 }
 function CandidateCarousel({ candidates, totals, totalVotes, lgaResults, label }: {

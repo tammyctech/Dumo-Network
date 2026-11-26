@@ -2054,7 +2054,7 @@ html.dark { background: #10131c; }
 
 :root.dark .landing-page footer { background: var(--dark-deep) !important; }
 
-:is(.landing-page, :root.dark .landing-page) footer.landing-footer {
+:is(footer.landing-footer, :root.dark footer.landing-footer) {
   --footer-heading: #f8fafc;
   --footer-link: #dce0e7;
   --footer-copy: #a1aabb;
@@ -2108,12 +2108,12 @@ html.dark { background: #10131c; }
 .landing-footer-grid > * { min-width: 0; }
 .landing-footer-brand img { flex-shrink: 0; }
 .landing-footer :is(p, span, a, h2) { font-size: .875rem; line-height: 1.6; overflow-wrap: anywhere; }
-:is(.landing-page, :root.dark .landing-page) footer.landing-footer :is(p, span) { color: var(--footer-copy) !important; }
-:is(.landing-page, :root.dark .landing-page) footer.landing-footer :is(h2, strong) { color: var(--footer-heading) !important; }
+:is(footer.landing-footer, :root.dark footer.landing-footer) :is(p, span) { color: var(--footer-copy) !important; }
+:is(footer.landing-footer, :root.dark footer.landing-footer) :is(h2, strong) { color: var(--footer-heading) !important; }
 .landing-footer h2 { margin-bottom: .75rem; font-weight: 750; }
 .landing-footer li + li { margin-top: .45rem; }
-:is(.landing-page, :root.dark .landing-page) footer.landing-footer a { color: var(--footer-link) !important; }
-:is(.landing-page, :root.dark .landing-page) footer.landing-footer a:hover { color: var(--footer-blue-hover) !important; }
+:is(footer.landing-footer, :root.dark footer.landing-footer) a { color: var(--footer-link) !important; }
+:is(footer.landing-footer, :root.dark footer.landing-footer) a:hover { color: var(--footer-blue-hover) !important; }
 .landing-footer-notice svg { flex: none; color: var(--footer-orange); }
 .landing-footer-bottom {
   padding-block: 1.25rem;

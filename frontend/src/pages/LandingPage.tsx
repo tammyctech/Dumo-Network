@@ -372,6 +372,14 @@ export default function LandingPage() {
   const [error, setError] = useState("");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { mode: themeMode, toggleTheme } = useTheme();
+  useEffect(() => {
+    const sectionId = window.location.hash.slice(1);
+    if (!sectionId) return;
+    const frame = window.requestAnimationFrame(() => {
+      document.getElementById(sectionId)?.scrollIntoView();
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, []);
   const [refreshKey, setRefreshKey] = useState(0);
   useEffect(() => {
     const elements = document.querySelectorAll<HTMLElement>(

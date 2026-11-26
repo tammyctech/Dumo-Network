@@ -29,14 +29,14 @@ export default function LandingFooter({ branding }: { branding: Branding }) {
             <h2 id="footer-platform">Platform</h2>
             <ul>
               <li><Link to="/live-results">Live Results</Link></li>
-              <li><a href="#results">Coverage map</a></li>
-              <li><a href="#updates">Field reports</a></li>
+              <li><a href="/#results">Coverage map</a></li>
+              <li><a href="/#updates">Field reports</a></li>
             </ul>
           </nav>
           <nav aria-labelledby="footer-resources">
             <h2 id="footer-resources">Resources</h2>
             <ul>
-              <li><a href="#methodology">How It Works</a></li>
+              <li><a href="/#methodology">How It Works</a></li>
               <li><a href={mapSource} target="_blank" rel="noreferrer">Map boundary source</a></li>
             </ul>
           </nav>
@@ -44,7 +44,7 @@ export default function LandingFooter({ branding }: { branding: Branding }) {
             <h2 id="footer-involved">Get Involved</h2>
             <ul>
               <li><Link to="/activate-agent">Activate agent account</Link></li>
-              <li><a href="#report-incident">Report an Incident</a></li>
+              <li><a href="/#report-incident">Report an Incident</a></li>
             </ul>
           </nav>
           <div className="landing-footer-notice">
