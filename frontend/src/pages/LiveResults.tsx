@@ -215,9 +215,13 @@ export default function LiveResults() {
           <div className="grid gap-8 lg:grid-cols-[.75fr_1.25fr] lg:items-end"><div><p className="text-sm font-black uppercase tracking-[.18em] text-sky-700">Unofficial results</p><h2 className="mt-3 text-4xl font-black tracking-[-.04em] sm:text-5xl">{candidates.length ? "Statewide candidate results" : "Statewide party results"}</h2></div><p className="rounded-2xl border border-sky-100 bg-sky-50 p-5 leading-7 text-slate-700">Vote totals and percentages update automatically from submitted polling-unit reports across Rivers State.</p></div>
           <div className="mt-8 flex gap-3"><span className="rounded-full bg-slate-950 px-4 py-2 text-sm font-bold text-white">{overview.submitted_polling_units} units reporting</span>{candidates.length > 0 && <span className="rounded-full border border-slate-200 px-4 py-2 text-sm font-bold text-slate-600">{candidates.length} candidates</span>}</div>
           {candidates.length > 0 && <CandidateCarousel candidates={candidates} totals={overview.party_totals} totalVotes={totalVotes} lgaResults={overview.lga_results} label="Statewide candidate scores" />}
-          <div className="mt-6 rounded-2xl border border-slate-200 bg-slate-50 p-4">
-            <ReportedPartyTotals totals={overview.party_totals} />
-          </div>
+          <section aria-labelledby="unofficial-party-totals" className="mt-6 rounded-2xl border border-slate-200 bg-slate-50 p-4 sm:p-6">
+            <h2 id="unofficial-party-totals" className="text-xl font-bold">Unofficial Party Vote Totals</h2>
+            <p className="mt-2 text-sm leading-6 text-slate-600">
+              Aggregated votes from agent-submitted polling-unit results. These are not official election totals.
+            </p>
+            <ReportedPartyTotals totals={overview.party_totals} showBars />
+          </section>
         </div>
       </section>
 
@@ -400,21 +404,32 @@ function PollingUnitReports({ electionId, lga, lastUpdated }: { electionId: numb
   );
 }
 
-function ReportedPartyTotals({ totals }: { totals: PartyTotal[] }) {
+function ReportedPartyTotals({ totals, showBars = false }: { totals: PartyTotal[]; showBars?: boolean }) {
   const rankedTotals = [...totals].sort((a, b) => b.votes - a.votes || a.party.localeCompare(b.party));
+  const maxVotes = rankedTotals[0]?.votes ?? 0;
 
   return (
     <div className="mt-4">
-      <h3 className="text-sm font-bold">Reported votes by party</h3>
+      {!showBars && <h3 className="text-sm font-bold">Reported votes by party</h3>}
       {totals.length === 0 ? <p className="mt-2 text-sm">No party totals reported yet.</p> : (
         <ul className="mt-2 divide-y divide-slate-400/25 text-sm">
           {rankedTotals.map(({ party, votes }) => (
-            <li key={party} className="flex justify-between gap-2 py-2">
-              <span className="flex items-center gap-2">
-                <span className="h-3 w-3 rounded-sm" style={{ backgroundColor: partyColor(party) }} aria-hidden="true" />
-                {party}
-              </span>
-              <span className="font-semibold tabular-nums">{votes.toLocaleString("en-NG")}</span>
+            <li key={party} className="py-2">
+              <div className="flex justify-between gap-2">
+                <span className="flex items-center gap-2">
+                  <span className="h-3 w-3 rounded-sm" style={{ backgroundColor: partyColor(party) }} aria-hidden="true" />
+                  {party}
+                </span>
+                <span className="font-semibold tabular-nums">{votes.toLocaleString("en-NG")}</span>
+              </div>
+              {showBars && (
+                <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-slate-200" aria-hidden="true">
+                  <div className="h-full rounded-full" style={{
+                    width: maxVotes > 0 ? `${(votes / maxVotes) * 100}%` : "0%",
+                    backgroundColor: partyColor(party),
+                  }} />
+                </div>
+              )}
             </li>
           ))}
         </ul>
