@@ -398,12 +398,14 @@ function PollingUnitReports({ electionId, lga, lastUpdated }: { electionId: numb
 }
 
 function ReportedPartyTotals({ totals }: { totals: PartyTotal[] }) {
+  const rankedTotals = [...totals].sort((a, b) => b.votes - a.votes || a.party.localeCompare(b.party));
+
   return (
     <div className="mt-4">
       <h3 className="text-sm font-bold">Reported votes by party</h3>
       {totals.length === 0 ? <p className="mt-2 text-sm">No party totals reported yet.</p> : (
         <ul className="mt-2 divide-y divide-slate-400/25 text-sm">
-          {totals.map(({ party, votes }) => (
+          {rankedTotals.map(({ party, votes }) => (
             <li key={party} className="flex justify-between gap-2 py-2">
               <span className="flex items-center gap-2">
                 <span className="h-3 w-3 rounded-sm" style={{ backgroundColor: partyColor(party) }} aria-hidden="true" />
