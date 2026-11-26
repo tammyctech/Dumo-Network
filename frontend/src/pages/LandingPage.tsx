@@ -131,15 +131,6 @@ function normalizeLga(value: string): string {
   return aliases[normalized] || normalized;
 }
 
-function leaderVoteShare(result: LgaResult | undefined): number {
-  if (!result?.leader) return 0;
-  const total = result.party_totals.reduce(
-    (sum, party) => sum + party.votes,
-    0
-  );
-  return total > 0 ? result.leader.votes / total : 0;
-}
-
 function formatNumber(value: number | null | undefined): string {
   return value == null ? "—" : value.toLocaleString("en-NG");
 }
@@ -251,13 +242,10 @@ function MapPanel({
                 <path
                   key={name}
                   d={featurePath(feature)}
-                  fill={result?.leader ? partyColor(result.leader.party) : "var(--map-idle, #e0f2fe)"}
-                  fillOpacity={
-                    result?.leader ? 0.5 + leaderVoteShare(result) * 0.5 : 1
-                  }
-                  stroke={active ? "var(--map-active, #0369a1)" : "var(--map-border, #7dd3fc)"}
-                  strokeWidth={active ? 3 : 1.5}
-                  className="cursor-pointer outline-none transition hover:brightness-125 focus-visible:stroke-sky-900 focus-visible:[stroke-width:3]"
+                  fill={result?.leader ? partyColor(result.leader.party) : "var(--map-idle, #d5dde7)"}
+                  stroke={active ? "var(--map-active, #0c4a6e)" : "var(--map-border, #75859a)"}
+                  strokeWidth={active ? 3 : 1.75}
+                  className="cursor-pointer outline-none transition focus-visible:[stroke-width:3]"
                   onMouseEnter={() => setSelected(name)}
                   onFocus={() => setSelected(name)}
                   onClick={() => setSelected(name)}

@@ -1863,9 +1863,9 @@ html.dark body #root :is(main, header, section, article, aside, dialog, [role="d
   --dark-info: #67b5ff;
   --chart-blue: #667fff;
   --chart-grid: var(--dark-border);
-  --map-idle: #303b60;
-  --map-border: #6275b3;
-  --map-active: #a2afff;
+  --map-idle: #394657;
+  --map-border: #9aaac0;
+  --map-active: #e0f2fe;
   accent-color: var(--dark-accent);
   scrollbar-color: var(--dark-text-muted) var(--dark-nav);
 }
