@@ -1,0 +1,59 @@
+<div id="dumo-hero-concept" aria-label="Proposed Dumo Network landing page hero">
+  <style>
+    #dumo-hero-concept {color-scheme:dark; --base:#090b11; --panel:#111722; --border:#252d3d; --text:#f8fafc; --muted:#b1baca; --blue:#6e9aff; --orange:#ff7a1a; background:var(--base); color:var(--text); font-family:Inter,system-ui,sans-serif; overflow:hidden; border-radius:16px;}
+    #dumo-hero-concept * {box-sizing:border-box;}
+    #dumo-hero-concept header {display:flex; align-items:center; justify-content:space-between; gap:12px; padding:15px clamp(16px,4vw,40px); border-bottom:1px solid var(--border);}
+    #dumo-hero-concept .brand {display:flex; gap:10px; align-items:center; font-weight:700; font-size:14px;}
+    #dumo-hero-concept .brand img {width:34px; height:34px; flex:none;}
+    #dumo-hero-concept nav {display:flex; gap:clamp(12px,2vw,27px); align-items:center;}
+    #dumo-hero-concept a {color:var(--text); text-decoration:none; font-size:13px;}
+    #dumo-hero-concept nav a:hover {color:var(--blue);}
+    #dumo-hero-concept .stage {position:relative; isolation:isolate; overflow:hidden; display:grid; grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr); align-items:center; gap:clamp(22px,4vw,50px); padding:clamp(32px,6vw,72px) clamp(16px,4vw,40px);}
+    #dumo-hero-concept .stage::before {content:""; position:absolute; z-index:-1; inset:-100% -24% 10% 51%; border-radius:0 0 20% 85%; transform:rotate(-24deg); background:linear-gradient(120deg,transparent 30%,#552701 72%,var(--orange)); box-shadow:0 25px 70px #ff7a1a22; pointer-events:none;}
+    #dumo-hero-concept .stage::after {content:""; position:absolute; z-index:-1; inset:auto 54% -37% -20%; height:52%; border-radius:12% 95% 0 0; transform:rotate(13deg); background:linear-gradient(13deg,transparent 42%,#12214b 77%,#245cff); opacity:.65; pointer-events:none;}
+    #dumo-hero-concept h1 {font-size:clamp(32px,5.4vw,60px); margin:0; line-height:1.02; font-weight:750; letter-spacing:-.055em;}
+    #dumo-hero-concept h1 span {display:block;}
+    #dumo-hero-concept .accent {color:var(--blue);}
+    #dumo-hero-concept .intro {margin:16px 0 0; color:var(--muted); font-size:clamp(14px,1.8vw,16px); max-width:39ch; line-height:1.55;}
+    #dumo-hero-concept .cta {display:inline-flex; gap:9px; align-items:center; min-height:44px; margin-top:22px; padding:0 14px; border:1px solid var(--orange); border-radius:10px; font-weight:650;}
+    #dumo-hero-concept .cta:hover {background:#302015;}
+    #dumo-hero-concept .dot {width:7px;height:7px;border-radius:50%;background:#22c55e;}
+    #dumo-hero-concept .preview {min-width:0; padding:19px; border:1px solid #365382; border-radius:15px; background:var(--panel); box-shadow:0 18px 42px #0008;}
+    #dumo-hero-concept .preview h2 {font-size:15px; margin:0 0 13px;}
+    #dumo-hero-concept .preview dl {display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; margin:0; padding:12px 0; border-top:1px solid var(--border); border-bottom:1px solid var(--border);}
+    #dumo-hero-concept dt,#dumo-hero-concept .notice {font-size:12px; color:var(--muted); line-height:1.45;}
+    #dumo-hero-concept dd {margin:5px 0 0; font-size:20px; font-weight:650;}
+    #dumo-hero-concept .notice {margin:12px 0 0;}
+    #dumo-hero-concept .features {display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; padding:18px clamp(16px,4vw,40px); border-top:1px solid var(--border); background:#0e121b;}
+    #dumo-hero-concept .features div {display:flex; align-items:center; gap:8px; min-width:0; font-size:13px; font-weight:600;}
+    #dumo-hero-concept .features svg {width:16px; height:16px; flex:none; color:var(--blue);}
+    @media(max-width:650px) {
+      #dumo-hero-concept .stage {grid-template-columns:1fr;}
+      #dumo-hero-concept .stage::before {inset:30% -45% 3% 30%; opacity:.7;}
+      #dumo-hero-concept .stage::after {inset:auto 26% -32% -55%; height:42%;}
+      #dumo-hero-concept nav a:first-child {display:none;}
+      #dumo-hero-concept .features {grid-template-columns:1fr; gap:10px;}
+    }
+  </style>
+  <header>
+    <div class="brand"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiByeD0iMTQiIGZpbGw9IiM3ZGQzZmMiLz4KICA8cGF0aCBkPSJNMjIgMzRWMTVhMyAzIDAgMCAxIDMtM2gxNGEzIDMgMCAwIDEgMyAzdjE5IiBmaWxsPSIjZWNlZWYyIi8+CiAgPHBhdGggZD0ibTI3IDIyIDMuNSAzLjUgNi41LTciIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzBjNGE2ZSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2Utd2lkdGg9IjMuNSIvPgogIDxyZWN0IHg9IjEyIiB5PSIzMSIgd2lkdGg9IjQwIiBoZWlnaHQ9IjIxIiByeD0iNSIgZmlsbD0iIzBjNGE2ZSIvPgogIDxwYXRoIGQ9Ik0yMiAzNWgyMCIgc3Ryb2tlPSIjYmFlNmZkIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS13aWR0aD0iMy41Ii8+Cjwvc3ZnPgo=" alt="">Dumo Youth Network</div>
+    <nav aria-label="Landing page navigation"><a href="https://dumo-network.vercel.app/live-results">Live Results</a><a href="https://dumo-network.vercel.app/login">Sign in</a></nav>
+  </header>
+  <section class="stage" aria-label="Hero section">
+    <div>
+      <h1>See what’s <span>happening at</span><span class="accent">the polling unit.</span></h1>
+      <p class="intro">Follow unofficial polling-unit results from all 23 local government areas in Rivers State.</p>
+      <a class="cta" href="https://dumo-network.vercel.app/live-results"><span class="dot" aria-hidden="true"></span>See Live Results</a>
+    </div>
+    <aside class="preview" aria-label="Public results preview">
+      <h2>Public results preview</h2>
+      <dl><div><dt>Reports received</dt><dd>—</dd></div><div><dt>Reporting coverage</dt><dd>—</dd></div></dl>
+      <p class="notice">Figures are unofficial until declared by the authorized electoral body.</p>
+    </aside>
+  </section>
+  <section class="features" aria-label="Platform features">
+    <div><i data-lucide="radio" aria-hidden="true"></i>Field reporting</div>
+    <div><i data-lucide="map-pin" aria-hidden="true"></i>Coverage across 23 LGAs</div>
+    <div><i data-lucide="shield-check" aria-hidden="true"></i>Public results tracking</div>
+  </section>
+</div>

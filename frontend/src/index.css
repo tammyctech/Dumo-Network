@@ -1977,17 +1977,23 @@ html.dark { background: var(--dark-surface-base); }
 
 :root.dark .landing-page footer { background: var(--dark-deep) !important; }
 
-:root.dark .landing-page .landing-footer {
+:is(.landing-page, :root.dark .landing-page) footer.landing-footer {
   --footer-heading: #f8fafc;
   --footer-link: #dce0e7;
   --footer-copy: #a1aabb;
+  --footer-base: var(--dark-surface-base, #090b11);
+  --footer-border: var(--dark-border, #252d3d);
+  --footer-blue: var(--dark-accent, #245cff);
+  --footer-blue-hover: var(--dark-accent-hover, #5381ff);
+  --footer-blue-surface: var(--dark-surface-overlay, #111c35);
+  --footer-orange: var(--dark-action, #ff7a1a);
   position: relative;
   isolation: isolate;
   overflow: hidden;
-  border-top: 1px solid var(--dark-border);
+  border-top: 1px solid var(--footer-border);
   background:
-    radial-gradient(ellipse at 99% 105%, color-mix(in srgb, var(--dark-action) 15%, transparent), transparent 42%),
-    var(--dark-surface-base) !important;
+    radial-gradient(ellipse at 99% 105%, color-mix(in srgb, var(--footer-orange) 15%, transparent), transparent 42%),
+    var(--footer-base) !important;
   color: var(--footer-copy);
 }
 
@@ -2004,7 +2010,7 @@ html.dark { background: var(--dark-surface-base); }
   height: 110%;
   border-radius: 0 0 37% 84%;
   transform: rotate(-17deg);
-  background: linear-gradient(115deg, transparent 19%, color-mix(in srgb, var(--dark-action) 36%, var(--dark-surface-base)) 65%, var(--dark-action));
+  background: linear-gradient(115deg, transparent 19%, color-mix(in srgb, var(--footer-orange) 36%, var(--footer-base)) 65%, var(--footer-orange));
 }
 
 .landing-footer::after {
@@ -2012,8 +2018,8 @@ html.dark { background: var(--dark-surface-base); }
   height: 70%;
   transform: rotate(10deg);
   border-radius: 75% 100% 0 0;
-  background: linear-gradient(12deg, transparent 25%, var(--dark-surface-overlay) 70%, var(--dark-accent));
-  box-shadow: 0 -12px 55px color-mix(in srgb, var(--dark-accent) 20%, transparent);
+  background: linear-gradient(12deg, transparent 25%, var(--footer-blue-surface) 70%, var(--footer-blue));
+  box-shadow: 0 -12px 55px color-mix(in srgb, var(--footer-blue) 20%, transparent);
 }
 
 .landing-footer-grid {
@@ -2025,16 +2031,16 @@ html.dark { background: var(--dark-surface-base); }
 .landing-footer-grid > * { min-width: 0; }
 .landing-footer-brand img { flex-shrink: 0; }
 .landing-footer :is(p, span, a, h2) { font-size: .875rem; line-height: 1.6; overflow-wrap: anywhere; }
-:root.dark .landing-page .landing-footer :is(p, span) { color: var(--footer-copy) !important; }
-:root.dark .landing-page .landing-footer :is(h2, strong) { color: var(--footer-heading) !important; }
+:is(.landing-page, :root.dark .landing-page) footer.landing-footer :is(p, span) { color: var(--footer-copy) !important; }
+:is(.landing-page, :root.dark .landing-page) footer.landing-footer :is(h2, strong) { color: var(--footer-heading) !important; }
 .landing-footer h2 { margin-bottom: .75rem; font-weight: 750; }
 .landing-footer li + li { margin-top: .45rem; }
-:root.dark .landing-page .landing-footer a { color: var(--footer-link) !important; }
-:root.dark .landing-page .landing-footer a:hover { color: var(--dark-accent-hover) !important; }
-.landing-footer-notice svg { flex: none; color: var(--dark-action); }
+:is(.landing-page, :root.dark .landing-page) footer.landing-footer a { color: var(--footer-link) !important; }
+:is(.landing-page, :root.dark .landing-page) footer.landing-footer a:hover { color: var(--footer-blue-hover) !important; }
+.landing-footer-notice svg { flex: none; color: var(--footer-orange); }
 .landing-footer-bottom {
   padding-block: 1.25rem;
-  border-top: 1px solid var(--dark-border);
+  border-top: 1px solid var(--footer-border);
   font-size: .8125rem;
 }
 
@@ -2046,7 +2052,7 @@ html.dark { background: var(--dark-surface-base); }
 }
 @media (min-width: 75rem) {
   .landing-footer-grid { grid-template-columns: minmax(0, 1.6fr) repeat(3, minmax(0, 1fr)) minmax(0, 1.2fr); gap: 1rem; }
-  .landing-footer-grid > :not(:first-child) { border-inline-start: 1px solid var(--dark-border); padding-inline-start: 1rem; }
+  .landing-footer-grid > :not(:first-child) { border-inline-start: 1px solid var(--footer-border); padding-inline-start: 1rem; }
 }
 @media (max-width: 37.99rem) {
   .landing-footer::before { inset-inline: 35% -66%; height: 79%; }

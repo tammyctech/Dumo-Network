@@ -907,7 +907,7 @@ export default function LandingPage() {
         </section>
       </main>
 
-      <LandingFooter branding={branding} dark={themeMode === "dark"} />
+      <LandingFooter branding={branding} />
 
     </div>
   );
