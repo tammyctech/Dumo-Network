@@ -1110,6 +1110,8 @@ html.dark body #root :is(main, header, section, article, aside, dialog, [role="d
   color: #0369a1;
 }
 
+:root.dark .live-results-badge { border-color: #22c55e !important; }
+
 .live-results-countdown-heading,
 .live-results-countdown-value {
   color: #0f172a;
