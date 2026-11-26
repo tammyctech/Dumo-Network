@@ -26,6 +26,7 @@ import { useBranding } from "../context/branding";
 import { PartyLogo } from "../constants/partyLogos";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/theme";
+import LandingFooter from "../components/LandingFooter";
 
 const API_URL = import.meta.env.DEV
   ? (import.meta.env.VITE_API_URL || "http://127.0.0.1:8000").replace(/\/$/, "")
@@ -906,16 +907,7 @@ export default function LandingPage() {
         </section>
       </main>
 
-      <footer className="border-t border-white/10 bg-sky-950 py-8 text-sky-100">
-        <div className="mx-auto flex max-w-7xl flex-col gap-5 px-5 text-sm sm:flex-row sm:items-center sm:justify-between lg:px-8">
-          <div className="flex items-center gap-3">
-            {branding.logo_data_url ? <img src={branding.logo_data_url} alt={`${branding.logo_title} logo`} className="h-11 w-11 rounded-xl bg-white object-contain p-1"/> : <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-white/10 text-white"><Activity size={20}/></span>}
-            <div><strong className="block text-white">{branding.logo_title}</strong><span className="text-sky-200">{branding.logo_subtitle}</span></div>
-          </div>
-          <p className="text-sky-200"><strong className="text-white">Transparent by design.</strong> Figures remain unofficial until declared by the authorized electoral body.</p>
-          <a href="https://github.com/wmgeolab/geoBoundaries" target="_blank" rel="noreferrer" className="text-sky-100 hover:text-white">Map boundary source <ArrowRight size={13} className="inline"/></a>
-        </div>
-      </footer>
+      <LandingFooter branding={branding} dark={themeMode === "dark"} />
 
     </div>
   );
