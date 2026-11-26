@@ -484,18 +484,14 @@ header h3 {
 ========================================== */
 
 :root.dark {
-  --brand-background: var(--dark-surface-base);
-  --brand-text: var(--dark-text-primary);
-  --dark-surface-base: #090b11;
-  --dark-surface-secondary: #0e121b;
-  --dark-action: #ff7a1a;
-  --dark-action-hover: #ff913d;
-  --dark-action-ink: var(--dark-surface-base);
-  --dark-canvas-glow: radial-gradient(ellipse at 76% 15%, rgb(36 92 255 / 0.18), transparent 34rem);
-  --dark-surface-card: #111722;
-  --dark-surface-raised: #171e2d;
-  --dark-surface-overlay: #111c35;
-  --dark-border: #252d3d;
+  --brand-background: #10131c;
+  --brand-text: #f5f6fa;
+  --dark-surface-base: #10131c;
+  --dark-canvas-glow: radial-gradient(ellipse at 76% 15%, rgb(64 93 251 / 0.18), transparent 34rem);
+  --dark-surface-card: #1c202b;
+  --dark-surface-raised: #222632;
+  --dark-surface-overlay: #282d3a;
+  --dark-border: #2b2f3b;
   --dark-text-primary: #f5f6fa;
   --dark-text-secondary: #b1b5c3;
   --dark-text-muted: #8b8f9e;
@@ -634,17 +630,17 @@ header h3 {
 
 :root.dark .user-action-refresh {
   border-color: #365a7d !important;
-  background-color: var(--dark-surface-overlay) !important;
-  color: var(--dark-link) !important;
+  background-color: #282d3a !important;
+  color: #a2afff !important;
 }
 
 :root.dark .user-action-refresh:hover {
   border-color: #5c86aa !important;
-  background-color: var(--dark-surface-overlay) !important;
+  background-color: #273262 !important;
 }
 
 :root.dark .user-action-refresh-icon {
-  color: var(--dark-link) !important;
+  color: #a2afff !important;
 }
 
 :root.dark .data-quality-subtitle {
@@ -668,15 +664,15 @@ header h3 {
 }
 
 :root.dark .email-centre-hero {
-  border-color: var(--dark-border) !important;
-  background-color: var(--dark-surface-card) !important;
-  background-image: linear-gradient(135deg, var(--dark-surface-card) 0%, var(--dark-surface-raised) 68%, #12352f 100%) !important;
+  border-color: #2b2f3b !important;
+  background-color: #1c202b !important;
+  background-image: linear-gradient(135deg, #1c202b 0%, #222632 68%, #12352f 100%) !important;
   color: #cbd5e1 !important;
 }
 
 :root.dark .email-centre-summary {
   border-color: #315474 !important;
-  background-color: var(--dark-surface-overlay) !important;
+  background-color: #282d3a !important;
 }
 
 :root.dark .email-centre-summary-value {
@@ -698,22 +694,22 @@ header h3 {
 }
 
 :root.dark .landing-page :is(.text-slate-700, .text-slate-600, .text-slate-500, .text-slate-400, .text-slate-300) {
-  color: var(--dark-link) !important;
+  color: #a2afff !important;
 }
 
 :root.dark .landing-page #report-incident p.text-sky-700 {
-  color: var(--dark-link) !important;
+  color: #a2afff !important;
 }
 
 :root.dark .landing-page h1 .text-sky-700 {
-  color: var(--dark-link) !important;
+  color: #a2afff !important;
 }
 
 :root.dark .landing-page .landing-hero-cta,
 :root.dark .landing-page .landing-hero-cta:hover {
-  border-color: var(--dark-link) !important;
-  background-color: var(--dark-link) !important;
-  color: var(--dark-surface-base) !important;
+  border-color: #a2afff !important;
+  background-color: #a2afff !important;
+  color: #10131c !important;
 }
 
 :root.dark .landing-page .landing-hero-cta {
@@ -721,7 +717,7 @@ header h3 {
 }
 
 :root.dark .landing-page .landing-hero-cta-primary {
-  box-shadow: 0 10px 28px rgb(36 92 255 / 0.24), 0 0 0 1px rgb(255 255 255 / 0.08) !important;
+  box-shadow: 0 10px 28px rgb(64 93 251 / 0.24), 0 0 0 1px rgb(255 255 255 / 0.08) !important;
 }
 
 :root.dark .landing-page .landing-hero-cta-secondary {
@@ -729,12 +725,12 @@ header h3 {
 }
 
 :root.dark .landing-page .landing-hero-cta:hover {
-  background-color: var(--dark-accent-hover) !important;
+  background-color: #bac4ff !important;
   transform: translateY(-1px);
 }
 
 :root.dark .landing-page .landing-hero-cta:focus-visible {
-  box-shadow: 0 0 0 3px var(--dark-surface-base), 0 0 0 6px rgb(36 92 255 / 0.75) !important;
+  box-shadow: 0 0 0 3px #10131c, 0 0 0 6px rgb(64 93 251 / 0.75) !important;
 }
 
 :root.dark :is(.border, .border-t, .border-b, .border-r, .border-l, .divide-y > :not(:last-child)),
@@ -849,19 +845,19 @@ html.dark body #root :is(main, header, section, article, aside, dialog, [role="d
 /* Termii-inspired landing page: layered navy surfaces and restrained contrast. */
 :root.dark .landing-page {
   --landing-bg: var(--dark-surface-base);
-  --landing-section: var(--dark-surface-secondary);
+  --landing-section: #141720;
   --landing-card: var(--dark-surface-card);
   --landing-card-hover: var(--dark-surface-raised);
   --landing-border: var(--dark-border);
   --landing-copy: #dce0e7;
   --landing-heading: #eceef2;
-  --landing-accent: var(--dark-link);
+  --landing-accent: #a2afff;
   background: var(--landing-bg) !important;
 }
 
 :root.dark .landing-page > header {
-  border-color: rgb(36 92 255 / 0.18) !important;
-  background: color-mix(in srgb, var(--dark-nav) 88%, transparent) !important;
+  border-color: rgb(64 93 251 / 0.18) !important;
+  background: rgb(18 21 31 / 0.88) !important;
   box-shadow: 0 1px 0 rgb(255 255 255 / 0.03), 0 12px 32px rgb(0 0 0 / 0.2) !important;
 }
 
@@ -872,9 +868,9 @@ html.dark body #root :is(main, header, section, article, aside, dialog, [role="d
 
 :root.dark .landing-page .nav-sign-in,
 :root.dark .landing-page .nav-sign-in:hover {
-  border: 1px solid var(--dark-link);
-  background: var(--dark-link) !important;
-  color: var(--dark-surface-base) !important;
+  border: 1px solid #a2afff;
+  background: #a2afff !important;
+  color: #10131c !important;
 }
 
 :root.dark .landing-page .nav-sign-in:hover {
@@ -882,9 +878,9 @@ html.dark body #root :is(main, header, section, article, aside, dialog, [role="d
 }
 
 :root.dark .landing-page .nav-logo-mark {
-  background-color: var(--dark-link) !important;
-  color: var(--dark-surface-base) !important;
-  box-shadow: 0 6px 18px rgb(36 92 255 / 0.2);
+  background-color: #a2afff !important;
+  color: #10131c !important;
+  box-shadow: 0 6px 18px rgb(64 93 251 / 0.2);
 }
 
 :root.dark .landing-page main > section {
@@ -903,7 +899,7 @@ html.dark body #root :is(main, header, section, article, aside, dialog, [role="d
 }
 
 :root.dark .landing-page :is(article, form, .bg-white, .bg-slate-50\/70):hover {
-  border-color: rgb(36 92 255 / 0.48) !important;
+  border-color: rgb(64 93 251 / 0.48) !important;
 }
 
 :root.dark .landing-page :is(.bg-sky-50, .bg-sky-50\/50, .bg-sky-50\/70, .bg-sky-100, .bg-sky-200\/50, .bg-slate-100, .bg-slate-200\/80) {
@@ -991,8 +987,8 @@ html.dark body #root :is(main, header, section, article, aside, dialog, [role="d
 }
 
 :root.dark .dashboard-current-election {
-  border-color: var(--dark-border) !important;
-  background: var(--dark-surface-card) !important;
+  border-color: #2b2f3b !important;
+  background: #1c202b !important;
 }
 
 :root.dark .dashboard-current-election-icon {
@@ -1017,9 +1013,9 @@ html.dark body #root :is(main, header, section, article, aside, dialog, [role="d
 :root.dark .dashboard-lga-coverage .coverage-caption { color: var(--dark-text-secondary); }
 
 :root.dark .dashboard-lga-coverage .recharts-default-tooltip {
-  border: 1px solid var(--dark-border) !important;
+  border: 1px solid #2b2f3b !important;
   border-radius: 0.75rem !important;
-  background: var(--dark-surface-card) !important;
+  background: #1c202b !important;
   box-shadow: 0 12px 28px rgb(0 0 0 / 0.32) !important;
 }
 
@@ -1057,17 +1053,17 @@ html.dark body #root :is(main, header, section, article, aside, dialog, [role="d
 }
 
 :root.dark .topbar-account {
-  border-color: var(--dark-border) !important;
+  border-color: #2b2f3b !important;
 }
 
 :root.dark .topbar-account-button:hover {
-  background: var(--dark-surface-overlay) !important;
+  background: #282d3a !important;
 }
 
 :root.dark .topbar-account-avatar {
-  background: var(--dark-surface-overlay) !important;
-  color: var(--dark-link) !important;
-  --tw-ring-color: var(--dark-border) !important;
+  background: #273262 !important;
+  color: #a2afff !important;
+  --tw-ring-color: #2b2f3b !important;
 }
 
 :root.dark .topbar-account-name {
@@ -1119,8 +1115,8 @@ html.dark body #root :is(main, header, section, article, aside, dialog, [role="d
 }
 
 :root.dark .live-results-countdown {
-  border-color: var(--dark-border) !important;
-  background: var(--dark-surface-raised) !important;
+  border-color: #2b2f3b !important;
+  background: #222632 !important;
 }
 
 :root.dark .live-results-countdown-label {
@@ -1133,14 +1129,14 @@ html.dark body #root :is(main, header, section, article, aside, dialog, [role="d
 }
 
 :root.dark .live-results-countdown-badge {
-  border-color: var(--dark-border) !important;
-  background: var(--dark-surface-overlay) !important;
+  border-color: #2b2f3b !important;
+  background: #282d3a !important;
   color: #bae6fd !important;
 }
 
 :root.dark .live-results-countdown-card {
-  border-color: var(--dark-border) !important;
-  background: var(--dark-surface-card) !important;
+  border-color: #2b2f3b !important;
+  background: #1c202b !important;
 }
 
 :root.dark .live-results-countdown-unit {
@@ -1379,8 +1375,8 @@ html.dark body #root :is(main, header, section, article, aside, dialog, [role="d
 }
 
 :root.dark .app-sidebar {
-  border-color: var(--dark-border) !important;
-  background: var(--dark-surface-base) !important;
+  border-color: #1e293b !important;
+  background: #071722 !important;
   color: #fff !important;
   box-shadow: 10px 0 30px rgb(2 6 23 / 0.25) !important;
 }
@@ -1435,18 +1431,18 @@ html.dark body #root :is(main, header, section, article, aside, dialog, [role="d
 }
 
 :root.dark .app-sidebar-link:hover {
-  background: var(--dark-surface-overlay) !important;
+  background: #282d3a !important;
   color: #f1f5f9 !important;
 }
 
 :root.dark .app-sidebar-link.is-active {
   border-color: #5cc8f5 !important;
-  background: var(--dark-surface-overlay) !important;
+  background: #273262 !important;
   color: #e8f5fc !important;
 }
 
 :root.dark .app-sidebar-link.is-active svg {
-  color: var(--dark-link) !important;
+  color: #a2afff !important;
 }
 
 :root.dark .nav-sign-out {
@@ -1480,8 +1476,8 @@ html.dark body #root :is(main, header, section, article, aside, dialog, [role="d
 }
 
 :root.dark .settings-profile-summary {
-  border: 1px solid var(--dark-border);
-  background: var(--dark-surface-raised) !important;
+  border: 1px solid #2b2f3b;
+  background: #222632 !important;
 }
 
 :root.dark .settings-profile-avatar {
@@ -1521,8 +1517,8 @@ html.dark body #root :is(main, header, section, article, aside, dialog, [role="d
 }
 
 :root.dark .settings-security-info {
-  border-color: var(--dark-border) !important;
-  background: var(--dark-surface-raised) !important;
+  border-color: #2b2f3b !important;
+  background: #222632 !important;
 }
 
 :root.dark .settings-security-info-title {
@@ -1576,8 +1572,8 @@ html.dark body #root :is(main, header, section, article, aside, dialog, [role="d
 
 :root.dark #profile-full-name,
 :root.dark #profile-phone {
-  border-color: var(--dark-border) !important;
-  background: var(--dark-surface-card) !important;
+  border-color: #2b2f3b !important;
+  background: #1c202b !important;
   color: #e2e8f0 !important;
   caret-color: #9de1c5;
 }
@@ -1596,7 +1592,7 @@ html.dark body #root :is(main, header, section, article, aside, dialog, [role="d
 :root.dark #profile-full-name:-webkit-autofill,
 :root.dark #profile-phone:-webkit-autofill {
   -webkit-text-fill-color: #e2e8f0 !important;
-  -webkit-box-shadow: 0 0 0 1000px var(--dark-surface-card) inset !important;
+  -webkit-box-shadow: 0 0 0 1000px #1c202b inset !important;
   caret-color: #9de1c5;
 }
 
@@ -1615,8 +1611,8 @@ html.dark body #root :is(main, header, section, article, aside, dialog, [role="d
 
 :root.dark .organization-settings > section,
 :root.dark .landing-copy-section {
-  border-color: var(--dark-border) !important;
-  background: var(--dark-surface-card) !important;
+  border-color: #2b2f3b !important;
+  background: #1c202b !important;
 }
 
 :root.dark .organization-settings :is(h2, h3) {
@@ -1628,19 +1624,19 @@ html.dark body #root :is(main, header, section, article, aside, dialog, [role="d
 }
 
 :root.dark .organization-brand-preview {
-  border-color: var(--dark-border) !important;
-  background-color: var(--dark-surface-card) !important;
+  border-color: #2b2f3b !important;
+  background-color: #1c202b !important;
   background-image: none !important;
   color: #e2e8f0 !important;
 }
 
 :root.dark .organization-brand-preview-header {
-  border-color: var(--dark-border) !important;
+  border-color: #2b2f3b !important;
 }
 
 :root.dark .landing-copy-card {
-  border-color: var(--dark-border) !important;
-  background: var(--dark-surface-raised) !important;
+  border-color: #2b2f3b !important;
+  background: #222632 !important;
 }
 
 :root.dark .landing-copy-label {
@@ -1648,14 +1644,14 @@ html.dark body #root :is(main, header, section, article, aside, dialog, [role="d
 }
 
 :root.dark .landing-copy-input {
-  border-color: var(--dark-border) !important;
-  background: var(--dark-surface-card) !important;
+  border-color: #2b2f3b !important;
+  background: #1c202b !important;
   color: #e2e8f0 !important;
 }
 
 :root.dark .landing-copy-preview {
-  background: var(--dark-surface-card) !important;
-  box-shadow: inset 0 0 0 1px var(--dark-border);
+  background: #1c202b !important;
+  box-shadow: inset 0 0 0 1px #2b2f3b;
 }
 
 .settings-page-icon {
@@ -1709,8 +1705,8 @@ html.dark body #root :is(main, header, section, article, aside, dialog, [role="d
 }
 
 :root.dark .settings-nav {
-  border-color: var(--dark-border) !important;
-  background: var(--dark-surface-card) !important;
+  border-color: #2b2f3b !important;
+  background: #1c202b !important;
 }
 
 :root.dark .settings-nav-item {
@@ -1719,7 +1715,7 @@ html.dark body #root :is(main, header, section, article, aside, dialog, [role="d
 }
 
 :root.dark .settings-nav-item:hover {
-  background: var(--dark-surface-overlay) !important;
+  background: #282d3a !important;
 }
 
 :root.dark .settings-nav-item.is-selected {
@@ -1727,13 +1723,13 @@ html.dark body #root :is(main, header, section, article, aside, dialog, [role="d
 }
 
 :root.dark .settings-nav-icon {
-  background: var(--dark-surface-overlay) !important;
+  background: #282d3a !important;
   color: #aab8ca !important;
 }
 
 :root.dark .settings-nav-item:hover .settings-nav-icon {
-  background: var(--dark-surface-overlay) !important;
-  color: var(--dark-link) !important;
+  background: #273262 !important;
+  color: #a2afff !important;
 }
 
 :root.dark .settings-nav-item.is-selected .settings-nav-icon {
@@ -1841,29 +1837,28 @@ html.dark body #root :is(main, header, section, article, aside, dialog, [role="d
 
 /* Shared dark component states */
 :root.dark {
-  --dark-accent: #245cff;
-  --dark-accent-hover: #5381ff;
-  --dark-accent-pressed: #163bb5;
-  --dark-link: #86a8ff;
-  --dark-nav: var(--dark-surface-secondary);
-  --dark-deep: var(--dark-surface-base);
-  --dark-input: var(--dark-surface-secondary);
-  --dark-modal: var(--dark-surface-raised);
+  --dark-accent: #405dfb;
+  --dark-accent-hover: #526dff;
+  --dark-accent-pressed: #304ce0;
+  --dark-link: #a2afff;
+  --dark-nav: #12151f;
+  --dark-deep: #0b0d14;
+  --dark-input: #1a1e29;
+  --dark-modal: #1b1f2a;
   --dark-success: #32d74b;
   --dark-warning: #ff9f43;
   --dark-error: #ff7890;
   --dark-info: #67b5ff;
-  --chart-blue: var(--dark-accent);
-  --chart-orange: var(--dark-action);
+  --chart-blue: #667fff;
   --chart-grid: var(--dark-border);
-  --map-idle: var(--dark-surface-overlay);
-  --map-border: var(--dark-accent-hover);
-  --map-active: var(--dark-action);
+  --map-idle: #303b60;
+  --map-border: #6275b3;
+  --map-active: #a2afff;
   accent-color: var(--dark-accent);
   scrollbar-color: var(--dark-text-muted) var(--dark-nav);
 }
 
-html.dark { background: var(--dark-surface-base); }
+html.dark { background: #10131c; }
 .app-loading-screen, .app-loading-surface { background: var(--brand-background); }
 :root.dark .app-loading-screen { background: var(--dark-surface-base); }
 :root.dark .app-loading-screen .app-loading-name { color: var(--dark-text-primary) !important; }
@@ -1981,12 +1976,12 @@ html.dark { background: var(--dark-surface-base); }
   --footer-heading: #f8fafc;
   --footer-link: #dce0e7;
   --footer-copy: #a1aabb;
-  --footer-base: var(--dark-surface-base, #090b11);
-  --footer-border: var(--dark-border, #252d3d);
-  --footer-blue: var(--dark-accent, #245cff);
-  --footer-blue-hover: var(--dark-accent-hover, #5381ff);
-  --footer-blue-surface: var(--dark-surface-overlay, #111c35);
-  --footer-orange: var(--dark-action, #ff7a1a);
+  --footer-base: #090b11;
+  --footer-border: #252d3d;
+  --footer-blue: #245cff;
+  --footer-blue-hover: #5381ff;
+  --footer-blue-surface: #111c35;
+  --footer-orange: #ff7a1a;
   position: relative;
   isolation: isolate;
   overflow: hidden;
@@ -2080,7 +2075,7 @@ html.dark { background: var(--dark-surface-base); }
 
 :root.dark .dashboard-stat-value { font-variant-numeric: tabular-nums; }
 :root.dark .auth-screen {
-  background: radial-gradient(ellipse at 50% 0%, rgb(36 92 255 / .15), transparent 36rem),
+  background: radial-gradient(ellipse at 50% 0%, rgb(64 93 251 / .15), transparent 36rem),
     var(--dark-surface-base) !important;
 }
 :root.dark .auth-screen .input { border-radius: var(--control-radius); }
@@ -2096,187 +2091,6 @@ html.dark { background: var(--dark-surface-base); }
 :root.dark .app-shell footer { background: var(--dark-nav); }
 :root.dark .app-loading-screen .loading-progress { background: var(--dark-accent); }
 :root.dark .landing-page .nav-logo-mark { background: var(--dark-accent) !important; color: white !important; }
-
-/* Dark-only color overrides for surfaces and controls with legacy utilities. */
-:root.dark :is(.auth-screen, .app-shell, .landing-page, #root > div:has(#spread-analysis)) {
-  color: var(--dark-text-primary);
-}
-
-:root.dark #root > div:has(#spread-analysis) {
-  background-color: var(--dark-surface-base) !important;
-}
-
-:root.dark #root > div:has(#spread-analysis) > header {
-  background-color: var(--dark-nav) !important;
-}
-
-:root.dark #root :is([class*="bg-[#071722]"], .bg-slate-950) {
-  background-color: var(--dark-surface-secondary) !important;
-}
-
-:root.dark #root :is(thead, .bg-slate-200, .bg-slate-50\/50, .bg-slate-50\/60) {
-  background-color: var(--dark-surface-raised) !important;
-}
-
-:root.dark #root :is(.bg-blue-50, .bg-purple-50, .bg-sky-100) {
-  background-color: var(--dark-surface-overlay) !important;
-}
-
-:root.dark #root :is(.text-purple-700, .text-blue-700, .text-blue-800),
-:root.dark .landing-page main :is(.landing-brand-blue-text, .landing-heading-accent) {
-  color: var(--dark-link) !important;
-}
-
-:root.dark[data-custom-brand] :is(.dashboard-canvas, .bg-canvas) :is(.text-slate-950, .text-slate-900, .text-slate-800) {
-  color: var(--dark-text-primary) !important;
-}
-
-:root.dark #root :is(.text-slate-400, .text-slate-500) {
-  color: var(--dark-text-secondary) !important;
-}
-
-:root.dark #root :is(a.nav-sign-in, a.landing-hero-cta-secondary, a.landing-action),
-:root.dark #root :is(a, button):is(.bg-sky-600, .bg-sky-700, .bg-sky-800, .bg-emerald-600, .bg-emerald-700, .bg-emerald-800) {
-  background-color: var(--dark-accent) !important;
-  border-color: var(--dark-accent) !important;
-  color: #fff !important;
-}
-
-:root.dark #root :is(a.nav-sign-in, a.landing-hero-cta-secondary, a.landing-action, :is(a, button):is(.bg-sky-600, .bg-sky-700, .bg-sky-800, .bg-emerald-600, .bg-emerald-700, .bg-emerald-800)):hover:not(:disabled) {
-  background-color: var(--dark-accent-pressed) !important;
-  border-color: var(--dark-accent-hover) !important;
-}
-
-:root.dark #root :is(a.landing-hero-cta-primary, button.landing-action, button.submit-unofficial-result, .auth-screen button[class*="bg-[#005b8f]"], button[type="submit"]:is(.bg-emerald-600, .bg-emerald-700, .bg-sky-700)):not(:disabled) {
-  background-color: var(--dark-action) !important;
-  border-color: var(--dark-action) !important;
-  color: var(--dark-action-ink) !important;
-}
-
-:root.dark #root :is(a.landing-hero-cta-primary, button.landing-action, button.submit-unofficial-result, .auth-screen button[class*="bg-[#005b8f]"], button[type="submit"]:is(.bg-emerald-600, .bg-emerald-700, .bg-sky-700)):hover:not(:disabled) {
-  background-color: var(--dark-action-hover) !important;
-  border-color: var(--dark-action-hover) !important;
-}
-
-:root.dark #root .landing-page :is(.landing-hero-cta, .nav-sign-in, .landing-action) :is(span, svg) {
-  color: inherit !important;
-}
-
-:root.dark .dashboard-lga-coverage circle[stroke="#fbbf24"] { stroke: var(--chart-orange); }
-:root.dark .dashboard-lga-coverage .bg-amber-400 { background-color: var(--chart-orange) !important; }
-:root.dark #root > div:has(#spread-analysis) svg path[fill="#dbeafe"] { fill: var(--map-idle); stroke: var(--map-border); }
-:root.dark #root > div:has(#spread-analysis) svg path[fill="#0284c7"] { fill: var(--map-active); stroke: var(--dark-action-hover); }
-
-/* Dark landing hero artwork. The existing preview stays above both curves. */
-:root.dark .landing-page main > .landing-hero {
-  background:
-    radial-gradient(ellipse at 84% 61%, color-mix(in srgb, var(--dark-action) 17%, transparent), transparent 45%),
-    radial-gradient(ellipse at 12% 100%, color-mix(in srgb, var(--dark-accent) 17%, transparent), transparent 47%),
-    var(--dark-surface-base) !important;
-}
-
-:root.dark .landing-hero::before,
-:root.dark .landing-hero::after {
-  content: "";
-  position: absolute;
-  z-index: -1;
-  pointer-events: none;
-}
-
-:root.dark .landing-hero::before {
-  inset: -64% -21% auto 43%;
-  height: 146%;
-  border-radius: 0 0 38% 77% / 0 0 30% 68%;
-  transform: rotate(-25deg);
-  background: linear-gradient(108deg,
-    var(--dark-surface-base) 8%,
-    color-mix(in srgb, var(--dark-action) 36%, var(--dark-surface-base)) 54%,
-    var(--dark-action) 95%);
-  box-shadow: 0 24px 85px color-mix(in srgb, var(--dark-action) 21%, transparent);
-}
-
-:root.dark .landing-hero::after {
-  inset: auto 40% -52% -32%;
-  height: 69%;
-  border-radius: 52% 92% 0 0 / 39% 76% 0 0;
-  transform: rotate(15deg);
-  background: linear-gradient(16deg, transparent 24%, var(--dark-surface-overlay) 68%, var(--dark-accent));
-  box-shadow: 0 -10px 55px color-mix(in srgb, var(--dark-accent) 21%, transparent);
-}
-
-:root.dark #root .landing-hero h1 > span:first-child { color: #f8fafc !important; }
-:root.dark #root .landing-hero h1 > .landing-brand-blue-text { color: var(--dark-accent-hover) !important; }
-:root.dark #root .landing-hero h1 > .landing-hero-emphasis { color: var(--dark-action) !important; }
-
-:root.dark #root .landing-hero a.landing-hero-cta-primary {
-  box-shadow: 0 6px 26px color-mix(in srgb, var(--dark-action) 22%, transparent) !important;
-}
-
-:root.dark #root .landing-hero a.landing-hero-cta-primary:not(:disabled) {
-  background-color: transparent !important;
-  border-color: var(--dark-action) !important;
-  color: #fff !important;
-  box-shadow: inset 0 0 0 1px var(--dark-action), 0 6px 26px color-mix(in srgb, var(--dark-action) 22%, transparent) !important;
-  text-shadow: 0 1px 2px rgb(0 0 0 / 0.7);
-}
-
-:root.dark #root .landing-hero a.landing-hero-cta-primary:hover:not(:disabled) {
-  background-color: transparent !important;
-  border-color: var(--dark-action-hover) !important;
-  box-shadow: inset 0 0 0 1px var(--dark-action-hover), 0 6px 26px color-mix(in srgb, var(--dark-action) 30%, transparent) !important;
-}
-
-:root.dark #root .landing-hero a.landing-hero-cta-secondary {
-  background-color: var(--dark-surface-base) !important;
-  border-color: var(--dark-accent) !important;
-  color: var(--dark-link) !important;
-}
-
-:root.dark #root .landing-hero a.landing-hero-cta-secondary:hover {
-  background-color: var(--dark-surface-overlay) !important;
-  border-color: var(--dark-accent-hover) !important;
-}
-
-:root.dark #root .landing-hero .landing-hero-cta-primary:focus-visible {
-  outline-color: var(--dark-link);
-}
-
-:root.dark .landing-hero .landing-hero-preview {
-  border-color: color-mix(in srgb, var(--dark-accent) 53%, var(--dark-border)) !important;
-  background-color: var(--dark-surface-card) !important;
-  box-shadow:
-    0 24px 62px -28px color-mix(in srgb, var(--dark-action) 42%, transparent),
-    0 0 32px color-mix(in srgb, var(--dark-accent) 15%, transparent) !important;
-}
-
-:root.dark .landing-hero .landing-hero-preview-edge {
-  background-image: linear-gradient(90deg, var(--dark-accent-pressed), var(--dark-accent-hover), var(--dark-accent-pressed));
-}
-
-:root.dark #root .landing-page > header {
-  background: var(--dark-surface-base) !important;
-  border-color: var(--dark-border) !important;
-}
-
-:root.dark #root .landing-page > header nav :is(a, button):not(.nav-sign-in) {
-  color: var(--dark-text-primary) !important;
-}
-
-:root.dark #root .landing-page > header nav a:not(.nav-sign-in):hover { color: var(--dark-link) !important; }
-
-@media (max-width: 63.99rem) {
-  :root.dark .landing-hero::before {
-    inset: 38% -56% auto 35%;
-    height: 58%;
-    opacity: .68;
-  }
-
-  :root.dark .landing-hero::after {
-    inset: auto 22% -29% -66%;
-    height: 36%;
-    opacity: .77;
-  }
-}
 
 @media (width >= 64rem) {
   .app-shell[data-compact="true"] .app-sidebar { width: 4.75rem; }
