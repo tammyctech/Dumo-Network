@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
+import { Bar, BarChart, CartesianGrid, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { Activity, CalendarDays, MapPin, Radio, Share2, ShieldCheck } from "lucide-react";
 import LandingFooter from "../components/LandingFooter";
 import { PartyLogo } from "../constants/partyLogos";
@@ -220,7 +221,7 @@ export default function LiveResults() {
             <p className="mt-2 text-sm leading-6 text-slate-600">
               Aggregated votes from agent-submitted polling-unit results. These are not official election totals.
             </p>
-            <ReportedPartyTotals totals={overview.party_totals} showBars />
+            <PartyVoteChart totals={overview.party_totals} />
           </section>
         </div>
       </section>
@@ -404,13 +405,40 @@ function PollingUnitReports({ electionId, lga, lastUpdated }: { electionId: numb
   );
 }
 
-function ReportedPartyTotals({ totals, showBars = false }: { totals: PartyTotal[]; showBars?: boolean }) {
-  const rankedTotals = [...totals].sort((a, b) => b.votes - a.votes || a.party.localeCompare(b.party));
-  const maxVotes = rankedTotals[0]?.votes ?? 0;
+function rankPartyTotals(totals: PartyTotal[]) {
+  return [...totals].sort((a, b) => b.votes - a.votes || a.party.localeCompare(b.party));
+}
+
+function PartyVoteChart({ totals }: { totals: PartyTotal[] }) {
+  const data = useMemo(() => rankPartyTotals(totals), [totals]);
+  if (!data.length) return <p className="mt-4 text-sm text-slate-600">No party totals reported yet.</p>;
+
+  return (
+    <div className="mt-5 overflow-x-auto">
+      <div className="h-80" style={{ minWidth: 90 + data.length * 44 }}>
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart data={data} accessibilityLayer margin={{ top: 12, right: 12, bottom: 12, left: 0 }}>
+            <CartesianGrid stroke="var(--chart-grid, #dce3e8)" strokeDasharray="3 3" vertical={false} />
+            <XAxis dataKey="party" interval={0} tickLine={false} tick={{ fontSize: 12, fill: "#64748b" }} />
+            <YAxis allowDecimals={false} tickLine={false} axisLine={false} width={72}
+              tickFormatter={value => Number(value).toLocaleString("en-NG")} />
+            <Tooltip formatter={value => [Number(value).toLocaleString("en-NG"), "Votes"]} />
+            <Bar dataKey="votes" name="Reported votes" radius={[5, 5, 0, 0]} maxBarSize={42} isAnimationActive={false}>
+              {data.map(({ party }) => <Cell key={party} fill={partyColor(party)} />)}
+            </Bar>
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+    </div>
+  );
+}
+
+function ReportedPartyTotals({ totals }: { totals: PartyTotal[] }) {
+  const rankedTotals = rankPartyTotals(totals);
 
   return (
     <div className="mt-4">
-      {!showBars && <h3 className="text-sm font-bold">Reported votes by party</h3>}
+      <h3 className="text-sm font-bold">Reported votes by party</h3>
       {totals.length === 0 ? <p className="mt-2 text-sm">No party totals reported yet.</p> : (
         <ul className="mt-2 divide-y divide-slate-400/25 text-sm">
           {rankedTotals.map(({ party, votes }) => (
@@ -422,14 +450,6 @@ function ReportedPartyTotals({ totals, showBars = false }: { totals: PartyTotal[
                 </span>
                 <span className="font-semibold tabular-nums">{votes.toLocaleString("en-NG")}</span>
               </div>
-              {showBars && (
-                <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-slate-200" aria-hidden="true">
-                  <div className="h-full rounded-full" style={{
-                    width: maxVotes > 0 ? `${(votes / maxVotes) * 100}%` : "0%",
-                    backgroundColor: partyColor(party),
-                  }} />
-                </div>
-              )}
             </li>
           ))}
         </ul>
